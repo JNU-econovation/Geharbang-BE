@@ -1,4 +1,6 @@
 package guesthouse.oauth2.exception;
 
-public class AuthenticationFailException extends RuntimeException {
+import guesthouse.common.exception.GuestHouseException;
+
+public class AuthenticationFailException extends GuestHouseException {
 }
