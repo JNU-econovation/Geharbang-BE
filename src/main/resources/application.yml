@@ -1,0 +1,12 @@
+spring:
+  profiles:
+    default: local
+
+    group:
+      local:
+        - jpa
+
+  application:
+    name: guesthouse
+  config:
+    import: optional:file:.env[.properties]
