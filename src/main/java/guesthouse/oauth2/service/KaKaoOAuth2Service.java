@@ -1,5 +1,7 @@
 package guesthouse.oauth2.service;
 
+import guesthouse.oauth2.service.dto.KaKaoUserInfoResponse;
+import guesthouse.oauth2.service.dto.KakaoTokenResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;

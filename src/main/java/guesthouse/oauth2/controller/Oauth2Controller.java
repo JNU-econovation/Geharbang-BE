@@ -4,9 +4,8 @@ import guesthouse.oauth2.domain.vo.Provider;
 import guesthouse.oauth2.dto.response.KaKaoLoginUriResponse;
 import guesthouse.oauth2.service.AuthService;
 import guesthouse.oauth2.service.KaKaoOAuth2Service;
-import guesthouse.oauth2.service.KaKaoUserInfoResponse;
-import guesthouse.oauth2.service.KakaoTokenResponse;
-import jakarta.servlet.http.HttpServletResponse;
+import guesthouse.oauth2.service.dto.KaKaoUserInfoResponse;
+import guesthouse.oauth2.service.dto.KakaoTokenResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -15,8 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor

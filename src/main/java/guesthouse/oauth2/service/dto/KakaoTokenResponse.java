@@ -1,4 +1,4 @@
-package guesthouse.oauth2.service;
+package guesthouse.oauth2.service.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
