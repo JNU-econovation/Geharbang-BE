@@ -14,6 +14,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Service
 public class KaKaoOAuth2Service {
 
+    private static final String USER_LOGIN_URL = "https://kauth.kakao.com/oauth/authorize";
+    private static final String TOKEN_REQUEST_URL = "https://kauth.kakao.com/oauth/token";
+    private static final String USER_INFO_REQUEST_URL = "https://kapi.kakao.com/v2/user/me";
+
     @Value("${oauth2.kakao.client-id}")
     private String clientId;
 
@@ -22,7 +26,7 @@ public class KaKaoOAuth2Service {
 
     public String getLoginUri() {
         return UriComponentsBuilder
-                .fromUriString("https://kauth.kakao.com/oauth/authorize")
+                .fromUriString(USER_LOGIN_URL)
                 .queryParam("client_id", clientId)
                 .queryParam("redirect_uri", redirectUri)
                 .queryParam("response_type", "code")
@@ -37,7 +41,7 @@ public class KaKaoOAuth2Service {
         formData.add("redirect_uri", redirectUri);
         formData.add("code", code);
 
-        return WebClient.create("https://kauth.kakao.com/oauth/token")
+        return WebClient.create(TOKEN_REQUEST_URL)
                 .post()
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .bodyValue(formData)
@@ -47,7 +51,7 @@ public class KaKaoOAuth2Service {
     }
 
     public KaKaoUserInfoResponse getUserInfo(String accessToken) {
-        return WebClient.create("https://kapi.kakao.com/v2/user/me")
+        return WebClient.create(USER_INFO_REQUEST_URL)
                 .post()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
