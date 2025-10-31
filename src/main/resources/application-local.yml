@@ -27,14 +27,14 @@ spring:
 
 oauth2:
   kakao:
-    client-id: ${KAKAO_CLIENT_ID}
-    redirect-uri: ${KAKAO_REDIRECT_URI}
-  base-redirect-uri: ${BASE_REDIRECT_URI}
+    client-id: "asdasdsadsadsadasdsadsadsadsadsa"
+    redirect-uri: "asdasdsadsadsadasdasdasdasdsadsad"
+  base-redirect-uri: "asdsadasdsadsadsadasdasdasdsadsadsa"
 
 
 jwt:
   token:
-    secret-key: ${JWT_SECRET_KEY}
-    access-expiration-time: ${JWT_ACCESS_EXPIRATION_TIME}
-    refresh-expiration-time: ${JWT_REFRESH_EXPIRATION_TIME}
+    secret-key: "asdasdsadsadsadasdsadsadsadasdsadasdasdasdsadsadas"
+    access-expiration-time: "123131231"
+    refresh-expiration-time: "1232132132"
 
