@@ -9,6 +9,8 @@ import guesthouse.oauth2.service.KakaoTokenResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,12 +35,14 @@ public class Oauth2Controller {
     }
 
     @GetMapping("/api/v1/oauth/kakao/callback")
-    public void login(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
+    public ResponseEntity<Void> login(@RequestParam("code") String code){
         KakaoTokenResponse kakaoResponse = kaKaoOAuth2Service.getToken(code);
         KaKaoUserInfoResponse userInfo = kaKaoOAuth2Service.getUserInfo(kakaoResponse.accessToken());
         String accessToken = authService.loginWithProvider(userInfo.id(), Provider.KAKAO);
         String redirectUri = redirectBaseUri + accessToken;
-        response.sendRedirect(redirectUri);
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header(HttpHeaders.LOCATION, redirectUri)
+                .build();
     }
 
 }
