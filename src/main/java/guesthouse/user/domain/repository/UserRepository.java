@@ -1,6 +1,6 @@
-package guesthouse.oauth2.repository;
+package guesthouse.user.domain.repository;
 
-import guesthouse.oauth2.domain.model.User;
+import guesthouse.user.domain.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Long> {

@@ -1,8 +1,6 @@
 package guesthouse.oauth2.repository;
 
 import guesthouse.oauth2.domain.model.Oauth2Account;
-import guesthouse.oauth2.domain.model.User;
-import guesthouse.oauth2.domain.vo.Provider;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

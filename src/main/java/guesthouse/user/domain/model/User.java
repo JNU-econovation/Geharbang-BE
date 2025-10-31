@@ -1,4 +1,4 @@
-package guesthouse.oauth2.domain.model;
+package guesthouse.user.domain.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;

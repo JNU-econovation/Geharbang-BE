@@ -1,10 +1,10 @@
 package guesthouse.oauth2.service;
 
 import guesthouse.oauth2.domain.model.Oauth2Account;
-import guesthouse.oauth2.domain.model.User;
+import guesthouse.user.domain.model.User;
 import guesthouse.oauth2.domain.vo.Provider;
 import guesthouse.oauth2.repository.Oauth2AccountRepository;
-import guesthouse.oauth2.repository.UserRepository;
+import guesthouse.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
