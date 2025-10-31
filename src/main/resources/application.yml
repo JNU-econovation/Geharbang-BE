@@ -5,15 +5,6 @@ spring:
   application:
     name: guesthouse
 
-oauth2:
-  kakao:
-    client-id: ${KAKAO_CLIENT_ID}
-    redirect-uri: ${KAKAO_REDIRECT_URI}
-  base-redirect-uri: ${BASE_REDIRECT_URI}
+  config:
+    import: optional:file:.env[.properties]
 
-
-jwt:
-  token:
-    secret-key: ${JWT_SECRET_KEY}
-    access-expiration-time: ${JWT_ACCESS_EXPIRATION_TIME}
-    refresh-expiration-time: ${JWT_REFRESH_EXPIRATION_TIME}
