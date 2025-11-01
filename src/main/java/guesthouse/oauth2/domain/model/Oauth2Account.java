@@ -24,10 +24,10 @@ public class Oauth2Account {
     private Provider provider;
 
     @Column(nullable = false)
-    private Long socialId;
+    private String socialId;
 
     @Builder
-    public Oauth2Account(Long userId, Provider provider, Long socialId) {
+    public Oauth2Account(Long userId, Provider provider, String socialId) {
         this.userId = userId;
         this.provider = provider;
         this.socialId = socialId;
