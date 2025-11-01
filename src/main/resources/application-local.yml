@@ -1,3 +1,7 @@
+config:
+  activate:
+    on-profile: local
+
 spring:
   datasource:
     url: ${DB_URL}
@@ -15,3 +19,9 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
         jdbc:
           time_zone: Asia/Seoul
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+

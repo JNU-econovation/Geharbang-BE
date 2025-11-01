@@ -1,0 +1,9 @@
+spring:
+  profiles:
+    default: test
+
+  application:
+    name: guesthouse
+  config:
+    import: optional:file:.env[.properties]
+
