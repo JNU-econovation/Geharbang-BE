@@ -6,6 +6,8 @@ import guesthouse.oauth2.dto.response.KaKaoLoginUriResponse;
 import guesthouse.oauth2.service.AuthService;
 import guesthouse.oauth2.service.GoogleOAuth2Service;
 import guesthouse.oauth2.service.KaKaoOAuth2Service;
+import guesthouse.oauth2.service.dto.GoogleTokenResponse;
+import guesthouse.oauth2.service.dto.GoogleUserInfo;
 import guesthouse.oauth2.service.dto.KaKaoUserInfoResponse;
 import guesthouse.oauth2.service.dto.KakaoTokenResponse;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +51,17 @@ public class Oauth2Controller {
     public ResponseEntity<GoogleLoginUriResponse> getGoogleLoginUri() {
         String loginUri = googleOAuth2Service.getLoginUri();
         return ResponseEntity.ok(new GoogleLoginUriResponse(loginUri));
+    }
+
+    @GetMapping("/api/v1/oauth/google/callback")
+    public ResponseEntity<Void> loginWithGoogle(@RequestParam("code") String code){
+        GoogleTokenResponse response = googleOAuth2Service.getToken(code);
+        GoogleUserInfo userInfo = googleOAuth2Service.getUserInfo(response.accessToken());
+        String accessToken = authService.loginWithProvider(userInfo.id(), Provider.GOOGLE);
+        String redirectUri = redirectBaseUri + accessToken;
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header(HttpHeaders.LOCATION, redirectUri)
+                .build();
     }
 
 }
