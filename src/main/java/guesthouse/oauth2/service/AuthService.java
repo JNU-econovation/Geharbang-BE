@@ -4,7 +4,7 @@ import guesthouse.oauth2.domain.model.Oauth2Account;
 import guesthouse.oauth2.domain.vo.Provider;
 import guesthouse.oauth2.repository.Oauth2AccountRepository;
 import guesthouse.user.domain.model.User;
-import guesthouse.user.domain.repository.UserRepository;
+import guesthouse.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +22,7 @@ public class AuthService {
     }
 
     private Long findUser(Long socialId, Provider provider) {
-        return oauth2AccountRepository.findBySocialId(socialId, provider.name())
+        return oauth2AccountRepository.findBySocialId(socialId, provider)
                 .map(Oauth2Account::getUserId)
                 .orElseGet(() -> createUser(socialId, provider));
     }
