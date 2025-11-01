@@ -63,13 +63,13 @@ public class GoogleOAuth2Service {
                 .block();
     }
 
-    public GoogleUserInfo getUserInfo(String accessToken) {
-        Map<String, Object> payload = parseToken(accessToken);
+    public GoogleUserInfo getUserInfo(String idToken) {
+        Map<String, Object> payload = parseToken(idToken);
         return new GoogleUserInfo((String) payload.get("sub"));
     }
 
-    private Map<String, Object> parseToken(String accessToken) {
-        String[] parts = accessToken.split("\\.");
+    private Map<String, Object> parseToken(String idToken) {
+        String[] parts = idToken.split("\\.");
         String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]));
 
         Map<String, Object> payload;

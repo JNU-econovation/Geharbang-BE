@@ -56,7 +56,7 @@ public class Oauth2Controller {
     @GetMapping("/api/v1/oauth/google/callback")
     public ResponseEntity<Void> loginWithGoogle(@RequestParam("code") String code){
         GoogleTokenResponse response = googleOAuth2Service.getToken(code);
-        GoogleUserInfo userInfo = googleOAuth2Service.getUserInfo(response.accessToken());
+        GoogleUserInfo userInfo = googleOAuth2Service.getUserInfo(response.idToken());
         String accessToken = authService.loginWithProvider(userInfo.id(), Provider.GOOGLE);
         String redirectUri = redirectBaseUri + accessToken;
         return ResponseEntity.status(HttpStatus.FOUND)
