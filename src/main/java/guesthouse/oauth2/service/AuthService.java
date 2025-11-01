@@ -7,6 +7,7 @@ import guesthouse.user.domain.model.User;
 import guesthouse.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -16,6 +17,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final Oauth2AccountRepository oauth2AccountRepository;
 
+    @Transactional
     public String loginWithProvider(String socialId, Provider provider) {
         Long userId = findUser(socialId, provider);
         return tokenProcessor.generateAccessToken(userId);
