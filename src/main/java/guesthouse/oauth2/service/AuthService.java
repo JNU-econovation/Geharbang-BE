@@ -3,6 +3,7 @@ package guesthouse.oauth2.service;
 import guesthouse.oauth2.domain.model.Oauth2Account;
 import guesthouse.oauth2.domain.vo.Provider;
 import guesthouse.oauth2.repository.Oauth2AccountRepository;
+import guesthouse.oauth2.service.dto.LoginInfo;
 import guesthouse.user.domain.model.User;
 import guesthouse.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +19,10 @@ public class AuthService {
     private final Oauth2AccountRepository oauth2AccountRepository;
 
     @Transactional
-    public String loginWithProvider(String socialId, Provider provider) {
+    public LoginInfo loginWithProvider(String socialId, Provider provider) {
         Long userId = findUser(socialId, provider);
-        return tokenProcessor.generateAccessToken(userId);
+        String accessToken = tokenProcessor.generateAccessToken(userId);
+        return new LoginInfo(userId, accessToken);
     }
 
     private Long findUser(String socialId, Provider provider) {
