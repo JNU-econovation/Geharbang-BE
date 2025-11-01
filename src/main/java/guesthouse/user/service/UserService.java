@@ -22,6 +22,11 @@ public class UserService {
                 .orElseThrow(UserException::new);
     }
 
+    @Transactional
+    public User createEmptyUser() {
+        return userRepository.save(new User());
+    }
+
     public void updatePersonalInfo(String name,
                                    String phoneNumber,
                                    LocalDate birthDate,
