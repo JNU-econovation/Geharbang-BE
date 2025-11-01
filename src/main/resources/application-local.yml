@@ -4,10 +4,10 @@ config:
 
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
@@ -16,7 +16,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
         jdbc:
           time_zone: Asia/Seoul
 
@@ -24,17 +24,4 @@ spring:
     console:
       enabled: true
       path: /h2-console
-
-oauth2:
-  kakao:
-    client-id: "asdasdsadsadsadasdsadsadsadsadsa"
-    redirect-uri: "asdasdsadsadsadasdasdasdasdsadsad"
-  base-redirect-uri: "asdsadasdsadsadsadasdasdasdsadsadsa"
-
-
-jwt:
-  token:
-    secret-key: "asdasdsadsadsadasdsadsadsadasdsadasdasdasdsadsadas"
-    access-expiration-time: "123131231"
-    refresh-expiration-time: "1232132132"
 
