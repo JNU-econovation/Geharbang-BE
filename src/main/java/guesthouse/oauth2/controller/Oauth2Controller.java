@@ -1,8 +1,10 @@
 package guesthouse.oauth2.controller;
 
 import guesthouse.oauth2.domain.vo.Provider;
+import guesthouse.oauth2.dto.response.GoogleLoginUriResponse;
 import guesthouse.oauth2.dto.response.KaKaoLoginUriResponse;
 import guesthouse.oauth2.service.AuthService;
+import guesthouse.oauth2.service.GoogleOAuth2Service;
 import guesthouse.oauth2.service.KaKaoOAuth2Service;
 import guesthouse.oauth2.service.dto.KaKaoUserInfoResponse;
 import guesthouse.oauth2.service.dto.KakaoTokenResponse;
@@ -21,6 +23,7 @@ public class Oauth2Controller {
 
     private final AuthService authService;
     private final KaKaoOAuth2Service kaKaoOAuth2Service;
+    private final GoogleOAuth2Service googleOAuth2Service;
 
     @Value("${oauth2.base-redirect-uri}")
     private String redirectBaseUri;
@@ -40,6 +43,12 @@ public class Oauth2Controller {
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, redirectUri)
                 .build();
+    }
+
+    @GetMapping("/api/v1/oauth/google/login")
+    public ResponseEntity<GoogleLoginUriResponse> getGoogleLoginUri() {
+        String loginUri = googleOAuth2Service.getLoginUri();
+        return ResponseEntity.ok(new GoogleLoginUriResponse(loginUri));
     }
 
 }
