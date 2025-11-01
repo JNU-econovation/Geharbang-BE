@@ -1,7 +1,11 @@
 package guesthouse.user.domain.model;
 
+import guesthouse.user.domain.vo.Gender;
+import guesthouse.user.domain.vo.PersonalInfo;
 import jakarta.persistence.*;
 import lombok.Getter;
+
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -12,7 +16,19 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Embedded
+    private PersonalInfo personalInfo;
+
+    private String imageUrl;
+
     public User() {
     }
 
+    public void updatePersonalInfo(String name, String phoneNumber, LocalDate birthDate, Gender gender) {
+        this.personalInfo = new PersonalInfo(name, phoneNumber, birthDate, gender);
+    }
+
+    public void updateImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }
