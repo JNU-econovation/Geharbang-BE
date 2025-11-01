@@ -44,19 +44,24 @@ public class GoogleOAuth2Service {
     }
 
     public GoogleTokenResponse getToken(String code) {
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("grant_type", "authorization_code");
-        formData.add("client_id", clientId);
-        formData.add("redirect_uri", redirectUri);
-        formData.add("code", code);
+        try {
+            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+            formData.add("grant_type", "authorization_code");
+            formData.add("client_id", clientId);
+            formData.add("redirect_uri", redirectUri);
+            formData.add("code", code);
 
-        return WebClient.create(TOKEN_REQUEST_URL)
-                .post()
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .bodyValue(formData)
-                .retrieve()
-                .bodyToMono(GoogleTokenResponse.class)
-                .block();
+            return WebClient.create(TOKEN_REQUEST_URL)
+                    .post()
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .bodyValue(formData)
+                    .retrieve()
+                    .bodyToMono(GoogleTokenResponse.class)
+                    .block();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
     }
 
     public GoogleUserInfo getUserInfo(String accessToken) {
