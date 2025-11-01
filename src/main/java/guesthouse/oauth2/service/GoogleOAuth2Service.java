@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Base64;
@@ -58,8 +59,8 @@ public class GoogleOAuth2Service {
                     .retrieve()
                     .bodyToMono(GoogleTokenResponse.class)
                     .block();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        } catch (WebClientResponseException e) {
+            System.out.println("e.getResponseBodyAsString() = " + e.getResponseBodyAsString());
             throw e;
         }
     }
