@@ -1,15 +1,18 @@
 package guesthouse.oauth2.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import guesthouse.oauth2.service.dto.GoogleTokenResponse;
 import guesthouse.oauth2.service.dto.GoogleUserInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -21,6 +24,15 @@ import java.util.Map;
 public class GoogleOAuth2Service {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    static {
+        OBJECT_MAPPER.getFactory().setStreamReadConstraints(
+                StreamReadConstraints.builder()
+                        .maxNumberLength(2000)
+                        .build()
+        );
+    }
+
     private static final String USER_LOGIN_URL = "https://accounts.google.com/o/oauth2/v2/auth";
     private static final String TOKEN_REQUEST_URL = "https://oauth2.googleapis.com/token";
     private static final String SCOPE = "openid profile email";
@@ -54,13 +66,27 @@ public class GoogleOAuth2Service {
         formData.add("redirect_uri", redirectUri);
         formData.add("code", code);
 
-        return WebClient.create(TOKEN_REQUEST_URL)
+        WebClient client = createWebClient(TOKEN_REQUEST_URL, OBJECT_MAPPER);
+
+        return client
                 .post()
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .bodyValue(formData)
                 .retrieve()
                 .bodyToMono(GoogleTokenResponse.class)
                 .block();
+    }
+
+    private WebClient createWebClient(String tokenRequestUrl, ObjectMapper objectMapper) {
+        return WebClient.builder()
+                .baseUrl(tokenRequestUrl)
+                .exchangeStrategies(
+                        ExchangeStrategies.builder()
+                                .codecs(configurer -> configurer.defaultCodecs()
+                                        .jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper)))
+                                .build()
+                )
+                .build();
     }
 
     public GoogleUserInfo getUserInfo(String idToken) {
