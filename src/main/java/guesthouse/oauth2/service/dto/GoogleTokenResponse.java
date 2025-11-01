@@ -14,7 +14,7 @@ public record GoogleTokenResponse(
         @JsonProperty("refresh_token_expires_in")
         Integer refreshTokenExpiresIn,
         @JsonProperty("id_token")
-        Integer idToken,
+        String idToken,
         String scope
 ) {
 }
