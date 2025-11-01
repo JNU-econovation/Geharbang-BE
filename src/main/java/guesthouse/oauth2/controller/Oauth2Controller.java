@@ -6,10 +6,7 @@ import guesthouse.oauth2.dto.response.KaKaoLoginUriResponse;
 import guesthouse.oauth2.service.AuthService;
 import guesthouse.oauth2.service.GoogleOAuth2Service;
 import guesthouse.oauth2.service.KaKaoOAuth2Service;
-import guesthouse.oauth2.service.dto.GoogleTokenResponse;
-import guesthouse.oauth2.service.dto.GoogleUserInfo;
-import guesthouse.oauth2.service.dto.KaKaoUserInfoResponse;
-import guesthouse.oauth2.service.dto.KakaoTokenResponse;
+import guesthouse.oauth2.service.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -37,11 +34,11 @@ public class Oauth2Controller {
     }
 
     @GetMapping("/api/v1/oauth/kakao/callback")
-    public ResponseEntity<Void> login(@RequestParam("code") String code){
+    public ResponseEntity<Void> login(@RequestParam("code") String code) {
         KakaoTokenResponse kakaoResponse = kaKaoOAuth2Service.getToken(code);
         KaKaoUserInfoResponse userInfo = kaKaoOAuth2Service.getUserInfo(kakaoResponse.accessToken());
-        String accessToken = authService.loginWithProvider(String.valueOf(userInfo.id()), Provider.KAKAO);
-        String redirectUri = redirectBaseUri + accessToken;
+        LoginInfo loginInfo = authService.loginWithProvider(String.valueOf(userInfo.id()), Provider.KAKAO);
+        String redirectUri = redirectBaseUri + loginInfo.accessToken() + "&userId=" + userInfo.id();
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, redirectUri)
                 .build();
@@ -54,11 +51,11 @@ public class Oauth2Controller {
     }
 
     @GetMapping("/api/v1/oauth/google/callback")
-    public ResponseEntity<Void> loginWithGoogle(@RequestParam("code") String code){
+    public ResponseEntity<Void> loginWithGoogle(@RequestParam("code") String code) {
         GoogleTokenResponse response = googleOAuth2Service.getToken(code);
         GoogleUserInfo userInfo = googleOAuth2Service.getUserInfo(response.idToken());
-        String accessToken = authService.loginWithProvider(userInfo.id(), Provider.GOOGLE);
-        String redirectUri = redirectBaseUri + accessToken;
+        LoginInfo loginInfo = authService.loginWithProvider(userInfo.id(), Provider.GOOGLE);
+        String redirectUri = redirectBaseUri + loginInfo.accessToken() + "&userId=" + userInfo.id();
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, redirectUri)
                 .build();
