@@ -1,6 +1,5 @@
-package guesthouse.application.domain.vo;
+package guesthouse.user.domain.vo;
 
-import guesthouse.application.exception.DayOfWeekNotMatchedException;
 import guesthouse.application.exception.GenderNotMatchedException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
