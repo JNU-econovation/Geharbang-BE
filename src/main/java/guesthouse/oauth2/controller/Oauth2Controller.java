@@ -40,7 +40,7 @@ public class Oauth2Controller {
     public ResponseEntity<Void> login(@RequestParam("code") String code){
         KakaoTokenResponse kakaoResponse = kaKaoOAuth2Service.getToken(code);
         KaKaoUserInfoResponse userInfo = kaKaoOAuth2Service.getUserInfo(kakaoResponse.accessToken());
-        String accessToken = authService.loginWithProvider(userInfo.id(), Provider.KAKAO);
+        String accessToken = authService.loginWithProvider(String.valueOf(userInfo.id()), Provider.KAKAO);
         String redirectUri = redirectBaseUri + accessToken;
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, redirectUri)
