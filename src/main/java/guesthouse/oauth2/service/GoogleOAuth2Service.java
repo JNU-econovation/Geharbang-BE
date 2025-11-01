@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Base64;
@@ -32,6 +31,9 @@ public class GoogleOAuth2Service {
     @Value("${oauth2.google.redirect-uri}")
     private String redirectUri;
 
+    @Value("${oauth2.google.secret-key}")
+    private String secretKey;
+
 
     public String getLoginUri() {
         return UriComponentsBuilder
@@ -45,24 +47,20 @@ public class GoogleOAuth2Service {
     }
 
     public GoogleTokenResponse getToken(String code) {
-        try {
-            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-            formData.add("grant_type", "authorization_code");
-            formData.add("client_id", clientId);
-            formData.add("redirect_uri", redirectUri);
-            formData.add("code", code);
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("grant_type", "authorization_code");
+        formData.add("client_id", clientId);
+        formData.add("client_secret", secretKey);
+        formData.add("redirect_uri", redirectUri);
+        formData.add("code", code);
 
-            return WebClient.create(TOKEN_REQUEST_URL)
-                    .post()
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .bodyValue(formData)
-                    .retrieve()
-                    .bodyToMono(GoogleTokenResponse.class)
-                    .block();
-        } catch (WebClientResponseException e) {
-            System.out.println("e.getResponseBodyAsString() = " + e.getResponseBodyAsString());
-            throw e;
-        }
+        return WebClient.create(TOKEN_REQUEST_URL)
+                .post()
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue(formData)
+                .retrieve()
+                .bodyToMono(GoogleTokenResponse.class)
+                .block();
     }
 
     public GoogleUserInfo getUserInfo(String accessToken) {
