@@ -1,6 +1,7 @@
 package guesthouse.application.domain.vo;
 
 import guesthouse.application.exception.MbtiNotMatchedException;
+import guesthouse.application.exception.StyleNotMatchedException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -23,6 +24,6 @@ public enum Style {
             }
         }
 
-        throw new MbtiNotMatchedException();
+        throw new StyleNotMatchedException();
     }
 }
