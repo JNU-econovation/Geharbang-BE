@@ -22,7 +22,7 @@ public class AuthService {
     }
 
     private Long findUser(String socialId, Provider provider) {
-        return oauth2AccountRepository.findBySocialId(socialId, provider.name())
+        return oauth2AccountRepository.findBySocialId(socialId, provider)
                 .map(Oauth2Account::getUserId)
                 .orElseGet(() -> createUser(socialId, provider));
     }
