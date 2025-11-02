@@ -54,4 +54,6 @@ public class Application {
     private Set<Style> style;
 
     private String instagramId;
+
+    private String imageUrl;
 }

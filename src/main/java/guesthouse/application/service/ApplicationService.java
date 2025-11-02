@@ -27,8 +27,6 @@ public class ApplicationService {
                 Gender.fromValue(request.gender()),
                 userId);
 
-        userService.updateImageUrl(request.imageUrl(), userId);
-
         User user = userService.findById(userId);
         Application application = ApplicationMapper.toEntity(request, user);
 

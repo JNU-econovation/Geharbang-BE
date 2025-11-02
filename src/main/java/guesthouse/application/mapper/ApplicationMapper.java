@@ -34,6 +34,7 @@ public class ApplicationMapper {
                 .mbti(mbti)
                 .style(listOfStyle)
                 .instagramId(request.instagramId())
+                .imageUrl(request.imageUrl())
                 .build();
     }
 }

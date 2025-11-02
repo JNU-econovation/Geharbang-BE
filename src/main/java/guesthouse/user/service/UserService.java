@@ -35,9 +35,4 @@ public class UserService {
         User user = findById(userId);
         user.updatePersonalInfo(name, phoneNumber,birthDate, gender);
     }
-
-    public void updateImageUrl(String imageUrl, Long userId) {
-        User user = findById(userId);
-        user.updateImageUrl(imageUrl);
-    }
 }
