@@ -16,13 +16,11 @@ public class PersonalInfo {
     private static final String BIRTH_DATE_REQUIRED_MESSAGE = "출생년도는 null일 수 없습니다";
     private static final String GENDER_REQUIRED_MESSAGE = "성별은 null일 수 없습니다";
 
-    @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String phoneNumber;
 
-    @Column(nullable = false)
     private LocalDate birthDate;
 
     @Enumerated(EnumType.STRING)
