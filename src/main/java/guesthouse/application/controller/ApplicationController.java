@@ -20,7 +20,7 @@ public class ApplicationController {
     private final ApplicationService applicationService;
 
     @PostMapping
-    public ResponseEntity<ApplicationSaveResponse> getApplication(
+    public ResponseEntity<ApplicationSaveResponse> saveApplication(
             @RequestBody @Valid ApplicationSaveRequest applicationSaveRequest,
             @UserId Long userId
     ) {
