@@ -1,4 +1,4 @@
-package guesthouse.user.domain.repository;
+package guesthouse.user.repository;
 
 import guesthouse.user.domain.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;

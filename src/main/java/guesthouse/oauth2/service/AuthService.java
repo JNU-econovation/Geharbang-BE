@@ -5,7 +5,8 @@ import guesthouse.oauth2.domain.vo.Provider;
 import guesthouse.oauth2.repository.Oauth2AccountRepository;
 import guesthouse.oauth2.service.dto.LoginInfo;
 import guesthouse.user.domain.model.User;
-import guesthouse.user.domain.repository.UserRepository;
+import guesthouse.user.repository.UserRepository;
+import guesthouse.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final TokenProcessor tokenProcessor;
+    private final UserService userService;
     private final UserRepository userRepository;
     private final Oauth2AccountRepository oauth2AccountRepository;
 
