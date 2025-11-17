@@ -11,6 +11,10 @@ oauth2:
   kakao:
     client-id: ${KAKAO_CLIENT_ID}
     redirect-uri: ${KAKAO_REDIRECT_URI}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
+    secret-key: ${GOOGLE_SECRET_KEY}
   base-redirect-uri: ${BASE_REDIRECT_URI}
 
 
