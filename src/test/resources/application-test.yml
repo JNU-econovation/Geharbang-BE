@@ -29,6 +29,10 @@ oauth2:
   kakao:
     client-id: "asdasdsadsadsadasdsadsadsadsadsa"
     redirect-uri: "asdasdsadsadsadasdasdasdasdsadsad"
+  google:
+    client-id: "asdasdsadsadsadasdsadsadsadsadsa"
+    redirect-uri: "asdasdsadsadsadasdasdasdasdsadsad"
+    secret-key: "asdasdasdsadsadsadsadasdasdadas"
   base-redirect-uri: "asdsadasdsadsadsadasdasdasdsadsadsa"
 
 
