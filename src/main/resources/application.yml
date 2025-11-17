@@ -7,6 +7,11 @@ spring:
   config:
     import: optional:file:.env[.properties]
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 30MB
+
 oauth2:
   kakao:
     client-id: ${KAKAO_CLIENT_ID}
@@ -23,3 +28,7 @@ jwt:
     secret-key: ${JWT_SECRET_KEY}
     access-expiration-time: ${JWT_ACCESS_EXPIRATION_TIME}
     refresh-expiration-time: ${JWT_REFRESH_EXPIRATION_TIME}
+
+image:
+  directory:
+    path: ${IMAGE_DIRECTORY_PATH}

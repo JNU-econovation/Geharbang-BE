@@ -41,3 +41,7 @@ jwt:
     secret-key: "asdasdsadsadsadasdsadsadsadasdsadasdasdasdsadsadas"
     access-expiration-time: "123131231"
     refresh-expiration-time: "1232132132"
+
+image:
+  directory:
+    path: /home/test/test/test
