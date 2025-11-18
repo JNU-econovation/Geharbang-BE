@@ -35,7 +35,6 @@ public class StaffRecruitment {
     @Enumerated(EnumType.STRING)
     private WorkingPeriod workingPeriod;
 
-    private int actualWorkingHours;
 
     @Lob
     private String content;
