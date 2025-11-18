@@ -1,5 +1,6 @@
 package staffrecruitment.domain;
 
+import guesthouse.common.domain.TimeEntity;
 import staffrecruitment.vo.Gender;
 import staffrecruitment.vo.Region;
 import jakarta.persistence.*;
@@ -10,7 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-public class StaffRecruitment {
+public class StaffRecruitment extends TimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
