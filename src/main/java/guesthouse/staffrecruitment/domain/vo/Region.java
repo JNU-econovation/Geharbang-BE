@@ -1,4 +1,4 @@
-package guesthouse.staffrecruitment.vo;
+package guesthouse.staffrecruitment.domain.vo;
 
 public enum Region {
     제주시,
