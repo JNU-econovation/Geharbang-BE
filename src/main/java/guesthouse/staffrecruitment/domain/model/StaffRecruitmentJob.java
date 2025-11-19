@@ -1,10 +1,15 @@
 package guesthouse.staffrecruitment.domain.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalTime;
 
+@Builder
+@Getter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class StaffRecruitmentJob {
 
     @Id
