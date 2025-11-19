@@ -1,4 +1,4 @@
-package staffrecruitment.vo;
+package guesthouse.staffrecruitment.vo;
 
 public enum WorkingPeriod {
     단기,

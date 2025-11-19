@@ -1,11 +1,11 @@
-package staffrecruitment.domain;
+package guesthouse.staffrecruitment.domain;
 
 import guesthouse.common.domain.TimeEntity;
-import staffrecruitment.vo.Gender;
-import staffrecruitment.vo.Region;
+import guesthouse.staffrecruitment.vo.Gender;
+import guesthouse.staffrecruitment.vo.Region;
 import jakarta.persistence.*;
 import org.locationtech.jts.geom.Point;
-import staffrecruitment.vo.WorkingPeriod;
+import guesthouse.staffrecruitment.vo.WorkingPeriod;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

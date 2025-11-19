@@ -1,4 +1,4 @@
-package staffrecruitment.domain;
+package guesthouse.staffrecruitment.domain;
 
 import jakarta.persistence.*;
 

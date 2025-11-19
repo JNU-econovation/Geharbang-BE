@@ -1,7 +1,7 @@
-package staffrecruitment.domain;
+package guesthouse.staffrecruitment.domain;
 
 import jakarta.persistence.*;
-import staffrecruitment.vo.StaffRecruitmentImageType;
+import guesthouse.staffrecruitment.vo.StaffRecruitmentImageType;
 
 @Entity
 public class StaffRecruitmentImage {
