@@ -16,5 +16,5 @@ public class StaffRecruitmentImage {
     private StaffRecruitmentImageType type;
 
     private String imageUrl;
-    private String index;
+    private int index;
 }
