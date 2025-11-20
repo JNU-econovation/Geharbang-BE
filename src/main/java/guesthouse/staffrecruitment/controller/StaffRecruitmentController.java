@@ -28,7 +28,7 @@ public class StaffRecruitmentController {
         return ResponseEntity.ok(StaffRecruitmentDetailsResponse.from(details));
     }
 
-    @GetMapping("/api/v1/staff/recruitment")
+    @GetMapping
     public ResponseEntity<StaffRecruitmentPostsResponse> getRecruitments(
             @RequestParam(defaultValue = "최신순") SortType sort,
             @RequestParam(required = false) String keyword,
