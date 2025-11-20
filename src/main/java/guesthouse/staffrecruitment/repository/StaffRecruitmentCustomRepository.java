@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface StaffRecruitmentCustomRepository {
-    List<StaffRecruitment> findByFilter(Pageable pageable, StaffRecruitmentFilter staffRecruitmentFilter);
+    List<StaffRecruitment> searchByFilter(Pageable pageable, StaffRecruitmentFilter staffRecruitmentFilter);
 
 }
 

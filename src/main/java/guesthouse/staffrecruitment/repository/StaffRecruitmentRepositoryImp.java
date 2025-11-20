@@ -20,7 +20,7 @@ public class StaffRecruitmentRepositoryImp implements StaffRecruitmentCustomRepo
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<StaffRecruitment> findByFilter(Pageable pageable, StaffRecruitmentFilter filter) {
+    public List<StaffRecruitment> searchByFilter(Pageable pageable, StaffRecruitmentFilter filter) {
         return jpaQueryFactory.select(staffRecruitment)
                 .from(staffRecruitment)
                 .join(staffRecruitmentJob)

@@ -84,7 +84,7 @@ public class StaffRecruitmentService {
     @Transactional(readOnly = true)
     public StaffRecruitmentPostsResponse getStaffRecruitments(Long userId, int pageNumber, StaffRecruitmentFilter filter) {
         Pageable pageable = PageRequest.of(pageNumber, 10);
-        List<StaffRecruitment> staffRecruitments = staffRecruitmentRepository.findByFilter(pageable, filter);
+        List<StaffRecruitment> staffRecruitments = staffRecruitmentRepository.searchByFilter(pageable, filter);
 
         List<StaffRecruitmentPostDto> DTOs = staffRecruitments.stream()
                 .map(staffRecruitment -> createDTO(staffRecruitment, userId))
