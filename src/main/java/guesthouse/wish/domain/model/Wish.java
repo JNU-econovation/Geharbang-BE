@@ -1,20 +1,23 @@
-package guesthouse.staffrecruitment.domain.model;
+package guesthouse.wish.domain.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+@Builder
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class StaffRecruitmentQuestion {
+@AllArgsConstructor
+public class Wish {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Long staffRecruitmentId;
-    private String content;
+
+    private Long userId;
 }
