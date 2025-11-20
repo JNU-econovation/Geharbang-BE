@@ -15,7 +15,7 @@ import static guesthouse.staffrecruitment.domain.model.QStaffRecruitmentJob.staf
 
 
 @RequiredArgsConstructor
-public class StaffRecruitmentRepositoryImp implements StaffRecruitmentCustomRepository {
+public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
 

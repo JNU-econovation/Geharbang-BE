@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface StaffRecruitmentImageRepository extends JpaRepository<StaffRecruitmentImage, Long>, StaffRecruitmentCustomRepository {
+public interface StaffRecruitmentImageRepository extends JpaRepository<StaffRecruitmentImage, Long> {
     List<StaffRecruitmentImage> findByStaffRecruitmentIdAndType(Long recruitmentId, StaffRecruitmentImageType staffRecruitmentImageType);
 
     default StaffRecruitmentImage getRepresentativeImageByStaffRecruitmentId(Long staffRecruitmentId) {
