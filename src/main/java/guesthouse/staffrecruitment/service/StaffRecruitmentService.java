@@ -41,11 +41,11 @@ public class StaffRecruitmentService {
         return StaffRecruitmentDetailsDTO.from(recruitment, jobs, representativeImages, contentImages, isWished);
     }
 
-    private Boolean isWished(Long id, Long userId) {
+    private Boolean isWished(Long staffRecruitmentId, Long userId) {
         if (isGuest(userId))
             return false;
 
-        return wishService.isWished(id, userId);
+        return wishService.isWished(userId, staffRecruitmentId);
     }
 
     private boolean isGuest(Long userId) {
