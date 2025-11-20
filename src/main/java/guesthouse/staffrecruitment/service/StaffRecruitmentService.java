@@ -6,6 +6,8 @@ import guesthouse.staffrecruitment.domain.model.StaffRecruitmentJob;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentFilter;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentImageType;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
+import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostDto;
+import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentImageRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentJobRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentRepository;
@@ -15,8 +17,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostDto;
-import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -83,8 +83,7 @@ public class StaffRecruitmentService {
     }
 
 
-
-    public StaffRecruitmentPostsResponse getStaffRecruitments(int pageNumber, StaffRecruitmentFilter filter) {
+    public StaffRecruitmentPostsResponse getStaffRecruitments(Long userId, int pageNumber, StaffRecruitmentFilter filter) {
         Pageable pageable = PageRequest.of(pageNumber, 10);
         List<StaffRecruitment> staffRecruitments = staffRecruitmentRepository.findByFilter(pageable, filter);
 
@@ -96,7 +95,7 @@ public class StaffRecruitmentService {
                     staffRecruitment.getGuesthouseName(),
                     List.of(staffRecruitment.getWorkingPeriod().name()),
                     staffRecruitment.getRegion().name(),
-                    false,
+                    isWished(staffRecruitment.getId(), userId),
                     image.getImageUrl()
             );
             dtos.add(staffRecruitmentPostDto);

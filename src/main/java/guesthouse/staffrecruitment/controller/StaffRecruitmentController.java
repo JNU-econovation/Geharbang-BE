@@ -36,13 +36,14 @@ public class StaffRecruitmentController {
             @RequestParam(required = false) List<WorkingPeriod> period,
             @RequestParam(required = false) List<WorkScheduleType> workScheduleType,
             @RequestParam(required = false) Gender gender,
-            @RequestParam int pageNumber
+            @RequestParam int pageNumber,
+            @UserId(required = false) Long userId
     ) {
 
         StaffRecruitmentFilter filter = new StaffRecruitmentFilter(
                 keyword, sort, region, gender, period, workScheduleType
         );
-        StaffRecruitmentPostsResponse response = staffRecruitmentService.getStaffRecruitments(pageNumber, filter);
+        StaffRecruitmentPostsResponse response = staffRecruitmentService.getStaffRecruitments(userId, pageNumber, filter);
 
         return ResponseEntity.ok(response);
     }
