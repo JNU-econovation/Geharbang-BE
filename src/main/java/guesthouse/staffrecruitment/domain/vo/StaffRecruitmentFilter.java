@@ -12,8 +12,8 @@ public class StaffRecruitmentFilter {
     private final String keyword;
     private final SortType sortType;
     private final List<Region> region;
-    private final List<WorkingPeriod> workingPeriods;
     private final Gender gender;
+    private final List<WorkingPeriod> workingPeriods;
     private final List<WorkScheduleType> workScheduleType;
 
     public StaffRecruitmentFilter(String keyword, SortType sortType, List<Region> region, Gender gender, List<WorkingPeriod> workingPeriods, List<WorkScheduleType> workScheduleType) {
