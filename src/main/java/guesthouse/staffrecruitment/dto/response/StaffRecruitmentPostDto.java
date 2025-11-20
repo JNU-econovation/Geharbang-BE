@@ -1,5 +1,6 @@
 package guesthouse.staffrecruitment.dto.response;
 
+import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import lombok.Builder;
 
 import java.util.List;
@@ -14,6 +15,15 @@ public record StaffRecruitmentPostDto(
         String imageUrl
 ) {
 
-
+    public static StaffRecruitmentPostDto of(StaffRecruitment staffRecruitment, boolean isWished, String imageUrl) {
+        return new StaffRecruitmentPostDto(
+                staffRecruitment.getId(),
+                staffRecruitment.getGuesthouseName(),
+                List.of(staffRecruitment.getWorkingPeriod().name()),
+                staffRecruitment.getRegion().name(),
+                isWished,
+                imageUrl
+        );
+    }
 
 }

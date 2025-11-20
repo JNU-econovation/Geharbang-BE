@@ -18,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -87,19 +86,19 @@ public class StaffRecruitmentService {
         Pageable pageable = PageRequest.of(pageNumber, 10);
         List<StaffRecruitment> staffRecruitments = staffRecruitmentRepository.findByFilter(pageable, filter);
 
-        List<StaffRecruitmentPostDto> dtos = new ArrayList<>();
-        for (StaffRecruitment staffRecruitment : staffRecruitments) {
-            StaffRecruitmentImage image = staffRecruitmentImageRepository.getRepresentativeImageByStaffRecruitmentId(staffRecruitment.getId());
-            StaffRecruitmentPostDto staffRecruitmentPostDto = new StaffRecruitmentPostDto(
-                    staffRecruitment.getId(),
-                    staffRecruitment.getGuesthouseName(),
-                    List.of(staffRecruitment.getWorkingPeriod().name()),
-                    staffRecruitment.getRegion().name(),
-                    isWished(staffRecruitment.getId(), userId),
-                    image.getImageUrl()
-            );
-            dtos.add(staffRecruitmentPostDto);
-        }
-        return new StaffRecruitmentPostsResponse(dtos);
+        List<StaffRecruitmentPostDto> DTOs = staffRecruitments.stream()
+                .map(staffRecruitment -> createDTO(staffRecruitment, userId))
+                .toList();
+        return new StaffRecruitmentPostsResponse(DTOs);
+
+    }
+
+    private StaffRecruitmentPostDto createDTO(StaffRecruitment staffRecruitment, Long userId) {
+        StaffRecruitmentImage image = staffRecruitmentImageRepository.getRepresentativeImageByStaffRecruitmentId(staffRecruitment.getId());
+        return StaffRecruitmentPostDto.of(
+                staffRecruitment,
+                isWished(staffRecruitment.getId(), userId),
+                image.getImageUrl()
+        );
     }
 }
