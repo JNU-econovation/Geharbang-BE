@@ -1,9 +1,11 @@
 package staffrecruitment.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import staffrecruitment.vo.StaffRecruitmentImageType;
 
 @Entity
+@Getter
 public class StaffRecruitmentImage {
 
     @Id
