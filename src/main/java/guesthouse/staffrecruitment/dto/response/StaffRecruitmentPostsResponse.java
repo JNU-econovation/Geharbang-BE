@@ -1,4 +1,4 @@
-package staffrecruitment.dto.response;
+package guesthouse.staffrecruitment.dto.response;
 
 import java.util.List;
 

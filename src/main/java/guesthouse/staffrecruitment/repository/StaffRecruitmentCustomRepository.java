@@ -1,4 +1,4 @@
-package staffrecruitment.repository;
+package guesthouse.staffrecruitment.repository;
 
 import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentFilter;

@@ -1,4 +1,4 @@
-package staffrecruitment.repository;
+package guesthouse.staffrecruitment.repository;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;

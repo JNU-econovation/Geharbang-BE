@@ -3,6 +3,7 @@ package guesthouse.staffrecruitment.service;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentImage;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentJob;
+import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentFilter;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentImageType;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentImageRepository;
@@ -10,9 +11,14 @@ import guesthouse.staffrecruitment.repository.StaffRecruitmentJobRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentRepository;
 import guesthouse.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostDto;
+import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -74,5 +80,27 @@ public class StaffRecruitmentService {
                 .sorted(Comparator.comparing(StaffRecruitmentImage::getIndex))
                 .map(StaffRecruitmentImage::getImageUrl)
                 .toList();
+    }
+
+
+
+    public StaffRecruitmentPostsResponse getStaffRecruitments(int pageNumber, StaffRecruitmentFilter filter) {
+        Pageable pageable = PageRequest.of(pageNumber, 10);
+        List<StaffRecruitment> staffRecruitments = staffRecruitmentRepository.findByFilter(pageable, filter);
+
+        List<StaffRecruitmentPostDto> dtos = new ArrayList<>();
+        for (StaffRecruitment staffRecruitment : staffRecruitments) {
+            StaffRecruitmentImage image = staffRecruitmentImageRepository.getRepresentativeImageByStaffRecruitmentId(staffRecruitment.getId());
+            StaffRecruitmentPostDto staffRecruitmentPostDto = new StaffRecruitmentPostDto(
+                    staffRecruitment.getId(),
+                    staffRecruitment.getGuesthouseName(),
+                    List.of(staffRecruitment.getWorkingPeriod().name()),
+                    staffRecruitment.getRegion().name(),
+                    false,
+                    image.getImageUrl()
+            );
+            dtos.add(staffRecruitmentPostDto);
+        }
+        return new StaffRecruitmentPostsResponse(dtos);
     }
 }
