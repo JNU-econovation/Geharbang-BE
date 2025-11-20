@@ -82,7 +82,7 @@ public class StaffRecruitmentService {
                 .toList();
     }
 
-
+    @Transactional(readOnly = true)
     public StaffRecruitmentPostsResponse getStaffRecruitments(Long userId, int pageNumber, StaffRecruitmentFilter filter) {
         Pageable pageable = PageRequest.of(pageNumber, 10);
         List<StaffRecruitment> staffRecruitments = staffRecruitmentRepository.findByFilter(pageable, filter);
