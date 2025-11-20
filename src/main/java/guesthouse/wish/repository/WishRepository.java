@@ -11,4 +11,6 @@ public interface WishRepository extends JpaRepository<Wish, Long> {
     Boolean existsByUserIdAndStaffRecruitmentId(Long userId, Long staffRecruitmentId);
 
     Optional<Wish> findByUserIdAndStaffRecruitmentId(Long userId, Long staffRecruitmentId);
+
+    Optional<Wish> findByUserIdAndWishId(Long userId, Long wishId);
 }

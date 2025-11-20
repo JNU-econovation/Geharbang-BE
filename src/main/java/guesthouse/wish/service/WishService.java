@@ -1,6 +1,5 @@
 package guesthouse.wish.service;
 
-import guesthouse.staffrecruitment.repository.StaffRecruitmentRepository;
 import guesthouse.wish.domain.model.Wish;
 import guesthouse.wish.repository.WishRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +29,17 @@ public class WishService {
         Wish wish = new Wish(userId, staffRecruitmentId);
         wishRepository.save(wish);
         return wish.getId();
+    }
+
+    @Transactional
+    public void deleteWish(Long userId, Long wishId) {
+        Optional<Wish> optionalWish = wishRepository.findByUserIdAndWishId(userId, wishId);
+
+        if (optionalWish.isEmpty()) {
+            return;
+        }
+
+        wishRepository.deleteById(wishId);
     }
 
 }
