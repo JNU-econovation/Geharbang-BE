@@ -1,4 +1,4 @@
-package staffrecruitment.vo;
+package guesthouse.staffrecruitment.domain.vo;
 
 public enum SortType {
     최신순,

@@ -30,20 +30,27 @@ public class UserIdResolver implements HandlerMethodArgumentResolver {
                                   NativeWebRequest webRequest,
                                   WebDataBinderFactory binderFactory) throws Exception {
         String header = webRequest.getHeader(HttpHeaders.AUTHORIZATION);
-        String token = extractToken(header);
 
+        if (!hasToken(header)) {
+            if (isUserIdRequired(parameter)) //required가 true인데 토큰이 없으면 예외
+                throw new AuthenticationFailException();
+            return null; //required가 false이면서 토큰이 없으면 null 반환
+        }
+
+        String token = extractToken(header);
         return tokenProcessor.parseAccessToken(token);
     }
 
+    private boolean isUserIdRequired(MethodParameter parameter) {
+        UserId annotation = parameter.getParameterAnnotation(UserId.class);
+        return annotation.required();
+    }
 
-    private void validateTokenIsNull(String header) {
-        if (header == null)
-            throw new AuthenticationFailException();
+    private Boolean hasToken(String header) {
+        return header != null;
     }
 
     private String extractToken(String header) {
-        validateTokenIsNull(header);
-
         if (!header.startsWith(AUTH_TOKEN_HEADER)) {
             throw new AuthenticationFailException();
         }

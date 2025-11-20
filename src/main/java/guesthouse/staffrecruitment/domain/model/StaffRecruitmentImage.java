@@ -1,11 +1,14 @@
-package staffrecruitment.domain;
+package guesthouse.staffrecruitment.domain.model;
 
+import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentImageType;
 import jakarta.persistence.*;
-import lombok.Getter;
-import staffrecruitment.vo.StaffRecruitmentImageType;
+import lombok.*;
 
-@Entity
+@Builder
 @Getter
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class StaffRecruitmentImage {
 
     @Id
@@ -18,5 +21,7 @@ public class StaffRecruitmentImage {
     private StaffRecruitmentImageType type;
 
     private String imageUrl;
-    private int index;
+
+    @Column(name = "image_index")
+    private Long index;
 }

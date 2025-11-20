@@ -3,15 +3,16 @@ package staffrecruitment.repository;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
+import guesthouse.staffrecruitment.domain.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import staffrecruitment.domain.StaffRecruitment;
-import staffrecruitment.vo.*;
 
 import java.util.List;
 
-import static staffrecruitment.domain.QStaffRecruitment.staffRecruitment;
-import static staffrecruitment.domain.QStaffRecruitmentJob.staffRecruitmentJob;
+import static guesthouse.staffrecruitment.domain.model.QStaffRecruitment.staffRecruitment;
+import static guesthouse.staffrecruitment.domain.model.QStaffRecruitmentJob.staffRecruitmentJob;
+
 
 @RequiredArgsConstructor
 public class StaffRecruitmentRepositoryImp implements StaffRecruitmentCustomRepository {

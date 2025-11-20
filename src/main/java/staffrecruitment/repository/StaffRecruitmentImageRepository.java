@@ -1,8 +1,9 @@
 package staffrecruitment.repository;
 
+import guesthouse.staffrecruitment.domain.model.StaffRecruitmentImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import staffrecruitment.domain.StaffRecruitmentImage;
+
 
 public interface StaffRecruitmentImageRepository extends JpaRepository<StaffRecruitmentImage, Long> {
 

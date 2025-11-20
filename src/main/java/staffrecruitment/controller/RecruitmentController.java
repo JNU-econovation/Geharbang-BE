@@ -1,5 +1,6 @@
 package staffrecruitment.controller;
 
+import guesthouse.staffrecruitment.domain.vo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
 import staffrecruitment.service.StaffRecruitmentService;
-import staffrecruitment.vo.*;
 
 import java.util.List;
 

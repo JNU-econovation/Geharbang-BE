@@ -1,4 +1,4 @@
-package staffrecruitment.vo;
+package guesthouse.staffrecruitment.domain.vo;
 
 import guesthouse.application.exception.GenderNotMatchedException;
 import lombok.AllArgsConstructor;

@@ -1,8 +1,8 @@
 package staffrecruitment.repository;
 
+import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
+import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentFilter;
 import org.springframework.data.domain.Pageable;
-import staffrecruitment.domain.StaffRecruitment;
-import staffrecruitment.vo.StaffRecruitmentFilter;
 
 import java.util.List;
 

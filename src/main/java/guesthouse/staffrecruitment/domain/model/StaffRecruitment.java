@@ -1,18 +1,21 @@
-package staffrecruitment.domain;
+package guesthouse.staffrecruitment.domain.model;
 
 import guesthouse.common.domain.TimeEntity;
-import lombok.Getter;
-import staffrecruitment.vo.Gender;
-import staffrecruitment.vo.Region;
+import guesthouse.staffrecruitment.domain.vo.Gender;
+import guesthouse.staffrecruitment.domain.vo.Region;
+import guesthouse.staffrecruitment.domain.vo.WorkingPeriod;
 import jakarta.persistence.*;
+import lombok.*;
 import org.locationtech.jts.geom.Point;
-import staffrecruitment.vo.WorkingPeriod;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Entity
+@Builder
 @Getter
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class StaffRecruitment extends TimeEntity {
 
     @Id
@@ -41,6 +44,8 @@ public class StaffRecruitment extends TimeEntity {
 
     @Lob
     private String content;
+
+    @Enumerated(EnumType.STRING)
     private Gender gender;
     private String advantages;
     private String employeeBenefits;

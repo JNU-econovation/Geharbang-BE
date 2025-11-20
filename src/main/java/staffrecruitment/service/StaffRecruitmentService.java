@@ -1,16 +1,16 @@
 package staffrecruitment.service;
 
+import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
+import guesthouse.staffrecruitment.domain.model.StaffRecruitmentImage;
+import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import staffrecruitment.domain.StaffRecruitment;
-import staffrecruitment.domain.StaffRecruitmentImage;
 import staffrecruitment.dto.response.StaffRecruitmentPostDto;
 import staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
 import staffrecruitment.repository.StaffRecruitmentImageRepository;
 import staffrecruitment.repository.StaffRecruitmentRepository;
-import staffrecruitment.vo.StaffRecruitmentFilter;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package staffrecruitment.vo;
+package guesthouse.staffrecruitment.domain.vo;
 
 import lombok.Builder;
 import lombok.Getter;
