@@ -20,26 +20,15 @@ public class WishService {
 
     @Transactional
     public Long addWish(Long userId, Long staffRecruitmentId) {
-        Optional<Wish> optionalWish = wishRepository.findByUserIdAndStaffRecruitmentId(userId, staffRecruitmentId);
-
-        if (optionalWish.isPresent()) {
-            return optionalWish.get().getId();
-        }
-
-        Wish wish = new Wish(userId, staffRecruitmentId);
-        wishRepository.save(wish);
-        return wish.getId();
+        return wishRepository.findByUserIdAndStaffRecruitmentId(userId, staffRecruitmentId)
+                .map(Wish::getId)
+                .orElseGet(() -> wishRepository.save(new Wish(userId, staffRecruitmentId)).getId());
     }
 
     @Transactional
     public void deleteWish(Long userId, Long wishId) {
-        Optional<Wish> optionalWish = wishRepository.findByUserIdAndWishId(userId, wishId);
-
-        if (optionalWish.isEmpty()) {
-            return;
-        }
-
-        wishRepository.deleteById(wishId);
+        wishRepository.findByUserIdAndWishId(userId, wishId)
+                .ifPresent(wishRepository::delete);
     }
 
 }
