@@ -38,11 +38,17 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
     }
 
     private BooleanExpression regionIn(List<Region> region) {
-        return region.isEmpty() ? null : staffRecruitment.region.in(region);
+        if (region == null || region.isEmpty()) {
+            return null;
+        }
+        return staffRecruitment.region.in(region);
     }
 
     private BooleanExpression workingPeriodsIn(List<WorkingPeriod> workingPeriods) {
-        return workingPeriods.isEmpty() ? null : staffRecruitment.workingPeriod.in(workingPeriods);
+        if (workingPeriods == null || workingPeriods.isEmpty()) {
+            return null;
+        }
+        return staffRecruitment.workingPeriod.in(workingPeriods);
     }
 
     private BooleanExpression genderEq(Gender gender) {
