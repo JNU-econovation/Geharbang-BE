@@ -60,6 +60,10 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
     }
 
     private BooleanExpression workScheduleIn(List<WorkScheduleType> workScheduleTypes) {
+        if (workScheduleTypes == null || workScheduleTypes.isEmpty()) {
+            return null;
+        }
+
         List<Integer> workDayValues = workScheduleTypes.stream()
                 .map(WorkScheduleType::getWorkDays)
                 .toList();
