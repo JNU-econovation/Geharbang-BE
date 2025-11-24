@@ -21,9 +21,9 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
 
     @Override
     public List<StaffRecruitment> searchByFilter(Pageable pageable, StaffRecruitmentFilter filter) {
-        return jpaQueryFactory.select(staffRecruitment)
+        return jpaQueryFactory.selectDistinct(staffRecruitment)
                 .from(staffRecruitment)
-                .join(staffRecruitmentJob)
+                .leftJoin(staffRecruitmentJob)
                 .on(staffRecruitmentJob.staffRecruitmentId.eq(staffRecruitment.id))
                 .where(
                         regionIn(filter.getRegion()),
