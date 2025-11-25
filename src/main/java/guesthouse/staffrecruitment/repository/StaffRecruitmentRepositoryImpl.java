@@ -2,6 +2,7 @@ package guesthouse.staffrecruitment.repository;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.vo.*;
@@ -80,4 +81,14 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
         };
     }
 
+
+    @Override
+    public List<StaffRecruitment> findRandom(int count, Region region) {
+        return jpaQueryFactory
+                .selectFrom(staffRecruitment)
+                .where(staffRecruitment.region.eq(region))
+                .orderBy(Expressions.numberTemplate(Double.class, "RAND()").asc())
+                .limit(10)
+                .fetch();
+    }
 }
