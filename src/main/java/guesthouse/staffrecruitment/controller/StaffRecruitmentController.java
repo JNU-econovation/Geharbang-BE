@@ -1,15 +1,16 @@
 package guesthouse.staffrecruitment.controller;
 
 import guesthouse.common.annotation.UserId;
+import guesthouse.staffrecruitment.domain.vo.*;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentDetailsResponse;
 import guesthouse.staffrecruitment.service.StaffRecruitmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
+
+import java.util.List;
 
 @RequestMapping("/api/v1/staff-recruitment")
 @RestController
@@ -25,5 +26,25 @@ public class StaffRecruitmentController {
     ) {
         StaffRecruitmentDetailsDTO details= staffRecruitmentService.getDetails(id, userId);
         return ResponseEntity.ok(StaffRecruitmentDetailsResponse.from(details));
+    }
+
+    @GetMapping
+    public ResponseEntity<StaffRecruitmentPostsResponse> getRecruitments(
+            @RequestParam(defaultValue = "최신순") SortType sort,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) List<Region> region,
+            @RequestParam(required = false) List<WorkingPeriod> period,
+            @RequestParam(required = false) List<WorkScheduleType> workScheduleType,
+            @RequestParam(required = false) Gender gender,
+            @RequestParam int pageNumber,
+            @UserId(required = false) Long userId
+    ) {
+
+        StaffRecruitmentFilter filter = new StaffRecruitmentFilter(
+                keyword, sort, region, gender, period, workScheduleType
+        );
+        StaffRecruitmentPostsResponse response = staffRecruitmentService.getStaffRecruitments(userId, pageNumber, filter);
+
+        return ResponseEntity.ok(response);
     }
 }

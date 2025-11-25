@@ -1,7 +1,7 @@
 package guesthouse.staffrecruitment.domain.model;
 
-import jakarta.persistence.*;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentImageType;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Builder

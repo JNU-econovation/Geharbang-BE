@@ -3,10 +3,10 @@ package guesthouse.staffrecruitment.domain.model;
 import guesthouse.common.domain.TimeEntity;
 import guesthouse.staffrecruitment.domain.vo.Gender;
 import guesthouse.staffrecruitment.domain.vo.Region;
+import guesthouse.staffrecruitment.domain.vo.WorkingPeriod;
 import jakarta.persistence.*;
 import lombok.*;
 import org.locationtech.jts.geom.Point;
-import guesthouse.staffrecruitment.domain.vo.WorkingPeriod;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
