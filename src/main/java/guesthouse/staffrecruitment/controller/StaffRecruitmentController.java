@@ -4,27 +4,27 @@ import guesthouse.common.annotation.UserId;
 import guesthouse.staffrecruitment.domain.vo.*;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentDetailsResponse;
+import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
+import guesthouse.staffrecruitment.random.RandomStaffRecruitmentPostsResponse;
 import guesthouse.staffrecruitment.service.StaffRecruitmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
 
 import java.util.List;
 
 @RequestMapping("/api/v1/staff-recruitment")
-@RestController
 @RequiredArgsConstructor
 public class StaffRecruitmentController {
 
     private final StaffRecruitmentService staffRecruitmentService;
 
     @GetMapping("/{id}/details")
-    public ResponseEntity<StaffRecruitmentDetailsResponse> getDetails (
+    public ResponseEntity<StaffRecruitmentDetailsResponse> getDetails(
             @PathVariable Long id,
-            @UserId (required = false)  Long userId
+            @UserId(required = false) Long userId
     ) {
-        StaffRecruitmentDetailsDTO details= staffRecruitmentService.getDetails(id, userId);
+        StaffRecruitmentDetailsDTO details = staffRecruitmentService.getDetails(id, userId);
         return ResponseEntity.ok(StaffRecruitmentDetailsResponse.from(details));
     }
 
@@ -45,6 +45,12 @@ public class StaffRecruitmentController {
         );
         StaffRecruitmentPostsResponse response = staffRecruitmentService.getStaffRecruitments(userId, pageNumber, filter);
 
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/recommendation")
+    public ResponseEntity<RandomStaffRecruitmentPostsResponse> random(@PathVariable Region region) {
+        RandomStaffRecruitmentPostsResponse response = staffRecruitmentService.getRandomStaffRecruitments(region);
         return ResponseEntity.ok(response);
     }
 }

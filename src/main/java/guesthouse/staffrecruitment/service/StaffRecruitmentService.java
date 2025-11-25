@@ -3,11 +3,14 @@ package guesthouse.staffrecruitment.service;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentImage;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentJob;
+import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentFilter;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentImageType;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostDto;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
+import guesthouse.staffrecruitment.random.RandomStaffRecruitmentPostDto;
+import guesthouse.staffrecruitment.random.RandomStaffRecruitmentPostsResponse;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentImageRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentJobRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentRepository;
@@ -100,5 +103,19 @@ public class StaffRecruitmentService {
                 isWished(staffRecruitment.getId(), userId),
                 image.getImageUrl()
         );
+    }
+
+
+    public RandomStaffRecruitmentPostsResponse getRandomStaffRecruitments(Region region) {
+        List<StaffRecruitment> staffRecruitments = staffRecruitmentRepository.findRandom(10, region);
+        List<RandomStaffRecruitmentPostDto> DTOs = staffRecruitments.stream()
+                .map(this::createRandomDTO)
+                .toList();
+        return new RandomStaffRecruitmentPostsResponse(DTOs);
+    }
+
+    private RandomStaffRecruitmentPostDto createRandomDTO(StaffRecruitment staffRecruitment) {
+        StaffRecruitmentImage image = staffRecruitmentImageRepository.getRepresentativeImageByStaffRecruitmentId(staffRecruitment.getId());
+        return RandomStaffRecruitmentPostDto.of(staffRecruitment, image.getImageUrl());
     }
 }
