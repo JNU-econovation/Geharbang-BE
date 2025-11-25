@@ -1,5 +1,6 @@
 package guesthouse.application.service;
 
+import guesthouse.application.domain.model.Application;
 import guesthouse.application.domain.model.ApplicationRecord;
 import guesthouse.application.domain.model.QuestionAnswer;
 import guesthouse.application.dto.QuestionAnswerDTO;
@@ -17,13 +18,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ApplicationRecordService {
 
+    private final ApplicationService applicationService;
     private final StaffRecruitmentService staffRecruitmentService;
     private final ApplicationRecordRepository applicationRecordRepository;
     private final QuestionAnswerRepository questionAnswerRepository;
 
     @Transactional
     public void apply(List<QuestionAnswerDTO> answers, Long recruitmentId, Long userId) {
-        ApplicationRecord record= applicationRecordRepository.save(new ApplicationRecord(recruitmentId, userId));
+        Application application = applicationService.getApplication(userId);
+        ApplicationRecord record= applicationRecordRepository.save(new ApplicationRecord(recruitmentId, application.getId()));
         if(hasQuestions(recruitmentId)) {
             saveQuestionAnswers(answers, recruitmentId, record.getId());
         }
