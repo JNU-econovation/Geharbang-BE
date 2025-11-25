@@ -91,7 +91,7 @@ public class StaffRecruitmentService {
         List<StaffRecruitmentQuestion> questions = staffRecruitmentQuestionsRepository.findAllByStaffRecruitmentId(staffRecruitment.getId());
         User user = userService.findById(userId);
         UserImage userImage = userService.findImageByUserId(user.getId())
-                .orElseGet(null);
+                .orElse(null);
         return QuestionResponse.of(
                 staffRecruitment,
                 user.getPersonalInfo().getName(), getUserImageUrl(userImage),
