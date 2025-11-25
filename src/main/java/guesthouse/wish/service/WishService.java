@@ -27,7 +27,7 @@ public class WishService {
 
     @Transactional
     public void deleteWish(Long userId, Long wishId) {
-        wishRepository.findByUserIdAndWishId(userId, wishId)
+        wishRepository.findByUserIdAndId(userId, wishId)
                 .ifPresent(wishRepository::delete);
     }
 
