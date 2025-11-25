@@ -20,4 +20,9 @@ public class Wish {
     private Long staffRecruitmentId;
 
     private Long userId;
+
+    public Wish(Long userId, Long staffRecruitmentId) {
+        this.userId = userId;
+        this.staffRecruitmentId = staffRecruitmentId;
+    }
 }

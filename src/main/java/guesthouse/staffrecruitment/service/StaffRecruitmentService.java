@@ -4,9 +4,12 @@ import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentImage;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentJob;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentQuestion;
+import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentFilter;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentImageType;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
 import guesthouse.staffrecruitment.dto.response.QuestionResponse;
+import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostDto;
+import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentImageRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentJobRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentQuestionsRepository;
@@ -16,6 +19,8 @@ import guesthouse.user.domain.model.UserImage;
 import guesthouse.user.service.UserService;
 import guesthouse.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,11 +50,11 @@ public class StaffRecruitmentService {
         return StaffRecruitmentDetailsDTO.from(recruitment, jobs, representativeImages, contentImages, isWished);
     }
 
-    private Boolean isWished(Long id, Long userId) {
+    private Boolean isWished(Long staffRecruitmentId, Long userId) {
         if (isGuest(userId))
             return false;
 
-        return wishService.isWished(id, userId);
+        return wishService.isWished(userId, staffRecruitmentId);
     }
 
     private boolean isGuest(Long userId) {
@@ -106,5 +111,25 @@ public class StaffRecruitmentService {
         return "";
     }
 
+    @Transactional(readOnly = true)
+    public StaffRecruitmentPostsResponse getStaffRecruitments(Long userId, int pageNumber, StaffRecruitmentFilter filter) {
+        Pageable pageable = PageRequest.of(pageNumber, 10);
+        List<StaffRecruitment> staffRecruitments = staffRecruitmentRepository.searchByFilter(pageable, filter);
+
+        List<StaffRecruitmentPostDto> DTOs = staffRecruitments.stream()
+                .map(staffRecruitment -> createDTO(staffRecruitment, userId))
+                .toList();
+        return new StaffRecruitmentPostsResponse(DTOs);
+
+    }
+
+    private StaffRecruitmentPostDto createDTO(StaffRecruitment staffRecruitment, Long userId) {
+        StaffRecruitmentImage image = staffRecruitmentImageRepository.getRepresentativeImageByStaffRecruitmentId(staffRecruitment.getId());
+        return StaffRecruitmentPostDto.of(
+                staffRecruitment,
+                isWished(staffRecruitment.getId(), userId),
+                image.getImageUrl()
+        );
+    }
 
 }
