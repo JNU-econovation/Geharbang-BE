@@ -6,6 +6,7 @@ import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
 import guesthouse.staffrecruitment.dto.response.QuestionResponse;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentDetailsResponse;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
+import guesthouse.staffrecruitment.random.RandomStaffRecruitmentPostsResponse;
 import guesthouse.staffrecruitment.service.StaffRecruitmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RequestMapping("/api/v1/staff-recruitment")
-@RestController
 @RequiredArgsConstructor
 public class StaffRecruitmentController {
 
@@ -58,4 +58,9 @@ public class StaffRecruitmentController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/recommendation")
+    public ResponseEntity<RandomStaffRecruitmentPostsResponse> random(@RequestParam Region region) {
+        RandomStaffRecruitmentPostsResponse response = staffRecruitmentService.getRandomStaffRecruitments(region);
+        return ResponseEntity.ok(response);
+    }
 }
