@@ -19,10 +19,19 @@ public class User {
     @Embedded
     private PersonalInfo personalInfo;
 
+    private String profileImageUrl;
+
     public User() {
     }
 
     public void updatePersonalInfo(String name, String phoneNumber, LocalDate birthDate, Gender gender) {
         this.personalInfo = new PersonalInfo(name, phoneNumber, birthDate, gender);
+    }
+
+    public String getProfileImageUrl() {
+        if (profileImageUrl == null || profileImageUrl.isBlank()) {
+            return "";
+        }
+        return profileImageUrl;
     }
 }

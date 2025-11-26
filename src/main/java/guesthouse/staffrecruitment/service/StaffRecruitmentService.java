@@ -15,7 +15,6 @@ import guesthouse.staffrecruitment.repository.StaffRecruitmentJobRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentQuestionsRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentRepository;
 import guesthouse.user.domain.model.User;
-import guesthouse.user.domain.model.UserImage;
 import guesthouse.user.service.UserService;
 import guesthouse.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
@@ -95,22 +94,14 @@ public class StaffRecruitmentService {
         StaffRecruitment staffRecruitment = getStaffRecruitmentById(recruitmentId);
         List<StaffRecruitmentQuestion> questions = staffRecruitmentQuestionsRepository.findAllByStaffRecruitmentId(staffRecruitment.getId());
         User user = userService.findById(userId);
-        UserImage userImage = userService.findImageByUserId(user.getId())
-                .orElse(null);
         return QuestionResponse.of(
                 staffRecruitment,
                 user.getPersonalInfo().getName(),
-                getUserImageUrl(userImage),
+                user.getProfileImageUrl(),
                 questions
         );
     }
 
-    private String getUserImageUrl(UserImage userImage) {
-        if (userImage != null) {
-            return userImage.getImageUrl();
-        }
-        return "";
-    }
 
     @Transactional(readOnly = true)
     public StaffRecruitmentPostsResponse getStaffRecruitments(Long userId, int pageNumber, StaffRecruitmentFilter filter) {
