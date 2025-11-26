@@ -49,7 +49,7 @@ public class StaffRecruitmentController {
     }
 
     @GetMapping("/recommendation")
-    public ResponseEntity<RandomStaffRecruitmentPostsResponse> random(@PathVariable Region region) {
+    public ResponseEntity<RandomStaffRecruitmentPostsResponse> random(@RequestParam Region region) {
         RandomStaffRecruitmentPostsResponse response = staffRecruitmentService.getRandomStaffRecruitments(region);
         return ResponseEntity.ok(response);
     }
