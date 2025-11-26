@@ -3,14 +3,19 @@ package guesthouse.staffrecruitment.service;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentImage;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentJob;
+import guesthouse.staffrecruitment.domain.model.StaffRecruitmentQuestion;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentFilter;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentImageType;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
+import guesthouse.staffrecruitment.dto.response.QuestionResponse;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostDto;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentImageRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentJobRepository;
+import guesthouse.staffrecruitment.repository.StaffRecruitmentQuestionsRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentRepository;
+import guesthouse.user.domain.model.User;
+import guesthouse.user.service.UserService;
 import guesthouse.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +34,9 @@ public class StaffRecruitmentService {
     private final StaffRecruitmentRepository staffRecruitmentRepository;
     private final StaffRecruitmentJobRepository staffRecruitmentJobRepository;
     private final StaffRecruitmentImageRepository staffRecruitmentImageRepository;
+    private final StaffRecruitmentQuestionsRepository staffRecruitmentQuestionsRepository;
+    private final UserService userService;
+
 
     @Transactional(readOnly = true)
     public StaffRecruitmentDetailsDTO getDetails(Long id, Long userId) {
@@ -82,6 +90,20 @@ public class StaffRecruitmentService {
     }
 
     @Transactional(readOnly = true)
+    public QuestionResponse getQuestions(Long userId, Long recruitmentId) {
+        StaffRecruitment staffRecruitment = getStaffRecruitmentById(recruitmentId);
+        List<StaffRecruitmentQuestion> questions = staffRecruitmentQuestionsRepository.findAllByStaffRecruitmentId(staffRecruitment.getId());
+        User user = userService.findById(userId);
+        return QuestionResponse.of(
+                staffRecruitment,
+                user.getPersonalInfo().getName(),
+                user.getProfileImageUrl(),
+                questions
+        );
+    }
+
+
+    @Transactional(readOnly = true)
     public StaffRecruitmentPostsResponse getStaffRecruitments(Long userId, int pageNumber, StaffRecruitmentFilter filter) {
         Pageable pageable = PageRequest.of(pageNumber, 10);
         List<StaffRecruitment> staffRecruitments = staffRecruitmentRepository.searchByFilter(pageable, filter);
@@ -101,4 +123,5 @@ public class StaffRecruitmentService {
                 image.getImageUrl()
         );
     }
+
 }
