@@ -3,6 +3,8 @@ package guesthouse.common.annotation.resolver;
 import guesthouse.common.annotation.UserId;
 import guesthouse.oauth2.exception.AuthenticationFailException;
 import guesthouse.oauth2.service.TokenProcessor;
+import guesthouse.user.exception.UserException;
+import guesthouse.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +20,7 @@ public class UserIdResolver implements HandlerMethodArgumentResolver {
     private static final String AUTH_TOKEN_HEADER = "Bearer ";
 
     private final TokenProcessor tokenProcessor;
+    private final UserRepository userRepository;
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -38,7 +41,10 @@ public class UserIdResolver implements HandlerMethodArgumentResolver {
         }
 
         String token = extractToken(header);
-        return tokenProcessor.parseAccessToken(token);
+        Long userId = tokenProcessor.parseAccessToken(token);
+        userRepository.findById(userId)
+                .orElseThrow(() -> new UserException());
+        return userId;
     }
 
     private boolean isUserIdRequired(MethodParameter parameter) {
