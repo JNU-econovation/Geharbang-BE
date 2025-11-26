@@ -3,6 +3,7 @@ package guesthouse.staffrecruitment.controller;
 import guesthouse.common.annotation.UserId;
 import guesthouse.staffrecruitment.domain.vo.*;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
+import guesthouse.staffrecruitment.dto.response.QuestionResponse;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentDetailsResponse;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
 import guesthouse.staffrecruitment.random.RandomStaffRecruitmentPostsResponse;
@@ -26,6 +27,15 @@ public class StaffRecruitmentController {
     ) {
         StaffRecruitmentDetailsDTO details = staffRecruitmentService.getDetails(id, userId);
         return ResponseEntity.ok(StaffRecruitmentDetailsResponse.from(details));
+    }
+
+    @GetMapping("/{id}/questions")
+    public ResponseEntity<QuestionResponse> getQuestions(
+            @UserId Long userId,
+            @PathVariable Long id
+    ) {
+        QuestionResponse response = staffRecruitmentService.getQuestions(userId, id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping

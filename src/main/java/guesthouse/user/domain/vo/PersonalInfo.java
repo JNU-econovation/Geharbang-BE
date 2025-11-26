@@ -5,10 +5,12 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 @Embeddable
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PersonalInfo {
     private static final String NAME_REQUIRED_MESSAGE = "유저 이름은 null이거나 비어있을 수 없습니다";
