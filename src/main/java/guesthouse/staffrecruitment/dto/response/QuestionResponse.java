@@ -6,15 +6,16 @@ import guesthouse.staffrecruitment.domain.model.StaffRecruitmentQuestion;
 import java.util.List;
 
 public record QuestionResponse(
-        GuesthouseDTO guesthouseDTO,
-        ProfileDTO profileDTO,
-        List<QuestionDTO> questionDTOS
+        GuesthouseDTO guesthouse,
+        ProfileDTO profile,
+        List<QuestionDTO> questions
 ) {
 
     public record GuesthouseDTO(
             String name,
             String region,
-            List<String> tags
+            List<String> tags,
+            String imageUrl
     ) {
     }
 
@@ -32,16 +33,19 @@ public record QuestionResponse(
 
     public static QuestionResponse of(
             StaffRecruitment staffRecruitment,
-            String username, String imageUrl,
+            String staffRecruitmentImageUrl,
+            String username,
+            String userImageUrl,
             List<StaffRecruitmentQuestion> questions
     ) {
         GuesthouseDTO guesthouseDTO = new GuesthouseDTO(
                 staffRecruitment.getGuesthouseName(),
                 staffRecruitment.getRegion().name(),
-                List.of(staffRecruitment.getWorkingPeriod().name())
+                List.of(staffRecruitment.getWorkingPeriod().name()),
+                staffRecruitmentImageUrl
         );
 
-        ProfileDTO profileDTO = new ProfileDTO(username, imageUrl);
+        ProfileDTO profileDTO = new ProfileDTO(username, userImageUrl);
 
         List<QuestionDTO> questionDTOs = questions.stream()
                 .map(question -> new QuestionDTO(question.getId(), question.getContent()))
