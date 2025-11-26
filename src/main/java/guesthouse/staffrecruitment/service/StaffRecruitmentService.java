@@ -96,9 +96,11 @@ public class StaffRecruitmentService {
     public QuestionResponse getQuestions(Long userId, Long recruitmentId) {
         StaffRecruitment staffRecruitment = getStaffRecruitmentById(recruitmentId);
         List<StaffRecruitmentQuestion> questions = staffRecruitmentQuestionsRepository.findAllByStaffRecruitmentId(staffRecruitment.getId());
+        StaffRecruitmentImage image = staffRecruitmentImageRepository.getRepresentativeImageByStaffRecruitmentId(staffRecruitment.getId());
         User user = userService.findById(userId);
         return QuestionResponse.of(
                 staffRecruitment,
+                image.getImageUrl(),
                 user.getPersonalInfo().getName(),
                 user.getProfileImageUrl(),
                 questions
