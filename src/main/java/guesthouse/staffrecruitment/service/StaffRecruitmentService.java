@@ -99,7 +99,8 @@ public class StaffRecruitmentService {
                 .orElse(null);
         return QuestionResponse.of(
                 staffRecruitment,
-                user.getPersonalInfo().getName(), getUserImageUrl(userImage),
+                user.getPersonalInfo().getName(),
+                getUserImageUrl(userImage),
                 questions
         );
     }
