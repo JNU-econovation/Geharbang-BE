@@ -26,7 +26,7 @@ public record QuestionResponse(
     }
 
     public record QuestionDTO(
-            Long questionsId,
+            Long questionId,
             String content
     ) {
     }
