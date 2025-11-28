@@ -32,4 +32,9 @@ public class ApplicationService {
 
         return applicationRepository.save(application).getId();
     }
+
+    @Transactional(readOnly = true)
+    public Boolean hasApplication(Long userId) {
+        return applicationRepository.existsById(userId);
+    }
 }
