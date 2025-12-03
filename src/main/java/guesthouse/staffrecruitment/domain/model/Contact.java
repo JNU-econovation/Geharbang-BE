@@ -1,0 +1,24 @@
+package guesthouse.staffrecruitment.domain.model;
+
+import jakarta.persistence.Embeddable;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
+@Embeddable
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+public class Contact {
+
+    private String instagramId;
+    private String phoneNumber;
+    private String email;
+    private String webSite;
+
+    public Contact(String instagramId, String phoneNumber, String email, String webSite) {
+        this.instagramId = instagramId;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+        this.webSite = webSite;
+    }
+}

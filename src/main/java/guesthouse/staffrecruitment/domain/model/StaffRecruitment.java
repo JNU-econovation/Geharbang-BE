@@ -1,7 +1,6 @@
 package guesthouse.staffrecruitment.domain.model;
 
 import guesthouse.common.domain.TimeEntity;
-import guesthouse.staffrecruitment.domain.vo.Gender;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.staffrecruitment.domain.vo.WorkingPeriod;
 import jakarta.persistence.*;
@@ -36,23 +35,19 @@ public class StaffRecruitment extends TimeEntity {
     private Point coordinates;
 
     private LocalDate startDate;
-    private Boolean isStartDateNegotiable;
 
     @Enumerated(EnumType.STRING)
     private WorkingPeriod workingPeriod;
 
-
     @Lob
     private String content;
 
-    @Enumerated(EnumType.STRING)
-    private Gender gender;
-    private String advantages;
-    private String employeeBenefits;
-    private String instagramId;
-    private String phoneNumber;
-    private String email;
-    private String webSite;
+    @Embedded
+    private Feature feature;
+
+    @Embedded
+    private Contact contact;
+
     private String ownerMessage;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
