@@ -17,10 +17,15 @@ public class ApplicationRecord {
     private Long staffRecruitmentId;
 
     @Column(nullable = false)
-    private Long applicationId;
+    private Long userId;
 
-    public ApplicationRecord(Long recruitmentId, Long applicationId) {
+    @Lob
+    @Column(nullable = false)
+    private String applicationSnapShot;
+
+    public ApplicationRecord(Long recruitmentId, Long userId, String applicationSnapShot) {
         this.staffRecruitmentId = recruitmentId;
-        this.applicationId = applicationId;
+        this.userId = userId;
+        this.applicationSnapShot = applicationSnapShot;
     }
 }
