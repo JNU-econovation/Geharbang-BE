@@ -1,8 +1,6 @@
 package guesthouse.staffrecruitment.dto.request;
 
-import guesthouse.staffrecruitment.domain.vo.Gender;
-import guesthouse.staffrecruitment.domain.vo.Region;
-import guesthouse.staffrecruitment.domain.vo.WorkingPeriod;
+import guesthouse.staffrecruitment.domain.vo.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -91,12 +89,12 @@ public record StaffRecruitmentCreateRequest(
             @Size(min = 1, max = 50)
             String job,
 
-            @NotBlank
-            String standard,
+            @NotNull
+            WorkType standard,
 
             Integer workDays,
             Integer restDays,
-            String weeklyWorkingDays
+            WorkScheduleType weeklyWorkingDays
     ) {
     }
 
