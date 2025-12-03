@@ -39,11 +39,11 @@ public class ApplicationRecordService {
     private void saveQuestionAnswers(List<QuestionAnswerDTO> answers, Long recruitmentId, Long recordId) {
         answers.forEach(answer -> {
            StaffRecruitmentQuestion question = staffRecruitmentService.getStaffRecruitmentQuestion(answer.questionId(), recruitmentId);
-           saveQuestionAnswer(recordId, question.getId(), answer.content());
+           saveQuestionAnswer(recordId, question.getContent(), answer.content());
         });
     }
 
-    private void saveQuestionAnswer(Long recordId, Long questionId, String content) {
-        questionAnswerRepository.save(new QuestionAnswer(recordId, questionId, content));
+    private void saveQuestionAnswer(Long recordId, String question, String content) {
+        questionAnswerRepository.save(new QuestionAnswer(recordId, question, content));
     }
 }

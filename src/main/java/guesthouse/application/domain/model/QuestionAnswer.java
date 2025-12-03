@@ -18,14 +18,14 @@ public class QuestionAnswer {
     private Long applicationRecordId;
 
     @Column(nullable = false)
-    private Long questionId;
+    private String question;
 
     @Column(nullable = false)
     private String content;
 
-    public QuestionAnswer(Long applicationRecordId, Long questionId, String content) {
+    public QuestionAnswer(Long applicationRecordId, String question, String content) {
         this.applicationRecordId = applicationRecordId;
-        this.questionId = questionId;
+        this.question = question;
         this.content = content;
     }
 }
