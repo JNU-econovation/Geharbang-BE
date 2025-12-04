@@ -3,8 +3,10 @@ package guesthouse.staffrecruitment.controller;
 import guesthouse.common.annotation.UserId;
 import guesthouse.staffrecruitment.domain.vo.*;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
+import guesthouse.staffrecruitment.dto.request.StaffRecruitmentCreateRequest;
 import guesthouse.staffrecruitment.dto.response.QuestionResponse;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentDetailsResponse;
+import guesthouse.staffrecruitment.dto.response.StaffRecruitmentIdResponse;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
 import guesthouse.staffrecruitment.random.RandomStaffRecruitmentPostsResponse;
 import guesthouse.staffrecruitment.service.StaffRecruitmentService;
@@ -64,4 +66,14 @@ public class StaffRecruitmentController {
         RandomStaffRecruitmentPostsResponse response = staffRecruitmentService.getRandomStaffRecruitments(region);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping
+    public ResponseEntity<StaffRecruitmentIdResponse> createStaffRecruitment(
+            @UserId Long userId,
+            @RequestBody StaffRecruitmentCreateRequest request
+    ) {
+        Long staffRecruitmentId = staffRecruitmentService.createStaffRecruitment(userId, request);
+        return ResponseEntity.ok(new StaffRecruitmentIdResponse(staffRecruitmentId));
+    }
+
 }
