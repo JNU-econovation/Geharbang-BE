@@ -52,7 +52,9 @@ public record StaffRecruitmentCreateRequest(
     public record Location(
 
             @NotBlank
-            String address,
+            String lotNumberAddress,
+
+            String roadNameAddress,
 
             @Size(min = 2, max = 2)
             List<Double> coordinates
