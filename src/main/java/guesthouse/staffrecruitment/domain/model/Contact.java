@@ -12,13 +12,11 @@ public class Contact {
 
     private String instagramId;
     private String phoneNumber;
-    private String email;
     private String webSite;
 
-    public Contact(String instagramId, String phoneNumber, String email, String webSite) {
+    public Contact(String instagramId, String phoneNumber, String webSite) {
         this.instagramId = instagramId;
         this.phoneNumber = phoneNumber;
-        this.email = email;
         this.webSite = webSite;
     }
 }

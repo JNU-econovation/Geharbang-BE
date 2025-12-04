@@ -29,7 +29,9 @@ public class StaffRecruitment extends TimeEntity {
     @Enumerated(EnumType.STRING)
     private Region region;
 
-    private String address;
+    @Column(nullable = false)
+    private String lotNumberAddress;
+    private String roadNameAddress;
 
     @Column(columnDefinition = "POINT SRID 4326", nullable = false)
     private Point coordinates;
