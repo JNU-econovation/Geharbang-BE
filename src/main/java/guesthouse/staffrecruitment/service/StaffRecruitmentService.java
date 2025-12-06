@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class StaffRecruitmentService {
@@ -129,6 +128,14 @@ public class StaffRecruitmentService {
         );
     }
 
+    public StaffRecruitmentQuestion getStaffRecruitmentQuestion(Long staffRecruitmentQuestionId, Long staffRecruitmentId) {
+        return staffRecruitmentQuestionsRepository.findByIdAndStaffRecruitmentId(staffRecruitmentQuestionId, staffRecruitmentId)
+                .orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다"));
+    }
+
+    public Boolean hasQuestion(Long recruitmentId) {
+        return staffRecruitmentQuestionsRepository.existsByStaffRecruitmentId(recruitmentId);
+    }
 
     public RandomStaffRecruitmentPostsResponse getRandomStaffRecruitments(Region region) {
         List<StaffRecruitment> staffRecruitments = staffRecruitmentRepository.findRandom(10, region);
