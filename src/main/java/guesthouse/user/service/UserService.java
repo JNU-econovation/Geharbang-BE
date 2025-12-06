@@ -1,8 +1,8 @@
 package guesthouse.user.service;
 
+import guesthouse.user.domain.model.User;
 import guesthouse.user.domain.vo.Gender;
 import guesthouse.user.exception.UserException;
-import guesthouse.user.domain.model.User;
 import guesthouse.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,6 +33,6 @@ public class UserService {
                                    Gender gender,
                                    Long userId) {
         User user = findById(userId);
-        user.updatePersonalInfo(name, phoneNumber,birthDate, gender);
+        user.updatePersonalInfo(name, phoneNumber, birthDate, gender);
     }
 }

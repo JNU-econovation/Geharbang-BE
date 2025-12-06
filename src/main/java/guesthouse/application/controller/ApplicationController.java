@@ -3,6 +3,7 @@ package guesthouse.application.controller;
 import guesthouse.application.dto.QuestionAnswerDTO;
 import guesthouse.application.dto.requset.ApplicationApplyRequest;
 import guesthouse.application.dto.requset.ApplicationSaveRequest;
+import guesthouse.application.dto.response.ApplicationExistenceResponse;
 import guesthouse.application.dto.response.ApplicationSaveResponse;
 import guesthouse.application.service.ApplicationRecordService;
 import guesthouse.application.service.ApplicationService;
@@ -40,5 +41,13 @@ public class ApplicationController {
         List<QuestionAnswerDTO> answers = applicationApplyRequest.answers();
         applicationRecordService.apply(answers, recruitmentId, userId);
         return ResponseEntity.ok().build();
+    }
+  
+    @GetMapping("/my/exist")
+    public ResponseEntity<ApplicationExistenceResponse> hasApplication(
+            @UserId Long userId
+    ) {
+        Boolean isExist = applicationService.hasApplication(userId);
+        return ResponseEntity.ok(new ApplicationExistenceResponse(isExist));
     }
 }
