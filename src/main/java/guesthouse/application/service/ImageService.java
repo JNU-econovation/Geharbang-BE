@@ -11,12 +11,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ImageService {
-    private static final String IMAGE_URL_PREFIX  = "/images/application/";
+    private static final String IMAGE_URL_PREFIX = "/images/application/";
     private static final String UNDER_BAR = "_";
 
     @Value("${image.directory.path}")
@@ -47,4 +48,11 @@ public class ImageService {
         Files.createDirectories(path.getParent());
         Files.write(path, image.getBytes());
     }
+
+    public List<String> saveImages(List<MultipartFile> images, Long userId) {
+        return images.stream()
+                .map(image -> saveImage(image, userId))
+                .toList();
+    }
+
 }
