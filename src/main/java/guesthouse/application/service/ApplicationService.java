@@ -33,6 +33,11 @@ public class ApplicationService {
         return applicationRepository.save(application).getId();
     }
 
+    public Application getApplication(Long userId) {
+        return applicationRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유저의 지원서가 존재하지 않습니다"));
+    }
+  
     @Transactional(readOnly = true)
     public Boolean hasApplication(Long userId) {
         return applicationRepository.existsById(userId);
