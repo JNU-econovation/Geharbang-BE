@@ -1,5 +1,7 @@
 package guesthouse.staffrecruitment.domain.model;
 
+import guesthouse.staffrecruitment.domain.vo.WorkScheduleType;
+import guesthouse.staffrecruitment.domain.vo.WorkType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,7 +24,11 @@ public class StaffRecruitmentJob {
     private LocalTime startTime;
     private LocalTime endTime;
     private String job;
+    private WorkType standard;
     private Integer workDays;
     private Integer restDays;
+
+    @Enumerated(EnumType.STRING)
+    private WorkScheduleType workScheduleType;
 
 }

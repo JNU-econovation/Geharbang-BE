@@ -35,7 +35,6 @@ public record StaffRecruitmentDetailsDTO(
 
         String instagramId,
         String phoneNumber,
-        String email,
         String webSite,
         Boolean isWished,
         String ownerMessage
@@ -46,6 +45,7 @@ public record StaffRecruitmentDetailsDTO(
                                                    List<String> contentImages,
                                                    Boolean isWished
     ) {
+
         return StaffRecruitmentDetailsDTO.builder()
                 .representativeImages(representativeImages)
                 .contentImages(contentImages)
@@ -56,19 +56,18 @@ public record StaffRecruitmentDetailsDTO(
                 .title(recruitment.getTitle())
                 .guesthouseName(recruitment.getGuesthouseName())
                 .region(recruitment.getRegion())
-                .address(recruitment.getAddress())
+                .address(recruitment.getLotNumberAddress())
                 .coordinates(recruitment.getCoordinates())
                 .startDate(recruitment.getStartDate())
-                .isStartDateNegotiable(recruitment.getIsStartDateNegotiable())
+                .isStartDateNegotiable(false)
                 .workingPeriod(recruitment.getWorkingPeriod())
                 .content(recruitment.getContent())
-                .gender(recruitment.getGender())
-                .advantages(recruitment.getAdvantages())
-                .employeeBenefits(recruitment.getEmployeeBenefits())
-                .instagramId(recruitment.getInstagramId())
-                .phoneNumber(recruitment.getPhoneNumber())
-                .email(recruitment.getEmail())
-                .webSite(recruitment.getWebSite())
+                .gender(recruitment.getFeature().getGender())
+                .advantages(recruitment.getFeature().getAdvantages())
+                .employeeBenefits(recruitment.getFeature().getEmployeeBenefits())
+                .instagramId(recruitment.getContact().getInstagramId())
+                .phoneNumber(recruitment.getContact().getPhoneNumber())
+                .webSite(recruitment.getContact().getWebSite())
                 .isWished(isWished)
                 .ownerMessage(recruitment.getOwnerMessage())
                 .build();

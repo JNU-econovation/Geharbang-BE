@@ -41,7 +41,7 @@ public record StaffRecruitmentDetailsResponse(
                 .workingInformation(WorkingInformation.from(details.startDate(), details.isStartDateNegotiable(), details.workingPeriod(), details.jobs()))
                 .introduction(new Introduction(details.content(), details.contentImages()))
                 .feature(Feature.from(details.gender(), details.advantages(), details.employeeBenefits()))
-                .contact(new Contact(details.instagramId(), details.phoneNumber(), details.email(), details.webSite()))
+                .contact(new Contact(details.instagramId(), details.phoneNumber(), details.webSite()))
                 .isWished(details.isWished())
                 .ownerMessage(details.ownerMessage())
                 .build();
@@ -126,7 +126,6 @@ public record StaffRecruitmentDetailsResponse(
     private record Contact(
             String instagramId,
             String phoneNumber,
-            String email,
             String webSite
     ) {
     }

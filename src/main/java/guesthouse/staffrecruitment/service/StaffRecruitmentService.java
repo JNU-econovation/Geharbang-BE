@@ -3,11 +3,12 @@ package guesthouse.staffrecruitment.service;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentImage;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentJob;
-import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentQuestion;
+import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentFilter;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentImageType;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
+import guesthouse.staffrecruitment.dto.request.StaffRecruitmentCreateRequest;
 import guesthouse.staffrecruitment.dto.response.QuestionResponse;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostDto;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
@@ -148,5 +149,22 @@ public class StaffRecruitmentService {
     private RandomStaffRecruitmentPostDto createRandomDTO(StaffRecruitment staffRecruitment) {
         StaffRecruitmentImage image = staffRecruitmentImageRepository.getRepresentativeImageByStaffRecruitmentId(staffRecruitment.getId());
         return RandomStaffRecruitmentPostDto.of(staffRecruitment, image.getImageUrl());
+    }
+
+    @Transactional
+    public Long createStaffRecruitment(Long userId, StaffRecruitmentCreateRequest request) {
+        StaffRecruitment staffRecruitment = StaffRecruitmentMapper.from(request, userId);
+        staffRecruitmentRepository.save(staffRecruitment);
+
+        List<StaffRecruitmentJob> jobs = StaffRecruitmentJobMapper.from(request, staffRecruitment.getId());
+        staffRecruitmentJobRepository.saveAll(jobs);
+
+        List<StaffRecruitmentQuestion> questions = StaffRecruitmentQuestionMapper.from(request, staffRecruitment.getId());
+        staffRecruitmentQuestionsRepository.saveAll(questions);
+
+        List<StaffRecruitmentImage> images = StaffRecruitmentImageMapper.from(request, staffRecruitment.getId());
+        staffRecruitmentImageRepository.saveAll(images);
+
+        return staffRecruitment.getId();
     }
 }

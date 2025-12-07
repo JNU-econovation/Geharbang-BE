@@ -23,5 +23,5 @@ public class StaffRecruitmentImage {
     private String imageUrl;
 
     @Column(name = "image_index")
-    private Long index;
+    private int index;
 }
