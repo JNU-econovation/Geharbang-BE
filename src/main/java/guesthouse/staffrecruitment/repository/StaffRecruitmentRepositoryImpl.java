@@ -53,7 +53,7 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
     }
 
     private BooleanExpression genderEq(Gender gender) {
-        return gender == null ? null : staffRecruitment.gender.eq(gender);
+        return gender == null ? null : staffRecruitment.feature.gender.eq(gender);
     }
 
     private BooleanExpression keywordContains(String keyword) {
