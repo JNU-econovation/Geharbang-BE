@@ -10,6 +10,7 @@ import guesthouse.staffrecruitment.dto.response.StaffRecruitmentIdResponse;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
 import guesthouse.staffrecruitment.random.RandomStaffRecruitmentPostsResponse;
 import guesthouse.staffrecruitment.service.StaffRecruitmentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -70,7 +71,7 @@ public class StaffRecruitmentController {
     @PostMapping
     public ResponseEntity<StaffRecruitmentIdResponse> createStaffRecruitment(
             @UserId Long userId,
-            @RequestBody StaffRecruitmentCreateRequest request
+            @RequestBody @Valid StaffRecruitmentCreateRequest request
     ) {
         Long staffRecruitmentId = staffRecruitmentService.createStaffRecruitment(userId, request);
         return ResponseEntity.ok(new StaffRecruitmentIdResponse(staffRecruitmentId));
