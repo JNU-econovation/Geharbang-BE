@@ -24,6 +24,8 @@ public class StaffRecruitmentJob {
     private LocalTime startTime;
     private LocalTime endTime;
     private String job;
+
+    @Enumerated(EnumType.STRING)
     private WorkType standard;
     private Integer workDays;
     private Integer restDays;
