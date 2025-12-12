@@ -1,6 +1,7 @@
 package guesthouse.staffrecruitment.repository;
 
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -29,6 +30,9 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
                 .where(
                         regionIn(filter.getRegion()),
                         genderEq(filter.getGender()),
+                        workTypeEq(filter.getWorkType()),
+                        workDaysEq(filter.getWorkDays()),
+                        restDaysEq(filter.getRestDays()),
                         workingPeriodsIn(filter.getWorkingPeriods()),
                         workScheduleIn(filter.getWorkScheduleType()),
                         keywordContains(filter.getKeyword())
@@ -39,6 +43,7 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
     }
 
     private BooleanExpression regionIn(List<Region> region) {
+        System.out.println(region);
         if (region == null || region.isEmpty()) {
             return null;
         }
@@ -46,6 +51,7 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
     }
 
     private BooleanExpression workingPeriodsIn(List<WorkingPeriod> workingPeriods) {
+        System.out.println(workingPeriods);
         if (workingPeriods == null || workingPeriods.isEmpty()) {
             return null;
         }
@@ -53,14 +59,33 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
     }
 
     private BooleanExpression genderEq(Gender gender) {
+        System.out.println(gender);
         return gender == null ? null : staffRecruitment.feature.gender.eq(gender);
     }
 
+    private Predicate workTypeEq(WorkType workType) {
+        System.out.println(workType);
+        return workType == null ? null : staffRecruitmentJob.standard.eq(workType);
+    }
+
+    private Predicate workDaysEq(Integer workDays) {
+        System.out.println(workDays);
+        return workDays == null ? null : staffRecruitmentJob.workDays.eq(workDays);
+    }
+
+    private Predicate restDaysEq(Integer restDays) {
+        System.out.println(restDays);
+        return restDays == null ? null : staffRecruitmentJob.restDays.eq(restDays);
+    }
+
+
     private BooleanExpression keywordContains(String keyword) {
+        System.out.println(keyword);
         return keyword == null ? null : staffRecruitment.guesthouseName.contains(keyword);
     }
 
     private BooleanExpression workScheduleIn(List<WorkScheduleType> workScheduleTypes) {
+        System.out.println(workScheduleTypes);
         if (workScheduleTypes == null || workScheduleTypes.isEmpty()) {
             return null;
         }

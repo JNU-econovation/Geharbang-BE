@@ -47,15 +47,17 @@ public class StaffRecruitmentController {
             @RequestParam(defaultValue = "최신순") SortType sort,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) List<Region> region,
+            @RequestParam(required = false) WorkType workType,
+            @RequestParam(required = false) Integer workDays,
+            @RequestParam(required = false) Integer restDays,
             @RequestParam(required = false) List<WorkingPeriod> period,
             @RequestParam(required = false) List<WorkScheduleType> workScheduleType,
             @RequestParam(required = false) Gender gender,
             @RequestParam int pageNumber,
             @UserId(required = false) Long userId
     ) {
-
         StaffRecruitmentFilter filter = new StaffRecruitmentFilter(
-                keyword, sort, region, gender, period, workScheduleType
+                keyword, sort, region, workType, workDays, restDays, gender, period, workScheduleType
         );
         StaffRecruitmentPostsResponse response = staffRecruitmentService.getStaffRecruitments(userId, pageNumber, filter);
 
