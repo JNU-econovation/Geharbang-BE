@@ -2,6 +2,7 @@ package guesthouse.staffrecruitment.dto.response;
 
 import guesthouse.staffrecruitment.domain.vo.Gender;
 import guesthouse.staffrecruitment.domain.vo.Region;
+import guesthouse.staffrecruitment.domain.vo.WorkType;
 import guesthouse.staffrecruitment.domain.vo.WorkingPeriod;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentJobDTO;
@@ -29,7 +30,7 @@ public record StaffRecruitmentDetailsResponse(
         String ownerMessage
 
 ) {
-    private static final String SEPARATOR = "\\|";
+    private static final String SEPARATOR = "\\|:\\|";
 
     public static StaffRecruitmentDetailsResponse from(StaffRecruitmentDetailsDTO details) {
         return StaffRecruitmentDetailsResponse.builder()
@@ -86,7 +87,8 @@ public record StaffRecruitmentDetailsResponse(
             LocalTime endTime,
             String job,
             Integer workDays,
-            Integer restDays
+            Integer restDays,
+            WorkType workType
     ) {
         private static JobSummaryDTO from(StaffRecruitmentJobDTO dto) {
             return new JobSummaryDTO(
@@ -95,7 +97,8 @@ public record StaffRecruitmentDetailsResponse(
                     dto.endTime(),
                     dto.job(),
                     dto.workDays(),
-                    dto.restDays()
+                    dto.restDays(),
+                    dto.workType()
             );
         }
     }
