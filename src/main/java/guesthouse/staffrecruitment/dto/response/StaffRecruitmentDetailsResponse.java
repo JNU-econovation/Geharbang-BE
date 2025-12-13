@@ -12,8 +12,10 @@ import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Builder
 public record StaffRecruitmentDetailsResponse(
@@ -115,14 +117,23 @@ public record StaffRecruitmentDetailsResponse(
             List<String> employeeBenefits
     ) {
         public static Feature from(Gender gender, String advantages, String employeeBenefits) {
-            List<String> advantagesList = Arrays.asList(advantages.split(SEPARATOR));
-            List<String> employeeBenefitsList = Arrays.asList(employeeBenefits.split(SEPARATOR));
+            List<String> advantagesList = splitBySeparator(advantages);
+            List<String> employeeBenefitsList = splitBySeparator(employeeBenefits);
 
             return new Feature(
                     gender,
                     advantagesList,
                     employeeBenefitsList
             );
+        }
+
+        private static List<String> splitBySeparator(String str) {
+            List<String> result = new ArrayList<>();
+
+            if (str != null && !str.isBlank())
+                result = Arrays.asList(str.split(SEPARATOR));
+
+            return result;
         }
     }
 
