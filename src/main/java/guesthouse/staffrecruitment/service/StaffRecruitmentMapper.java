@@ -65,10 +65,10 @@ public final class StaffRecruitmentMapper {
                 feature.gender(),
                 Optional.ofNullable(feature.advantages())
                         .map(list -> String.join(DELIMITER, list))
-                        .orElse(null),
+                        .orElse(""),
                 Optional.ofNullable(feature.employeeBenefits())
                         .map(list -> String.join(DELIMITER, list))
-                        .orElse(null)
+                        .orElse("")
         );
     }
 
