@@ -18,7 +18,7 @@ public record StaffRecruitmentPostDto(
     public static StaffRecruitmentPostDto of(StaffRecruitment staffRecruitment, boolean isWished, String imageUrl) {
         return new StaffRecruitmentPostDto(
                 staffRecruitment.getId(),
-                staffRecruitment.getGuesthouseName(),
+                staffRecruitment.getGuestHouseName(),
                 List.of(staffRecruitment.getWorkingPeriod().name()),
                 staffRecruitment.getRegion().name(),
                 isWished,

@@ -24,7 +24,7 @@ public class StaffRecruitment extends TimeEntity {
     private Long ownerId;
 
     private String title;
-    private String guesthouseName;
+    private String guestHouseName;
 
     @Enumerated(EnumType.STRING)
     private Region region;

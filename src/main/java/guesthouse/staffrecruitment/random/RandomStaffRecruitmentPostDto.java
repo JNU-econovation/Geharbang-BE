@@ -16,7 +16,7 @@ public record RandomStaffRecruitmentPostDto(
     public static RandomStaffRecruitmentPostDto of(StaffRecruitment staffRecruitment, String imageUrl) {
         return new RandomStaffRecruitmentPostDto(
                 staffRecruitment.getId(),
-                staffRecruitment.getGuesthouseName(),
+                staffRecruitment.getGuestHouseName(),
                 List.of(staffRecruitment.getWorkingPeriod().name()),
                 imageUrl
         );
