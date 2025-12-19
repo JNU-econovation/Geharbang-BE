@@ -30,6 +30,7 @@ public class ApplicationRecordService {
 
     @Transactional
     public void apply(List<QuestionAnswerDTO> answers, Long recruitmentId, Long userId) {
+        checkDuplicatedApplication(recruitmentId, userId);
         Application application = applicationService.getApplication(userId);
         String snapShot = convertToSnapshot(application);
 
@@ -37,6 +38,12 @@ public class ApplicationRecordService {
         if(hasQuestions(recruitmentId)) {
             saveQuestionAnswers(answers, recruitmentId, record.getId());
         }
+    }
+
+    private void checkDuplicatedApplication(Long recruitmentId, Long userId) {
+        Boolean isDuplicated = applicationRecordRepository.existsByStaffRecruitmentIdAndUserId(recruitmentId, userId);
+        if (isDuplicated)
+            throw new IllegalArgumentException("이미 지원한 스탭 공고입니다");
     }
 
     private String convertToSnapshot(Application application) {

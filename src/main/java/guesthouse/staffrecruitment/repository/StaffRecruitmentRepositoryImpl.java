@@ -74,7 +74,7 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
 
 
     private BooleanExpression keywordContains(String keyword) {
-        return keyword == null ? null : staffRecruitment.guesthouseName.contains(keyword);
+        return keyword == null ? null : staffRecruitment.guestHouseName.contains(keyword);
     }
 
     private BooleanExpression workScheduleIn(List<WorkScheduleType> workScheduleTypes) {

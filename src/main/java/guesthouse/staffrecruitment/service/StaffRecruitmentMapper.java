@@ -33,7 +33,7 @@ public final class StaffRecruitmentMapper {
         return StaffRecruitment.builder()
                 .ownerId(ownerId)
                 .title(request.title())
-                .guesthouseName(request.guestHouseName())
+                .guestHouseName(request.guestHouseName())
                 .region(request.region())
                 .lotNumberAddress(location.lotNumberAddress())
                 .roadNameAddress(location.roadNameAddress())
