@@ -39,7 +39,7 @@ public record QuestionResponse(
             List<StaffRecruitmentQuestion> questions
     ) {
         GuesthouseDTO guesthouseDTO = new GuesthouseDTO(
-                staffRecruitment.getGuesthouseName(),
+                staffRecruitment.getGuestHouseName(),
                 staffRecruitment.getRegion().name(),
                 List.of(staffRecruitment.getWorkingPeriod().name()),
                 staffRecruitmentImageUrl

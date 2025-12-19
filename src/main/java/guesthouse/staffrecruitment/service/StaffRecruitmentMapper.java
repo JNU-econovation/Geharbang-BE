@@ -10,6 +10,7 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public final class StaffRecruitmentMapper {
@@ -53,9 +54,9 @@ public final class StaffRecruitmentMapper {
 
     private static Contact createContact(StaffRecruitmentCreateRequest.Contact contact) {
         return new Contact(
-                contact.instagramId(),
-                contact.phoneNumber(),
-                contact.webSite()
+                Objects.requireNonNullElse(contact.instagramId(), ""),
+                Objects.requireNonNullElse(contact.phoneNumber(), ""),
+                Objects.requireNonNullElse(contact.webSite(), "")
         );
     }
 
@@ -64,10 +65,10 @@ public final class StaffRecruitmentMapper {
                 feature.gender(),
                 Optional.ofNullable(feature.advantages())
                         .map(list -> String.join(DELIMITER, list))
-                        .orElse(null),
+                        .orElse(""),
                 Optional.ofNullable(feature.employeeBenefits())
                         .map(list -> String.join(DELIMITER, list))
-                        .orElse(null)
+                        .orElse("")
         );
     }
 

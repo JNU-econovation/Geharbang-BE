@@ -38,7 +38,7 @@ public record StaffRecruitmentDetailsResponse(
         return StaffRecruitmentDetailsResponse.builder()
                 .representativeImages(details.representativeImages())
                 .title(details.title())
-                .guesthouseName(details.guesthouseName())
+                .guesthouseName(details.guestHouseName())
                 .region(details.region())
                 .location(Location.from(details.address(), details.coordinates()))
                 .workingInformation(WorkingInformation.from(details.startDate(), details.isStartDateNegotiable(), details.workingPeriod(), details.jobs()))

@@ -16,7 +16,7 @@ public record StaffRecruitmentDetailsDTO(
         List<String> representativeImages,
 
         String title,
-        String guesthouseName,
+        String guestHouseName,
         Region region,
         String address,
         Point coordinates,
@@ -54,7 +54,7 @@ public record StaffRecruitmentDetailsDTO(
                         .map(StaffRecruitmentJobDTO::from)
                         .toList())
                 .title(recruitment.getTitle())
-                .guesthouseName(recruitment.getGuesthouseName())
+                .guestHouseName(recruitment.getGuestHouseName())
                 .region(recruitment.getRegion())
                 .address(recruitment.getLotNumberAddress())
                 .coordinates(recruitment.getCoordinates())
