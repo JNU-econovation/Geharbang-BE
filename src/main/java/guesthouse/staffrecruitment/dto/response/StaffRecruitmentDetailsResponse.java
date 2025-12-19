@@ -2,6 +2,7 @@ package guesthouse.staffrecruitment.dto.response;
 
 import guesthouse.staffrecruitment.domain.vo.Gender;
 import guesthouse.staffrecruitment.domain.vo.Region;
+import guesthouse.staffrecruitment.domain.vo.WorkType;
 import guesthouse.staffrecruitment.domain.vo.WorkingPeriod;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentJobDTO;
@@ -11,8 +12,10 @@ import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Builder
 public record StaffRecruitmentDetailsResponse(
@@ -29,7 +32,7 @@ public record StaffRecruitmentDetailsResponse(
         String ownerMessage
 
 ) {
-    private static final String SEPARATOR = "\\|";
+    private static final String SEPARATOR = "\\|:\\|";
 
     public static StaffRecruitmentDetailsResponse from(StaffRecruitmentDetailsDTO details) {
         return StaffRecruitmentDetailsResponse.builder()
@@ -86,7 +89,8 @@ public record StaffRecruitmentDetailsResponse(
             LocalTime endTime,
             String job,
             Integer workDays,
-            Integer restDays
+            Integer restDays,
+            WorkType workType
     ) {
         private static JobSummaryDTO from(StaffRecruitmentJobDTO dto) {
             return new JobSummaryDTO(
@@ -95,7 +99,8 @@ public record StaffRecruitmentDetailsResponse(
                     dto.endTime(),
                     dto.job(),
                     dto.workDays(),
-                    dto.restDays()
+                    dto.restDays(),
+                    dto.workType()
             );
         }
     }
@@ -112,14 +117,23 @@ public record StaffRecruitmentDetailsResponse(
             List<String> employeeBenefits
     ) {
         public static Feature from(Gender gender, String advantages, String employeeBenefits) {
-            List<String> advantagesList = Arrays.asList(advantages.split(SEPARATOR));
-            List<String> employeeBenefitsList = Arrays.asList(employeeBenefits.split(SEPARATOR));
+            List<String> advantagesList = splitBySeparator(advantages);
+            List<String> employeeBenefitsList = splitBySeparator(employeeBenefits);
 
             return new Feature(
                     gender,
                     advantagesList,
                     employeeBenefitsList
             );
+        }
+
+        private static List<String> splitBySeparator(String str) {
+            List<String> result = new ArrayList<>();
+
+            if (str != null && !str.isBlank())
+                result = Arrays.asList(str.split(SEPARATOR));
+
+            return result;
         }
     }
 

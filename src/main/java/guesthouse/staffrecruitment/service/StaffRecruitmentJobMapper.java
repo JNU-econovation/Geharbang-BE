@@ -1,11 +1,13 @@
 package guesthouse.staffrecruitment.service;
 
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentJob;
+import guesthouse.staffrecruitment.domain.vo.WorkType;
 import guesthouse.staffrecruitment.dto.request.StaffRecruitmentCreateRequest;
 
 import java.util.List;
 
 public final class StaffRecruitmentJobMapper {
+    private static final Integer SEVEN_DAYS = 7;
 
     private StaffRecruitmentJobMapper() {
 
