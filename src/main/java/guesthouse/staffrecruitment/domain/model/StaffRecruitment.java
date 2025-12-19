@@ -41,7 +41,7 @@ public class StaffRecruitment extends TimeEntity {
     @Enumerated(EnumType.STRING)
     private WorkingPeriod workingPeriod;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @Embedded
