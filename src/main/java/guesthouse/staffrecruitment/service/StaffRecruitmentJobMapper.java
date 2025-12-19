@@ -22,13 +22,6 @@ public final class StaffRecruitmentJobMapper {
     }
 
     private static StaffRecruitmentJob createStaffRecruitmentJob(Long staffRecruitmentId, StaffRecruitmentCreateRequest.Job job) {
-        Integer workDays = job.workDays();
-        Integer restDays = job.restDays();
-        if (isWeeklyStandard(job.standard())){
-            workDays = job.weeklyWorkingDays().getWorkDays();
-            restDays = SEVEN_DAYS - workDays;
-        }
-
         return StaffRecruitmentJob.builder()
                 .staffRecruitmentId(staffRecruitmentId)
                 .name(job.name())
@@ -36,13 +29,9 @@ public final class StaffRecruitmentJobMapper {
                 .endTime(job.endTime())
                 .job(job.job())
                 .standard(job.standard())
-                .workDays(workDays)
-                .restDays(restDays)
+                .workDays(job.workDays())
+                .restDays(job.restDays())
                 .workScheduleType(job.weeklyWorkingDays())
                 .build();
-    }
-
-    private static boolean isWeeklyStandard(WorkType standard) {
-        return standard == WorkType._7일_기준;
     }
 }
