@@ -8,7 +8,7 @@ import java.util.List;
 @Builder
 public record StaffRecruitmentPostDto(
         Long id,
-        String name,
+        String title,
         List<String> tags,
         String region,
         boolean isWished,
@@ -18,7 +18,7 @@ public record StaffRecruitmentPostDto(
     public static StaffRecruitmentPostDto of(StaffRecruitment staffRecruitment, boolean isWished, String imageUrl) {
         return new StaffRecruitmentPostDto(
                 staffRecruitment.getId(),
-                staffRecruitment.getGuestHouseName(),
+                staffRecruitment.getTitle(),
                 List.of(staffRecruitment.getWorkingPeriod().name()),
                 staffRecruitment.getRegion().name(),
                 isWished,
