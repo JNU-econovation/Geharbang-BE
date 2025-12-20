@@ -21,7 +21,7 @@ import java.util.Optional;
 public record StaffRecruitmentDetailsResponse(
         List<String> representativeImages,
         String title,
-        String guesthouseName,
+        String guestHouseName,
         Region region,
         Location location,
         WorkingInformation workingInformation,
@@ -38,7 +38,7 @@ public record StaffRecruitmentDetailsResponse(
         return StaffRecruitmentDetailsResponse.builder()
                 .representativeImages(details.representativeImages())
                 .title(details.title())
-                .guesthouseName(details.guestHouseName())
+                .guestHouseName(details.guestHouseName())
                 .region(details.region())
                 .location(Location.from(details.address(), details.coordinates()))
                 .workingInformation(WorkingInformation.from(details.startDate(), details.isStartDateNegotiable(), details.workingPeriod(), details.jobs()))
