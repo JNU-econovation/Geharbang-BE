@@ -40,6 +40,6 @@ public class ApplicationService {
   
     @Transactional(readOnly = true)
     public Boolean hasApplication(Long userId) {
-        return applicationRepository.existsById(userId);
+        return applicationRepository.existsByUserId(userId);
     }
 }
