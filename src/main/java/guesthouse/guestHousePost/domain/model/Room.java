@@ -39,5 +39,5 @@ public class Room {
     private LocalTime checkOutTime;
 
     @Column(nullable = false)
-    private Long pricePerNight;
+    private Integer pricePerNight;
 }
