@@ -1,6 +1,5 @@
 package guesthouse.guestHousePost.domain.model;
 
-import guesthouse.guestHousePost.domain.vo.ImageType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,9 +16,6 @@ public class RoomImage {
 
     @Column(nullable = false)
     private Long roomId;
-
-    @Enumerated(EnumType.STRING)
-    private ImageType type;
 
     @Column(nullable = false)
     private String imageUrl;
