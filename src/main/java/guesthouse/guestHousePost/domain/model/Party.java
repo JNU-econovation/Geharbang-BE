@@ -1,6 +1,6 @@
 package guesthouse.guestHousePost.domain.model;
 
-import guesthouse.application.domain.vo.DayOfWeek;
+import guesthouse.guestHousePost.domain.vo.DayOfWeek;
 import guesthouse.guestHousePost.domain.vo.PartyType;
 import jakarta.persistence.*;
 import lombok.*;
