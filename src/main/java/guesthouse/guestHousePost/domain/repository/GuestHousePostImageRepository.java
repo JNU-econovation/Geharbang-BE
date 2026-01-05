@@ -1,0 +1,16 @@
+package guesthouse.guestHousePost.domain.repository;
+
+import guesthouse.guestHousePost.domain.model.GuestHousePostImage;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface GuestHousePostImageRepository extends JpaRepository<GuestHousePostImage, Long> {
+
+    default GuestHousePostImage getFirstImageByGuestHousePostId(Long guestHousePostId) {
+        return findByGuestHousePostIdAndIndex(guestHousePostId, 0);
+    }
+
+    GuestHousePostImage findByGuestHousePostIdAndIndex(Long staffRecruitmentId, int index);
+
+}
