@@ -53,7 +53,6 @@ public class Party {
     @Column(nullable = false)
     private Long guestFee;
 
-    @Column(nullable = false)
     private Long externalGuestFee;
 
     @Column(columnDefinition = "TEXT")
