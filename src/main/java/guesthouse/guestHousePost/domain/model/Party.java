@@ -26,6 +26,8 @@ public class Party {
     @Column(nullable = false)
     private PartyType partyType;
 
+    private String otherPartyType;
+
     @Column(nullable = false)
     private LocalTime startTime;
 
