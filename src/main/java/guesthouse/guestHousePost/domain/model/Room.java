@@ -19,7 +19,7 @@ public class Room {
     private Long id;
 
     @Column(nullable = false)
-    private Long GuestHousePostId;
+    private Long guestHousePostId;
 
     @Column(nullable = false)
     private String name;
@@ -39,5 +39,5 @@ public class Room {
     private LocalTime checkOutTime;
 
     @Column(nullable = false)
-    private Long pricePerNight;
+    private Integer pricePerNight;
 }

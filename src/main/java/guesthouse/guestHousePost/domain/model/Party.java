@@ -1,6 +1,7 @@
 package guesthouse.guestHousePost.domain.model;
 
 import guesthouse.application.domain.vo.DayOfWeek;
+import guesthouse.guestHousePost.domain.vo.PartyType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,6 +22,9 @@ public class Party {
 
     @Column(nullable = false)
     private Long GuestHousePostId;
+
+    @Column(nullable = false)
+    private PartyType partyType;
 
     @Column(nullable = false)
     private LocalTime startTime;
