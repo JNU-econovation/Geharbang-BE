@@ -23,6 +23,7 @@ public class Party {
     @Column(nullable = false)
     private Long guestHousePostId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PartyType partyType;
 
