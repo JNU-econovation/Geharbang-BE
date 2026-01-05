@@ -13,6 +13,7 @@ import java.util.Set;
 public record PartyWithImageUrlDTO(
         Long guestHousePostId,
         PartyType type,
+        String otherPartyType,
         LocalTime startTime,
         LocalTime endTime,
         Set<DayOfWeek> weeklyDays,
@@ -27,6 +28,7 @@ public record PartyWithImageUrlDTO(
         return PartyWithImageUrlDTO.builder()
                 .guestHousePostId(party.getGuestHousePostId())
                 .type(party.getPartyType())
+                .otherPartyType(party.getOtherPartyType())
                 .startTime(party.getStartTime())
                 .endTime(party.getEndTime())
                 .weeklyDays(party.getWeeklyDays())

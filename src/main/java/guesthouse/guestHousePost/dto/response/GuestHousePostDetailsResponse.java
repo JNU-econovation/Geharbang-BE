@@ -86,6 +86,7 @@ public record GuestHousePostDetailsResponse (
 
     private record Party (
             PartyType type,
+            String otherPartyType,
             LocalTime startTime,
             LocalTime endTime,
             Set<DayOfWeek> weeklyDays,
@@ -101,10 +102,10 @@ public record GuestHousePostDetailsResponse (
                     .stream()
                     .map(dto ->
                             new Party(
-                                dto.type(), dto.startTime(), dto.endTime(),
-                                dto.weeklyDays(), dto.place(), splitBySeparator(dto.moods()),
-                                dto.isExternalGuestAllowed(), dto.guestFee(), dto.externalGuestFee(),
-                                dto.imageUrls()
+                                    dto.type(), dto.otherPartyType(), dto.startTime(),
+                                    dto.endTime(), dto.weeklyDays(), dto.place(),
+                                    splitBySeparator(dto.moods()), dto.isExternalGuestAllowed(), dto.guestFee(),
+                                    dto.externalGuestFee(), dto.imageUrls()
                             )
                     )
                     .toList();
