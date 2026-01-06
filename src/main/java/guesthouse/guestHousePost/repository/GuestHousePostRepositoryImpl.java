@@ -1,4 +1,4 @@
-package guesthouse.guestHousePost.domain.repository;
+package guesthouse.guestHousePost.repository;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -39,9 +39,13 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
                         priceBetween(filter.getLowestRoomPrice(), filter.getHighestRoomPrice()),
                         roomTypeIn(filter.getRoomTypes()),
                         headCountTypeIn(filter.getHeadCountTypes()),
-                        moodIn(filter.getMoods()),
                         partyTypeIn(filter.getPartyTypes()),
+                        moodAllMatch(filter.getMoods()),
                         amenityIn(filter.getAmenities())
+                        )
+                .groupBy(guestHousePost.id)
+                .having(
+                        amenityCountEq(filter.getAmenities())
                 )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -69,11 +73,11 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
         return room.pricePerNight.between(lowestRoomPrice, highestRoomPrice);
     }
 
-    private BooleanExpression moodIn(List<Mood> moods) {
-        if (moods == null || moods.isEmpty()) {
-            return null;
-        }
-        return guestHousePost.moods.any().in(moods);
+    private BooleanExpression moodAllMatch(List<Mood> moods) {
+        if (moods == null || moods.isEmpty()) return null;
+
+        return guestHousePost.moods.size().eq(moods.size())
+                .and(guestHousePost.moods.any().in(moods));
     }
 
     private BooleanExpression roomTypeIn(List<RoomType> roomTypes) {
@@ -102,6 +106,12 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
         return keyword == null ? null : guestHousePost.guestHouseName.contains(keyword);
     }
 
+    private BooleanExpression amenityCountEq(List<String> amenities) {
+        if (amenities == null || amenities.isEmpty()) {
+            return null;
+        }
+        return amenity.value.countDistinct().eq((long) amenities.size());
+    }
 
     private OrderSpecifier<?> orderBy(SortType sortType) {
         return switch (sortType) {
