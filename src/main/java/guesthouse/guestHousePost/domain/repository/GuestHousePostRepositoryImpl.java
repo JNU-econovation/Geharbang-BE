@@ -2,13 +2,10 @@ package guesthouse.guestHousePost.domain.repository;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import guesthouse.guestHousePost.domain.model.GuestHousePost;
-import guesthouse.guestHousePost.domain.vo.Mood;
-import guesthouse.guestHousePost.domain.vo.PartyType;
-import guesthouse.guestHousePost.domain.vo.RoomHeadCount;
-import guesthouse.guestHousePost.domain.vo.RoomType;
-import guesthouse.guestHousePost.domain.vo.GuestHouseFilter;
+import guesthouse.guestHousePost.domain.vo.*;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.staffrecruitment.domain.vo.SortType;
 import lombok.RequiredArgsConstructor;
@@ -123,6 +120,17 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
             case 조회순 -> null;
             case 찜_많은순 -> null;
         };
+    }
+
+
+    @Override
+    public List<GuestHousePost> findRandom(int count, Region region) {
+        return jpaQueryFactory
+                .selectFrom(guestHousePost)
+                .where(guestHousePost.region.eq(region))
+                .orderBy(Expressions.numberTemplate(Double.class, "RAND()").asc())
+                .limit(count)
+                .fetch();
     }
 
 }

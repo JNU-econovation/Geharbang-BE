@@ -1,12 +1,15 @@
 package guesthouse.guestHousePost.domain.service;
 
+import guesthouse.guestHousePost.domain.dto.GuestHousePostDto;
+import guesthouse.guestHousePost.domain.dto.GuestHousePostsResponse;
 import guesthouse.guestHousePost.domain.model.GuestHousePost;
 import guesthouse.guestHousePost.domain.model.GuestHousePostImage;
 import guesthouse.guestHousePost.domain.repository.GuestHousePostImageRepository;
-import guesthouse.guestHousePost.domain.vo.GuestHouseFilter;
-import guesthouse.guestHousePost.domain.dto.GuestHousePostDto;
 import guesthouse.guestHousePost.domain.repository.GuestHousePostRepository;
-import guesthouse.guestHousePost.domain.dto.GuestHousePostsResponse;
+import guesthouse.guestHousePost.domain.tmp.RandomGuestHousePostDto;
+import guesthouse.guestHousePost.domain.tmp.RandomGuestHousePostsResponse;
+import guesthouse.guestHousePost.domain.vo.GuestHouseFilter;
+import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -55,6 +58,19 @@ public class GuestHousePostService {
 
     private boolean isGuest(Long userId) {
         return userId == null;
+    }
+
+    public RandomGuestHousePostsResponse getRandomGuestHousePosts(Region region) {
+        List<GuestHousePost> guestHousePosts = guestHousePostRepository.findRandom(10, region);
+        List<RandomGuestHousePostDto> dtos = guestHousePosts.stream()
+                .map(this::createRandomDto)
+                .toList();
+        return new RandomGuestHousePostsResponse(dtos);
+    }
+
+    private RandomGuestHousePostDto createRandomDto(GuestHousePost guestHousePost) {
+        GuestHousePostImage image = guestHousePostImageRepository.getFirstImageByGuestHousePostId(guestHousePost.getId());
+        return RandomGuestHousePostDto.of(guestHousePost, image.getImageUrl());
     }
 
 }

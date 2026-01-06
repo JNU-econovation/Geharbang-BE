@@ -3,24 +3,27 @@ package guesthouse.guestHousePost.domain.controller;
 import guesthouse.common.annotation.UserId;
 import guesthouse.guestHousePost.domain.dto.GuestHousePostsResponse;
 import guesthouse.guestHousePost.domain.service.GuestHousePostService;
+import guesthouse.guestHousePost.domain.tmp.RandomGuestHousePostsResponse;
 import guesthouse.guestHousePost.domain.vo.*;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.staffrecruitment.domain.vo.SortType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@RequestMapping("/api/v1/guest-houses")
 @RestController
 @RequiredArgsConstructor
 public class GuestHousePostController {
 
     private final GuestHousePostService guestHousePostService;
 
-    @GetMapping("/api/v1/guest-houses")
+    @GetMapping
     public ResponseEntity<GuestHousePostsResponse> getPosts(
             @RequestParam(defaultValue = "최신순") SortType sort,
             @RequestParam(required = false) List<Region> region,
@@ -44,6 +47,12 @@ public class GuestHousePostController {
 
         GuestHousePostsResponse response = guestHousePostService.getGuestHousePosts(userId, pageNumber, guestHouseFilter);
 
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/recommendation")
+    public ResponseEntity<RandomGuestHousePostsResponse> random(@RequestParam Region region) {
+        RandomGuestHousePostsResponse response = guestHousePostService.getRandomGuestHousePosts(region);
         return ResponseEntity.ok(response);
     }
 }
