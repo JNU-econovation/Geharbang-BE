@@ -30,7 +30,7 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
                 .join(room)
                 .on(guestHousePost.id.eq(room.guestHousePostId))
                 .join(party)
-                .on(guestHousePost.id.eq(party.GuestHousePostId))
+                .on(guestHousePost.id.eq(party.guestHousePostId))
                 .join(amenity)
                 .on(guestHousePost.id.eq(amenity.guestHousePostId))
                 .where(
@@ -42,7 +42,7 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
                         partyTypeIn(filter.getPartyTypes()),
                         moodAllMatch(filter.getMoods()),
                         amenityIn(filter.getAmenities())
-                        )
+                )
                 .groupBy(guestHousePost.id)
                 .having(
                         amenityCountEq(filter.getAmenities())
@@ -121,7 +121,6 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
             case 찜_많은순 -> null;
         };
     }
-
 
     @Override
     public List<GuestHousePost> findRandom(int count, Region region) {
