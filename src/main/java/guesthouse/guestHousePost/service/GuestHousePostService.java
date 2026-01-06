@@ -1,12 +1,14 @@
 package guesthouse.guestHousePost.service;
 
 import guesthouse.guestHousePost.domain.model.*;
-import guesthouse.guestHousePost.dto.GuestHousePostDetailsDTO;
-import guesthouse.guestHousePost.dto.PartyWithImageUrlDTO;
-import guesthouse.guestHousePost.dto.RoomWithImageUrlDTO;
+import guesthouse.guestHousePost.domain.vo.GuestHouseFilter;
+import guesthouse.guestHousePost.dto.*;
 import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
 import guesthouse.guestHousePost.repository.*;
+import guesthouse.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,40 @@ public class GuestHousePostService {
     private final PartyImageRepository partyImageRepository;
     private final RoomRepository roomRepository;
     private final RoomImageRepository roomImageRepository;
+    private final WishService wishService;
+
+    @Transactional(readOnly = true)
+    public GuestHousePostsResponse getGuestHousePosts(Long userId, int pageNumber, GuestHouseFilter filter) {
+        Pageable pageable = PageRequest.of(pageNumber, 10);
+
+        List<GuestHousePost> guestHousePosts = guestHousePostRepository.searchByFilter(pageable, filter);
+
+        List<GuestHousePostDto> dtos = guestHousePosts.stream()
+                .map(guestHousePost -> createDto(guestHousePost, userId))
+                .toList();
+
+        return new GuestHousePostsResponse(dtos);
+    }
+
+    private GuestHousePostDto createDto(GuestHousePost guestHousePost, Long userId) {
+        GuestHousePostImage image = guestHousePostImageRepository.getFirstImageByGuestHousePostId(guestHousePost.getId());
+        return GuestHousePostDto.of(
+                guestHousePost,
+                isWished(guestHousePost.getId(), userId),
+                image.getImageUrl()
+        );
+    }
+
+    private Boolean isWished(Long staffRecruitmentId, Long userId) {
+        if (isGuest(userId))
+            return false;
+
+        return wishService.isWished(userId, staffRecruitmentId);
+    }
+
+    private boolean isGuest(Long userId) {
+        return userId == null;
+    }
 
     @Transactional
     public Long create(GuestHouseCreateRequest request, Long userId) {
@@ -77,7 +113,7 @@ public class GuestHousePostService {
     @Transactional(readOnly = true)
     public GuestHousePost getGuestHousePostById(Long guestHousePostId) {
         return guestHousePostRepository.findById(guestHousePostId)
-                .orElseThrow(()-> new IllegalArgumentException("게스트하우스 게시글이 존재하지 않습니다"));
+                .orElseThrow(() -> new IllegalArgumentException("게스트하우스 게시글이 존재하지 않습니다"));
     }
 
     @Transactional(readOnly = true)
