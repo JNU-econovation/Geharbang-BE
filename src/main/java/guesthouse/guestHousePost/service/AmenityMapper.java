@@ -11,11 +11,11 @@ public class AmenityMapper {
     public static List<Amenity> toAmenities(List<String> amenities, Long guestHousePostId) {
         return amenities
                 .stream()
-                .map(value -> createAmenities(value, guestHousePostId))
+                .map(value -> createdAmenities(value, guestHousePostId))
                 .toList();
     }
 
-    private static Amenity createAmenities(String value, Long guestHousePostId) {
+    private static Amenity createdAmenities(String value, Long guestHousePostId) {
         return Amenity.builder()
                 .value(value)
                 .guestHousePostId(guestHousePostId)
