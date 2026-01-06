@@ -1,6 +1,5 @@
 package guesthouse.guestHousePost.repository;
 
-import com.querydsl.core.Fetchable;
 import guesthouse.guestHousePost.domain.model.RoomImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
