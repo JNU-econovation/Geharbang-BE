@@ -1,4 +1,4 @@
-package guesthouse.guestHousePost.domain.dto;
+package guesthouse.guestHousePost.dto;
 
 import java.util.List;
 

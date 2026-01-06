@@ -1,4 +1,4 @@
-package guesthouse.guestHousePost.domain.repository;
+package guesthouse.guestHousePost.repository;
 
 import guesthouse.guestHousePost.domain.model.GuestHousePostImage;
 import org.springframework.data.jpa.repository.JpaRepository;

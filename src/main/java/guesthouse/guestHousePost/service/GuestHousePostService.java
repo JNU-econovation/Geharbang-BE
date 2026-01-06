@@ -1,12 +1,12 @@
-package guesthouse.guestHousePost.domain.service;
+package guesthouse.guestHousePost.service;
 
 import guesthouse.guestHousePost.domain.model.GuestHousePost;
 import guesthouse.guestHousePost.domain.model.GuestHousePostImage;
-import guesthouse.guestHousePost.domain.repository.GuestHousePostImageRepository;
+import guesthouse.guestHousePost.repository.GuestHousePostImageRepository;
 import guesthouse.guestHousePost.domain.vo.GuestHouseFilter;
-import guesthouse.guestHousePost.domain.dto.GuestHousePostDto;
-import guesthouse.guestHousePost.domain.repository.GuestHousePostRepository;
-import guesthouse.guestHousePost.domain.dto.GuestHousePostsResponse;
+import guesthouse.guestHousePost.dto.GuestHousePostDto;
+import guesthouse.guestHousePost.repository.GuestHousePostRepository;
+import guesthouse.guestHousePost.dto.GuestHousePostsResponse;
 import guesthouse.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;

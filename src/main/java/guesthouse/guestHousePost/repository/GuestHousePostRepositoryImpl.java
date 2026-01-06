@@ -1,4 +1,4 @@
-package guesthouse.guestHousePost.domain.repository;
+package guesthouse.guestHousePost.repository;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
