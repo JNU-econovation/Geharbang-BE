@@ -1,0 +1,78 @@
+package guesthouse.guestHousePost.controller;
+
+import guesthouse.common.annotation.UserId;
+import guesthouse.guestHousePost.domain.vo.*;
+import guesthouse.guestHousePost.dto.GuestHousePostDetailsDTO;
+import guesthouse.guestHousePost.dto.GuestHousePostsResponse;
+import guesthouse.guestHousePost.dto.RandomGuestHousePostsResponse;
+import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
+import guesthouse.guestHousePost.dto.response.GuestHouseCreateResponse;
+import guesthouse.guestHousePost.dto.response.GuestHousePostDetailsResponse;
+import guesthouse.guestHousePost.service.GuestHousePostService;
+import guesthouse.staffrecruitment.domain.vo.Region;
+import guesthouse.staffrecruitment.domain.vo.SortType;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RequestMapping("/api/v1/guest-houses")
+@RestController
+@RequiredArgsConstructor
+public class GuestHousePostController {
+
+    private final GuestHousePostService guestHousePostService;
+
+    @GetMapping
+    public ResponseEntity<GuestHousePostsResponse> getPosts(
+            @RequestParam(defaultValue = "최신순") SortType sort,
+            @RequestParam(required = false) List<Region> region,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer lowestRoomPrice,
+            @RequestParam(required = false) Integer highestRoomPrice,
+            @RequestParam(required = false) List<PartyType> partyType,
+            @RequestParam(required = false) List<RoomType> roomType,
+            @RequestParam(required = false) List<RoomHeadCount> headCountType,
+            @RequestParam(required = false) List<String> amenities,
+            @RequestParam(required = false) List<Mood> moods,
+            @RequestParam int pageNumber,
+            @UserId(required = false) Long userId
+    ) {
+
+        GuestHouseFilter guestHouseFilter = new GuestHouseFilter(
+                keyword, sort, lowestRoomPrice,
+                highestRoomPrice, region, roomType,
+                headCountType, moods, partyType, amenities
+        );
+
+        GuestHousePostsResponse response = guestHousePostService.getGuestHousePosts(userId, pageNumber, guestHouseFilter);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/recommendation")
+    public ResponseEntity<RandomGuestHousePostsResponse> random(@RequestParam Region region) {
+        RandomGuestHousePostsResponse response = guestHousePostService.getRandomGuestHousePosts(region);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping
+    public ResponseEntity<GuestHouseCreateResponse> createGuestHousePost(
+            @RequestBody @Valid GuestHouseCreateRequest request,
+            @UserId Long userId
+    ) {
+        Long guestHouseId = guestHousePostService.create(request, userId);
+        return ResponseEntity.ok(new GuestHouseCreateResponse(guestHouseId));
+    }
+
+    @GetMapping("/{guestHousePostId}/details")
+    public ResponseEntity<GuestHousePostDetailsResponse> getGuestHousePostDetails(
+            @PathVariable Long guestHousePostId
+    ) {
+        GuestHousePostDetailsDTO details = guestHousePostService.getDetails(guestHousePostId);
+        return ResponseEntity.ok(GuestHousePostDetailsResponse.from(details));
+
+    }
+}
