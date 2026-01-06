@@ -5,6 +5,7 @@ import guesthouse.guestHousePost.domain.vo.GuestHouseFilter;
 import guesthouse.guestHousePost.dto.*;
 import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
 import guesthouse.guestHousePost.repository.*;
+import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -19,9 +20,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GuestHousePostService {
 
-    private final AmenityRepository amenityRepository;
+
     private final GuestHousePostRepository guestHousePostRepository;
     private final GuestHousePostImageRepository guestHousePostImageRepository;
+    private final AmenityRepository amenityRepository;
     private final PartyRepository partyRepository;
     private final PartyImageRepository partyImageRepository;
     private final RoomRepository roomRepository;
@@ -59,6 +61,19 @@ public class GuestHousePostService {
 
     private boolean isGuest(Long userId) {
         return userId == null;
+    }
+
+    public RandomGuestHousePostsResponse getRandomGuestHousePosts(Region region) {
+        List<GuestHousePost> guestHousePosts = guestHousePostRepository.findRandom(10, region);
+        List<RandomGuestHousePostDto> dtos = guestHousePosts.stream()
+                .map(this::createRandomDto)
+                .toList();
+        return new RandomGuestHousePostsResponse(dtos);
+    }
+
+    private RandomGuestHousePostDto createRandomDto(GuestHousePost guestHousePost) {
+        GuestHousePostImage image = guestHousePostImageRepository.getFirstImageByGuestHousePostId(guestHousePost.getId());
+        return RandomGuestHousePostDto.of(guestHousePost, image.getImageUrl());
     }
 
     @Transactional

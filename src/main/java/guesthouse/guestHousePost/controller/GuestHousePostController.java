@@ -4,6 +4,7 @@ import guesthouse.common.annotation.UserId;
 import guesthouse.guestHousePost.domain.vo.*;
 import guesthouse.guestHousePost.dto.GuestHousePostDetailsDTO;
 import guesthouse.guestHousePost.dto.GuestHousePostsResponse;
+import guesthouse.guestHousePost.dto.RandomGuestHousePostsResponse;
 import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
 import guesthouse.guestHousePost.dto.response.GuestHouseCreateResponse;
 import guesthouse.guestHousePost.dto.response.GuestHousePostDetailsResponse;
@@ -24,13 +25,13 @@ public class GuestHousePostController {
 
     private final GuestHousePostService guestHousePostService;
 
-    @GetMapping("/api/v1/guest-houses")
+    @GetMapping
     public ResponseEntity<GuestHousePostsResponse> getPosts(
             @RequestParam(defaultValue = "최신순") SortType sort,
             @RequestParam(required = false) List<Region> region,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) int lowestRoomPrice,
-            @RequestParam(required = false) int highestRoomPrice,
+            @RequestParam(required = false) Integer lowestRoomPrice,
+            @RequestParam(required = false) Integer highestRoomPrice,
             @RequestParam(required = false) List<PartyType> partyType,
             @RequestParam(required = false) List<RoomType> roomType,
             @RequestParam(required = false) List<RoomHeadCount> headCountType,
@@ -51,6 +52,12 @@ public class GuestHousePostController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/recommendation")
+    public ResponseEntity<RandomGuestHousePostsResponse> random(@RequestParam Region region) {
+        RandomGuestHousePostsResponse response = guestHousePostService.getRandomGuestHousePosts(region);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping
     public ResponseEntity<GuestHouseCreateResponse> createGuestHousePost(
             @RequestBody @Valid GuestHouseCreateRequest request,
@@ -66,5 +73,6 @@ public class GuestHousePostController {
     ) {
         GuestHousePostDetailsDTO details = guestHousePostService.getDetails(guestHousePostId);
         return ResponseEntity.ok(GuestHousePostDetailsResponse.from(details));
+
     }
 }
