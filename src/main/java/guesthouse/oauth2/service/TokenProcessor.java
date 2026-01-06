@@ -82,7 +82,7 @@ public final class TokenProcessor {
         } catch (ExpiredJwtException e) {
             throw new AuthenticationException(AuthErrorCode.TOKEN_EXPIRED);
         } catch (JwtException e) {
-            throw new AuthenticationException(AuthErrorCode.INVALID_TOKEN);
+            throw new AuthenticationException(AuthErrorCode.INVALID_TOKEN, e);
         }
     }
 
