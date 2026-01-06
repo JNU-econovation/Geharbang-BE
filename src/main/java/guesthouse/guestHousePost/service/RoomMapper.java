@@ -14,7 +14,7 @@ public class RoomMapper {
                 .type(room.type())
                 .headCount(room.headCountType())
                 .checkInTime(room.checkInTime())
-                .checkOutTime(room.checkInTime())
+                .checkOutTime(room.checkOutTime())
                 .pricePerNight(room.pricePerNight())
                 .build();
     }
