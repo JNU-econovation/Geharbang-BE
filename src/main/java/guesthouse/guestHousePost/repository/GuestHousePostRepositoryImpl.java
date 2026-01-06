@@ -33,7 +33,7 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
                 .join(room)
                 .on(guestHousePost.id.eq(room.guestHousePostId))
                 .join(party)
-                .on(guestHousePost.id.eq(party.GuestHousePostId))
+                .on(guestHousePost.id.eq(party.guestHousePostId))
                 .join(amenity)
                 .on(guestHousePost.id.eq(amenity.guestHousePostId))
                 .where(

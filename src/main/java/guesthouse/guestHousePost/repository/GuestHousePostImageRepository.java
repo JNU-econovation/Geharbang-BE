@@ -4,6 +4,8 @@ import guesthouse.guestHousePost.domain.model.GuestHousePostImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface GuestHousePostImageRepository extends JpaRepository<GuestHousePostImage, Long> {
 
@@ -12,5 +14,7 @@ public interface GuestHousePostImageRepository extends JpaRepository<GuestHouseP
     }
 
     GuestHousePostImage findByGuestHousePostIdAndIndex(Long staffRecruitmentId, int index);
+
+    List<GuestHousePostImage> findByGuestHousePostId(Long guestHousePostId);
 
 }

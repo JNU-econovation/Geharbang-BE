@@ -1,6 +1,6 @@
 package guesthouse.guestHousePost.domain.model;
 
-import guesthouse.application.domain.vo.DayOfWeek;
+import guesthouse.guestHousePost.domain.vo.DayOfWeek;
 import guesthouse.guestHousePost.domain.vo.PartyType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,10 +21,13 @@ public class Party {
     private Long id;
 
     @Column(nullable = false)
-    private Long GuestHousePostId;
+    private Long guestHousePostId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PartyType partyType;
+
+    private String otherPartyType;
 
     @Column(nullable = false)
     private LocalTime startTime;
@@ -53,7 +56,6 @@ public class Party {
     @Column(nullable = false)
     private Long guestFee;
 
-    @Column(nullable = false)
     private Long externalGuestFee;
 
     @Column(columnDefinition = "TEXT")
