@@ -51,6 +51,5 @@ public class GuestHousePost {
     @Embedded
     private Contact contact;
 
-    @Column(nullable = false)
     private String ownerMessage;
 }
