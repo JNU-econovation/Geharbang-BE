@@ -24,6 +24,7 @@ public record GuestHousePostDetailsResponse (
         String introduction,
         List<String> amenities,
         Set<Mood> moods,
+        List<String> imageUrls,
         List<Party> parties,
         Contact contact,
         String ownerMessage
@@ -40,6 +41,7 @@ public record GuestHousePostDetailsResponse (
                 .introduction(details.introduction())
                 .amenities(getAmenityValues(details.amenities()))
                 .moods(details.moods())
+                .imageUrls(details.imageUrls())
                 .parties(Party.from(details.parties()))
                 .contact(details.contact())
                 .ownerMessage(details.ownerMessage())

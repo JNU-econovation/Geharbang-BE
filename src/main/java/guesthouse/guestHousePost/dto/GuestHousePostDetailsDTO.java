@@ -20,6 +20,7 @@ public record GuestHousePostDetailsDTO (
         Point coordinates,
         String introduction,
         Set<Mood> moods,
+        List<String> imageUrls,
         Contact contact,
         String ownerMessage,
         List<Amenity> amenities,
@@ -27,7 +28,7 @@ public record GuestHousePostDetailsDTO (
         List<RoomWithImageUrlDTO> rooms
 ){
 
-    public static GuestHousePostDetailsDTO from(GuestHousePost guestHousePost, List<String> images, List<Amenity> amenities,
+    public static GuestHousePostDetailsDTO from(GuestHousePost guestHousePost, List<String> imageUrls, List<Amenity> amenities,
                                                 List<PartyWithImageUrlDTO> parties, List<RoomWithImageUrlDTO> rooms) {
         return GuestHousePostDetailsDTO.builder()
                 .guestHouseName(guestHousePost.getGuestHouseName())
@@ -37,6 +38,7 @@ public record GuestHousePostDetailsDTO (
                 .coordinates(guestHousePost.getCoordinates())
                 .introduction(guestHousePost.getIntroduction())
                 .moods(guestHousePost.getMoods())
+                .imageUrls(imageUrls)
                 .contact(guestHousePost.getContact())
                 .ownerMessage(guestHousePost.getOwnerMessage())
                 .amenities(amenities)

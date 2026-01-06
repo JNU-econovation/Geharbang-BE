@@ -66,12 +66,12 @@ public class GuestHousePostService {
     @Transactional(readOnly = true)
     public GuestHousePostDetailsDTO getDetails(Long guestHousePostId) {
         GuestHousePost guestHousePost = getGuestHousePostById(guestHousePostId);
-        List<String> images = getGuestHousePostImageUrlsByPostId(guestHousePostId);
+        List<String> imageUrls = getGuestHousePostImageUrlsByPostId(guestHousePostId);
         List<Amenity> amenities = getAmenitiesByPostId(guestHousePostId);
         List<PartyWithImageUrlDTO> parties = getPartiesWithImageUrlByPostId(guestHousePostId);
         List<RoomWithImageUrlDTO> rooms = getRoomsWithImageUrlByPostId(guestHousePostId);
 
-        return GuestHousePostDetailsDTO.from(guestHousePost, images, amenities, parties, rooms);
+        return GuestHousePostDetailsDTO.from(guestHousePost, imageUrls, amenities, parties, rooms);
     }
 
     @Transactional(readOnly = true)
