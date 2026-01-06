@@ -1,7 +1,8 @@
 package guesthouse.common.annotation.resolver;
 
 import guesthouse.common.annotation.UserId;
-import guesthouse.oauth2.exception.AuthenticationFailException;
+import guesthouse.oauth2.exception.AuthErrorCode;
+import guesthouse.oauth2.exception.AuthenticationException;
 import guesthouse.oauth2.service.TokenProcessor;
 import guesthouse.user.exception.UserException;
 import guesthouse.user.repository.UserRepository;
@@ -36,7 +37,7 @@ public class UserIdResolver implements HandlerMethodArgumentResolver {
 
         if (!hasToken(header)) {
             if (isUserIdRequired(parameter)) //required가 true인데 토큰이 없으면 예외
-                throw new AuthenticationFailException();
+                throw new AuthenticationException(AuthErrorCode.LOGIN_REQUIRED);
             return null; //required가 false이면서 토큰이 없으면 null 반환
         }
 
@@ -58,7 +59,7 @@ public class UserIdResolver implements HandlerMethodArgumentResolver {
 
     private String extractToken(String header) {
         if (!header.startsWith(AUTH_TOKEN_HEADER)) {
-            throw new AuthenticationFailException();
+            throw new AuthenticationException(AuthErrorCode.INVALID_AUTH_HEADER);
         }
         return header.substring(AUTH_TOKEN_HEADER.length());
     }
