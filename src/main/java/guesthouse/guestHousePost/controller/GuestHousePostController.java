@@ -1,10 +1,10 @@
-package guesthouse.guestHousePost.domain.controller;
+package guesthouse.guestHousePost.controller;
 
 import guesthouse.common.annotation.UserId;
-import guesthouse.guestHousePost.domain.dto.GuestHousePostsResponse;
-import guesthouse.guestHousePost.domain.service.GuestHousePostService;
-import guesthouse.guestHousePost.domain.tmp.RandomGuestHousePostsResponse;
+import guesthouse.guestHousePost.dto.GuestHousePostsResponse;
+import guesthouse.guestHousePost.dto.RandomGuestHousePostsResponse;
 import guesthouse.guestHousePost.domain.vo.*;
+import guesthouse.guestHousePost.service.GuestHousePostService;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.staffrecruitment.domain.vo.SortType;
 import lombok.RequiredArgsConstructor;

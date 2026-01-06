@@ -1,4 +1,4 @@
-package guesthouse.guestHousePost.domain.tmp;
+package guesthouse.guestHousePost.dto;
 
 import guesthouse.guestHousePost.domain.model.GuestHousePost;
 import lombok.Builder;

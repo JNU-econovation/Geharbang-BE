@@ -1,14 +1,15 @@
-package guesthouse.guestHousePost.domain.service;
+package guesthouse.guestHousePost.service;
 
-import guesthouse.guestHousePost.domain.dto.GuestHousePostDto;
-import guesthouse.guestHousePost.domain.dto.GuestHousePostsResponse;
+
 import guesthouse.guestHousePost.domain.model.GuestHousePost;
 import guesthouse.guestHousePost.domain.model.GuestHousePostImage;
-import guesthouse.guestHousePost.domain.repository.GuestHousePostImageRepository;
-import guesthouse.guestHousePost.domain.repository.GuestHousePostRepository;
-import guesthouse.guestHousePost.domain.tmp.RandomGuestHousePostDto;
-import guesthouse.guestHousePost.domain.tmp.RandomGuestHousePostsResponse;
+import guesthouse.guestHousePost.dto.GuestHousePostDto;
+import guesthouse.guestHousePost.dto.GuestHousePostsResponse;
+import guesthouse.guestHousePost.dto.RandomGuestHousePostDto;
+import guesthouse.guestHousePost.dto.RandomGuestHousePostsResponse;
 import guesthouse.guestHousePost.domain.vo.GuestHouseFilter;
+import guesthouse.guestHousePost.repository.GuestHousePostImageRepository;
+import guesthouse.guestHousePost.repository.GuestHousePostRepository;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
