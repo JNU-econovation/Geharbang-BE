@@ -51,7 +51,5 @@ public class StaffRecruitment extends TimeEntity {
     private Contact contact;
 
     private String ownerMessage;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
 }

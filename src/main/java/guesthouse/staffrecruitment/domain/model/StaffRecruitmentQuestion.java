@@ -1,5 +1,6 @@
 package guesthouse.staffrecruitment.domain.model;
 
+import guesthouse.common.domain.TimeEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class StaffRecruitmentQuestion {
+public class StaffRecruitmentQuestion extends TimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -1,5 +1,6 @@
 package guesthouse.staffrecruitment.domain.model;
 
+import guesthouse.common.domain.TimeEntity;
 import guesthouse.staffrecruitment.domain.vo.WorkScheduleType;
 import guesthouse.staffrecruitment.domain.vo.WorkType;
 import jakarta.persistence.*;
@@ -12,7 +13,7 @@ import java.time.LocalTime;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class StaffRecruitmentJob {
+public class StaffRecruitmentJob extends TimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
