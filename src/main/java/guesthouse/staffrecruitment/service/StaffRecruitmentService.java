@@ -12,6 +12,8 @@ import guesthouse.staffrecruitment.dto.request.StaffRecruitmentCreateRequest;
 import guesthouse.staffrecruitment.dto.response.QuestionResponse;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostDto;
 import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
+import guesthouse.staffrecruitment.exception.StaffRecruitmentErrorCode;
+import guesthouse.staffrecruitment.exception.StaffRecruitmentException;
 import guesthouse.staffrecruitment.random.RandomStaffRecruitmentPostDto;
 import guesthouse.staffrecruitment.random.RandomStaffRecruitmentPostsResponse;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentImageRepository;
@@ -66,7 +68,7 @@ public class StaffRecruitmentService {
     @Transactional(readOnly = true)
     public StaffRecruitment getStaffRecruitmentById(Long id) {
         return staffRecruitmentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("스태프 모집글이 존재하지 않습니다"));
+                .orElseThrow(() -> new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
@@ -131,7 +133,7 @@ public class StaffRecruitmentService {
 
     public StaffRecruitmentQuestion getStaffRecruitmentQuestion(Long staffRecruitmentQuestionId, Long staffRecruitmentId) {
         return staffRecruitmentQuestionsRepository.findByIdAndStaffRecruitmentId(staffRecruitmentQuestionId, staffRecruitmentId)
-                .orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다"));
+                .orElseThrow(() -> new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND_QUESTION));
     }
 
     public Boolean hasQuestion(Long recruitmentId) {
