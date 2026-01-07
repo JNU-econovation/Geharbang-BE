@@ -1,6 +1,5 @@
 package guesthouse.user.domain.vo;
 
-import guesthouse.application.exception.GenderNotMatchedException;
 import guesthouse.user.exception.UserErrorCode;
 import guesthouse.user.exception.UserException;
 import lombok.AllArgsConstructor;
