@@ -23,11 +23,6 @@ public class UserService {
                 .orElseThrow(() -> new UserException(UserErrorCode.NOT_FOUND));
     }
 
-    @Transactional
-    public User createEmptyUser() {
-        return userRepository.save(new User());
-    }
-
     public void updatePersonalInfo(String name,
                                    String phoneNumber,
                                    LocalDate birthDate,
