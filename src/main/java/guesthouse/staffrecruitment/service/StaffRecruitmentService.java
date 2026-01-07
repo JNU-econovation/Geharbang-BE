@@ -43,7 +43,7 @@ public class StaffRecruitmentService {
     private final UserService userService;
 
 
-    @Transactional(readOnly = true)
+    @Transactional
     public StaffRecruitmentDetailsDTO getDetails(Long id, Long userId) {
         StaffRecruitment recruitment = getStaffRecruitmentById(id);
         List<StaffRecruitmentJob> jobs = getJobsByRecruitmentId(id);
@@ -51,6 +51,7 @@ public class StaffRecruitmentService {
         List<String> contentImages = getContentImageUrls(id);
         Boolean isWished = isWished(id, userId);
 
+        recruitment.plusViewCount();
         return StaffRecruitmentDetailsDTO.from(recruitment, jobs, representativeImages, contentImages, isWished);
     }
 
