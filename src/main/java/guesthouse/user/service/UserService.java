@@ -2,6 +2,7 @@ package guesthouse.user.service;
 
 import guesthouse.user.domain.model.User;
 import guesthouse.user.domain.vo.Gender;
+import guesthouse.user.exception.UserErrorCode;
 import guesthouse.user.exception.UserException;
 import guesthouse.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public User findById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(UserException::new);
+                .orElseThrow(() -> new UserException(UserErrorCode.NOT_FOUND));
     }
 
     @Transactional
