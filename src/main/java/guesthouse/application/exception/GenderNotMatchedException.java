@@ -1,4 +1,6 @@
 package guesthouse.application.exception;
 
-public class GenderNotMatchedException extends IllegalArgumentException{
+import guesthouse.common.exception.GuestHouseException;
+
+public class GenderNotMatchedException extends GuestHouseException {
 }

@@ -9,7 +9,7 @@ public enum AuthErrorCode implements ErrorCode {
     TOKEN_EXPIRED("토큰이 만료되었습니다."),
     INVALID_TOKEN_SUBJECT("토큰의 용도가 올바르지 않습니다"),
     INVALID_TOKEN("유효하지 않는 토큰입니다."),
-    ;
+    GOOGLE_TOKEN_PARSE_FAILED("구글 토큰 파싱에 실패하였습니다.", 500);
 
     private final String message;
     private final int statusCode;
