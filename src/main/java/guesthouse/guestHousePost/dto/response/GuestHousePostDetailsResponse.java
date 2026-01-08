@@ -97,6 +97,7 @@ public record GuestHousePostDetailsResponse (
             Boolean isExternalGuestAllowed,
             Long guestFee,
             Long externalGuestFee,
+            String information,
             List<String> imageUrls
     ){
         public static List<Party> from(List<PartyWithImageUrlDTO> parties) {
@@ -107,7 +108,7 @@ public record GuestHousePostDetailsResponse (
                                     dto.type(), dto.otherPartyType(), dto.startTime(),
                                     dto.endTime(), dto.weeklyDays(), dto.place(),
                                     splitBySeparator(dto.moods()), dto.isExternalGuestAllowed(), dto.guestFee(),
-                                    dto.externalGuestFee(), dto.imageUrls()
+                                    dto.externalGuestFee(), dto.information(), dto.imageUrls()
                             )
                     )
                     .toList();
