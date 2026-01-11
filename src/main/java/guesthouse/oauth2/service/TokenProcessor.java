@@ -1,6 +1,7 @@
 package guesthouse.oauth2.service;
 
-import guesthouse.oauth2.exception.AuthenticationFailException;
+import guesthouse.oauth2.exception.AuthErrorCode;
+import guesthouse.oauth2.exception.AuthenticationException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -73,15 +74,15 @@ public final class TokenProcessor {
                     .parseSignedClaims(token)
                     .getPayload();
             if (!payload.getSubject().equals(subject)) {
-                throw new AuthenticationFailException();
+                throw new AuthenticationException(AuthErrorCode.INVALID_TOKEN_SUBJECT);
             }
             String userId = payload
                     .get(CLAIM_KEY_USER_ID, String.class);
             return Long.valueOf(userId);
         } catch (ExpiredJwtException e) {
-            throw new AuthenticationFailException();
+            throw new AuthenticationException(AuthErrorCode.TOKEN_EXPIRED);
         } catch (JwtException e) {
-            throw new AuthenticationFailException();
+            throw new AuthenticationException(AuthErrorCode.INVALID_TOKEN, e);
         }
     }
 
