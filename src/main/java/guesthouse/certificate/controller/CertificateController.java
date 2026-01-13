@@ -6,9 +6,8 @@ import guesthouse.common.annotation.UserId;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @RestController
@@ -21,4 +20,18 @@ public class CertificateController {
         certificateService.submitCertificate(request, userId);
         return ResponseEntity.ok().build();
     }
+
+
+    @PostMapping("/api/v1/certificate/file-upload")
+    public ResponseEntity<FileUploadedResponse> uploadFile(
+            @RequestParam MultipartFile file,
+            @RequestPart("fileType") String fileType,
+            @RequestPart("fileName") String fileName,
+            @UserId Long userId
+    ) {
+        String fileUrl = certificateService.uploadFile(file, fileType, fileName, userId);
+        return ResponseEntity.ok().body(new FileUploadedResponse(fileUrl));
+    }
+
+
 }
