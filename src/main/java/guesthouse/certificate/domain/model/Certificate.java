@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import static guesthouse.certificate.service.CertificateService.URL_PREFIX;
+
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -33,9 +35,6 @@ public class Certificate extends TimeEntity {
     private String fileUrl;
 
     @Column(nullable = false)
-    private String fileName;
-
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
 
@@ -47,7 +46,7 @@ public class Certificate extends TimeEntity {
     public Certificate(
             String ownerName, String guestHouseName, String phoneNumber,
             String fileUrl, CertificateType certificateType,
-            Long userId, String fileName
+            Long userId
     ) {
         this.ownerName = ownerName;
         this.guestHouseName = guestHouseName;
@@ -56,6 +55,9 @@ public class Certificate extends TimeEntity {
         this.certificateType = certificateType;
         this.status = Status.검토_대기;
         this.userId = userId;
-        this.fileName = fileName;
+    }
+
+    public String getFileName() {
+        return fileUrl.substring(URL_PREFIX.length() + 8, fileUrl.length());
     }
 }

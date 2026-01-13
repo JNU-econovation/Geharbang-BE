@@ -24,7 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CertificateService {
 
-    private static final String URL_PREFIX = "/files/certifications/";
+    public static final String URL_PREFIX = "/files/certifications/";
     private static final Set<String> ALLOWED_FILE_TYPES =
             Set.of("jpeg", "jpg", "pdf", "png");
 
