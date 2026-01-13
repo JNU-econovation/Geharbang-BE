@@ -1,6 +1,7 @@
 package guesthouse.user.domain.vo;
 
-import guesthouse.application.exception.GenderNotMatchedException;
+import guesthouse.user.exception.UserErrorCode;
+import guesthouse.user.exception.UserException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -19,6 +20,6 @@ public enum Gender {
             }
         }
 
-        throw new GenderNotMatchedException();
+        throw new UserException(UserErrorCode.INVALID_GENDER);
     }
 }

@@ -1,5 +1,6 @@
 package guesthouse.staffrecruitment.domain.model;
 
+import guesthouse.common.domain.TimeEntity;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentImageType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,7 +10,7 @@ import lombok.*;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class StaffRecruitmentImage {
+public class StaffRecruitmentImage extends TimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

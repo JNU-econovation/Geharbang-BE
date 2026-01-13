@@ -1,5 +1,6 @@
 package guesthouse.user.domain.model;
 
+import guesthouse.common.domain.TimeEntity;
 import guesthouse.user.domain.vo.Gender;
 import guesthouse.user.domain.vo.PersonalInfo;
 import jakarta.persistence.*;
@@ -10,7 +11,7 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @Table(name = "uuser")
-public class User {
+public class User extends TimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

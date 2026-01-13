@@ -1,6 +1,5 @@
 package guesthouse.staffrecruitment.domain.vo;
 
-import guesthouse.application.exception.GenderNotMatchedException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

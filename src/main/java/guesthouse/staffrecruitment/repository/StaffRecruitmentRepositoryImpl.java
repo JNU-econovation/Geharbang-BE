@@ -14,6 +14,7 @@ import java.util.List;
 
 import static guesthouse.staffrecruitment.domain.model.QStaffRecruitment.staffRecruitment;
 import static guesthouse.staffrecruitment.domain.model.QStaffRecruitmentJob.staffRecruitmentJob;
+import static guesthouse.staffrecruitment.domain.vo.SortType.*;
 
 
 @RequiredArgsConstructor
@@ -37,6 +38,7 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
                         workScheduleIn(filter.getWorkScheduleType()),
                         keywordContains(filter.getKeyword())
                 )
+                .orderBy(orderBy(filter.getSortType()))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -91,9 +93,8 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
 
     private OrderSpecifier<?> orderBy(SortType sortType) {
         return switch (sortType) {
-            //조인 필요
-            case SortType.최신순 -> staffRecruitment.createdAt.desc();
-            case 조회순 -> null;
+            case 최신순 -> staffRecruitment.createdAt.desc();
+            case 조회순 -> staffRecruitment.viewCount.desc();
             case 찜_많은순 -> null;
         };
     }
@@ -105,7 +106,7 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
                 .selectFrom(staffRecruitment)
                 .where(staffRecruitment.region.eq(region))
                 .orderBy(Expressions.numberTemplate(Double.class, "RAND()").asc())
-                .limit(10)
+                .limit(count)
                 .fetch();
     }
 }

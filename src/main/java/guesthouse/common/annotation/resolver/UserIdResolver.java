@@ -4,6 +4,7 @@ import guesthouse.common.annotation.UserId;
 import guesthouse.oauth2.exception.AuthErrorCode;
 import guesthouse.oauth2.exception.AuthenticationException;
 import guesthouse.oauth2.service.TokenProcessor;
+import guesthouse.user.exception.UserErrorCode;
 import guesthouse.user.exception.UserException;
 import guesthouse.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,7 @@ public class UserIdResolver implements HandlerMethodArgumentResolver {
         String token = extractToken(header);
         Long userId = tokenProcessor.parseAccessToken(token);
         userRepository.findById(userId)
-                .orElseThrow(() -> new UserException());
+                .orElseThrow(() -> new UserException(UserErrorCode.NOT_FOUND));
         return userId;
     }
 

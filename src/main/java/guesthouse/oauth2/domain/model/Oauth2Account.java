@@ -1,5 +1,6 @@
 package guesthouse.oauth2.domain.model;
 
+import guesthouse.common.domain.TimeEntity;
 import guesthouse.oauth2.domain.vo.Provider;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Oauth2Account {
+public class Oauth2Account extends TimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

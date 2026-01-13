@@ -1,6 +1,7 @@
 package guesthouse.staffrecruitment.dto.request;
 
 import guesthouse.staffrecruitment.domain.vo.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -24,6 +25,7 @@ public record StaffRecruitmentCreateRequest(
         @NotNull
         Region region,
 
+        @Valid
         @NotNull
         Location location,
 
@@ -31,12 +33,15 @@ public record StaffRecruitmentCreateRequest(
         @Size(min = 1, max = 10)
         List<String> representativeImageUrls,
 
+        @Valid
         @NotNull
         WorkingInformation workingInformation,
 
+        @Valid
         @NotNull
         Feature feature,
 
+        @Valid
         @NotNull
         Introduction introduction,
 
@@ -56,6 +61,7 @@ public record StaffRecruitmentCreateRequest(
 
             String roadNameAddress,
 
+            @NotNull
             @Size(min = 2, max = 2)
             List<Double> coordinates
     ) {
@@ -127,8 +133,6 @@ public record StaffRecruitmentCreateRequest(
             String phoneNumber,
 
             String instagramId,
-
-            String email,
 
             String webSite
     ) {

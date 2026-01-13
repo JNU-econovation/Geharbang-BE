@@ -27,11 +27,11 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
     public List<GuestHousePost> searchByFilter(Pageable pageable, GuestHouseFilter filter) {
         return jpaQueryFactory.selectDistinct(guestHousePost)
                 .from(guestHousePost)
-                .join(room)
+                .leftJoin(room)
                 .on(guestHousePost.id.eq(room.guestHousePostId))
-                .join(party)
+                .leftJoin(party)
                 .on(guestHousePost.id.eq(party.guestHousePostId))
-                .join(amenity)
+                .leftJoin(amenity)
                 .on(guestHousePost.id.eq(amenity.guestHousePostId))
                 .where(
                         regionIn(filter.getRegions()),
@@ -74,10 +74,13 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
     }
 
     private BooleanExpression moodAllMatch(List<Mood> moods) {
-        if (moods == null || moods.isEmpty()) return null;
+        if (moods == null || moods.isEmpty()) {
+            return null;
+        }
 
-        return guestHousePost.moods.size().eq(moods.size())
-                .and(guestHousePost.moods.any().in(moods));
+        return Expressions.allOf(moods.stream()
+                .map(m -> guestHousePost.moods.contains(m))
+                .toArray(BooleanExpression[]::new));
     }
 
     private BooleanExpression roomTypeIn(List<RoomType> roomTypes) {

@@ -1,5 +1,7 @@
 package guesthouse.user.domain.vo;
 
+import guesthouse.user.exception.UserErrorCode;
+import guesthouse.user.exception.UserException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
@@ -13,10 +15,6 @@ import java.time.LocalDate;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PersonalInfo {
-    private static final String NAME_REQUIRED_MESSAGE = "유저 이름은 null이거나 비어있을 수 없습니다";
-    private static final String PHONE_NUMBER_REQUIRED_MESSAGE = "휴대폰 번호는 null이거나 비어있을 수 없습니다";
-    private static final String BIRTH_DATE_REQUIRED_MESSAGE = "출생년도는 null일 수 없습니다";
-    private static final String GENDER_REQUIRED_MESSAGE = "성별은 null일 수 없습니다";
 
     private String name;
 
@@ -41,25 +39,25 @@ public class PersonalInfo {
 
     private void validateName(String name) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException(NAME_REQUIRED_MESSAGE);
+            throw new UserException(UserErrorCode.NAME_REQUIRED);
         }
     }
 
     private void validatePhoneNumber(String phoneNumber) {
         if (phoneNumber == null || phoneNumber.isBlank()) {
-            throw new IllegalArgumentException(PHONE_NUMBER_REQUIRED_MESSAGE);
+            throw new UserException(UserErrorCode.PHONE_NUMBER_REQUIRED);
         }
     }
 
     private void validateBirthDate(LocalDate birthDate) {
         if (birthDate == null) {
-            throw new IllegalArgumentException(BIRTH_DATE_REQUIRED_MESSAGE);
+            throw new UserException(UserErrorCode.BIRTH_DATE_REQUIRED);
         }
     }
 
     private void validateGender(Gender gender) {
         if (gender == null) {
-            throw new IllegalArgumentException(GENDER_REQUIRED_MESSAGE);
+            throw new UserException(UserErrorCode.GENDER_REQUIRED);
         }
     }
 }

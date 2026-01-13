@@ -3,6 +3,8 @@ package guesthouse.oauth2.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import guesthouse.oauth2.exception.AuthErrorCode;
+import guesthouse.oauth2.exception.AuthenticationException;
 import guesthouse.oauth2.service.dto.GoogleTokenResponse;
 import guesthouse.oauth2.service.dto.GoogleUserInfo;
 import lombok.RequiredArgsConstructor;
@@ -102,7 +104,7 @@ public class GoogleOAuth2Service {
         try {
             payload = OBJECT_MAPPER.readValue(payloadJson, Map.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("구글 토큰 페이로드 파싱 에러", e);
+            throw new AuthenticationException(AuthErrorCode.GOOGLE_TOKEN_PARSE_FAILED, e);
         }
         return payload;
     }

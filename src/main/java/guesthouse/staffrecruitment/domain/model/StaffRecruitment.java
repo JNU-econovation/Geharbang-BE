@@ -8,7 +8,6 @@ import lombok.*;
 import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Builder
 @Getter
@@ -51,7 +50,11 @@ public class StaffRecruitment extends TimeEntity {
     private Contact contact;
 
     private String ownerMessage;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
+    @Column(nullable = false)
+    private int viewCount;
+
+    public void plusViewCount() {
+        this.viewCount += 1;
+    }
 }
