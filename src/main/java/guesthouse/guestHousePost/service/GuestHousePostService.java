@@ -4,6 +4,8 @@ import guesthouse.guestHousePost.domain.model.*;
 import guesthouse.guestHousePost.domain.vo.GuestHouseFilter;
 import guesthouse.guestHousePost.dto.*;
 import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
+import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostDto;
+import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostsResponse;
 import guesthouse.guestHousePost.repository.*;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.wish.service.WishService;
@@ -185,6 +187,16 @@ public class GuestHousePostService {
                 .sorted(Comparator.comparing(RoomImage::getIndex))
                 .map(RoomImage::getImageUrl)
                 .toList();
+    }
+
+    public OwnerGuestHousePostsResponse getOwnGuestHousePosts(Long userId) {
+        List<GuestHousePost> guestHousePosts = guestHousePostRepository.findByOwnerId(userId);
+        List<String> imageUrls = guestHousePosts.stream()
+                .map(p -> guestHousePostImageRepository.getFirstImageByGuestHousePostId(p.getId()))
+                .map(i -> i.getImageUrl())
+                .toList();
+        List<OwnerGuestHousePostDto> dtos = OwnerGuestHousePostDto.of(guestHousePosts, imageUrls);
+        return new OwnerGuestHousePostsResponse(dtos);
     }
 
 }
