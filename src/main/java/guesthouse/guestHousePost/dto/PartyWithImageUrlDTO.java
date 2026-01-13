@@ -22,6 +22,7 @@ public record PartyWithImageUrlDTO(
         Boolean isExternalGuestAllowed,
         Long guestFee,
         Long externalGuestFee,
+        String information,
         List<String> imageUrls
 ) {
     public static PartyWithImageUrlDTO from(Party party, List<String> imageUrls) {
@@ -37,6 +38,7 @@ public record PartyWithImageUrlDTO(
                 .isExternalGuestAllowed(party.getIsExternalGuestAllowed())
                 .guestFee(party.getGuestFee())
                 .externalGuestFee(party.getExternalGuestFee())
+                .information(party.getInformation())
                 .imageUrls(imageUrls)
                 .build();
     }
