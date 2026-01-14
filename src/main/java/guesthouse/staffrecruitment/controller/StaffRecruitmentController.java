@@ -1,13 +1,11 @@
 package guesthouse.staffrecruitment.controller;
 
 import guesthouse.common.annotation.UserId;
+import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostsResponse;
 import guesthouse.staffrecruitment.domain.vo.*;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
 import guesthouse.staffrecruitment.dto.request.StaffRecruitmentCreateRequest;
-import guesthouse.staffrecruitment.dto.response.QuestionResponse;
-import guesthouse.staffrecruitment.dto.response.StaffRecruitmentDetailsResponse;
-import guesthouse.staffrecruitment.dto.response.StaffRecruitmentIdResponse;
-import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
+import guesthouse.staffrecruitment.dto.response.*;
 import guesthouse.staffrecruitment.random.RandomStaffRecruitmentPostsResponse;
 import guesthouse.staffrecruitment.service.StaffRecruitmentService;
 import jakarta.validation.Valid;
@@ -77,6 +75,12 @@ public class StaffRecruitmentController {
     ) {
         Long staffRecruitmentId = staffRecruitmentService.createStaffRecruitment(userId, request);
         return ResponseEntity.ok(new StaffRecruitmentIdResponse(staffRecruitmentId));
+    }
+
+    @GetMapping("/owner")
+    public ResponseEntity<OwnerStaffRecruitmentPostsResponse> getOwnStaffRecruitmentPosts(@UserId Long userId) {
+        OwnerStaffRecruitmentPostsResponse response = staffRecruitmentService.getOwnStaffRecruitmentPosts(userId);
+        return ResponseEntity.ok(response);
     }
 
 }

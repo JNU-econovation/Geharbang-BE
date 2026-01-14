@@ -22,6 +22,9 @@ public class GuestHousePost {
     private Long id;
 
     @Column(nullable = false)
+    private Long ownerId;
+
+    @Column(nullable = false)
     private String guestHouseName;
 
     @Enumerated(EnumType.STRING)

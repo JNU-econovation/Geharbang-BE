@@ -9,9 +9,7 @@ import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentFilter;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentImageType;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
 import guesthouse.staffrecruitment.dto.request.StaffRecruitmentCreateRequest;
-import guesthouse.staffrecruitment.dto.response.QuestionResponse;
-import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostDto;
-import guesthouse.staffrecruitment.dto.response.StaffRecruitmentPostsResponse;
+import guesthouse.staffrecruitment.dto.response.*;
 import guesthouse.staffrecruitment.exception.StaffRecruitmentErrorCode;
 import guesthouse.staffrecruitment.exception.StaffRecruitmentException;
 import guesthouse.staffrecruitment.random.RandomStaffRecruitmentPostDto;
@@ -31,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class StaffRecruitmentService {
@@ -170,4 +169,16 @@ public class StaffRecruitmentService {
 
         return staffRecruitment.getId();
     }
+
+    public OwnerStaffRecruitmentPostsResponse getOwnStaffRecruitmentPosts(Long userId) {
+        List<StaffRecruitment> staffRecruitments = staffRecruitmentRepository.findByOwnerId(userId);
+        List<String> imageUrls = staffRecruitments.stream()
+                .map(s -> staffRecruitmentImageRepository.getRepresentativeImageByStaffRecruitmentId(s.getId()))
+                .map(StaffRecruitmentImage::getImageUrl)
+                .toList();
+        List<OwnerStaffRecruitmentPostDto> dtos = OwnerStaffRecruitmentPostDto.of(staffRecruitments, imageUrls);
+        return new OwnerStaffRecruitmentPostsResponse(dtos);
+    }
+
+
 }

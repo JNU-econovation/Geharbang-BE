@@ -8,6 +8,7 @@ import guesthouse.guestHousePost.dto.RandomGuestHousePostsResponse;
 import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
 import guesthouse.guestHousePost.dto.response.GuestHouseCreateResponse;
 import guesthouse.guestHousePost.dto.response.GuestHousePostDetailsResponse;
+import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostsResponse;
 import guesthouse.guestHousePost.service.GuestHousePostService;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.staffrecruitment.domain.vo.SortType;
@@ -74,5 +75,11 @@ public class GuestHousePostController {
         GuestHousePostDetailsDTO details = guestHousePostService.getDetails(guestHousePostId);
         return ResponseEntity.ok(GuestHousePostDetailsResponse.from(details));
 
+    }
+
+    @GetMapping("/owner")
+    public ResponseEntity<OwnerGuestHousePostsResponse> getOwnGuestHousePosts(@UserId Long userId) {
+        OwnerGuestHousePostsResponse response = guestHousePostService.getOwnGuestHousePosts(userId);
+        return ResponseEntity.ok(response);
     }
 }

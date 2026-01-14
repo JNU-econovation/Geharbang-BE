@@ -20,6 +20,7 @@ public class GuestHouseMapper {
         GuestHouseCreateRequest.Contact contact = request.contact();
 
         return GuestHousePost.builder()
+                .ownerId(userId)
                 .guestHouseName(request.guestHouseName())
                 .region(request.region())
                 .lotNumberAddress(location.lotNumberAddress())
