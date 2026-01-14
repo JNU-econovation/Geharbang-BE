@@ -11,4 +11,6 @@ import java.util.List;
 public interface StaffRecruitmentRepository extends JpaRepository<StaffRecruitment, Long>, StaffRecruitmentCustomRepository {
 
     List<StaffRecruitment> findByOwnerId(Long userId);
+
+    boolean existsByOwnerIdAndId(Long userId, Long staffRecruitmentId);
 }

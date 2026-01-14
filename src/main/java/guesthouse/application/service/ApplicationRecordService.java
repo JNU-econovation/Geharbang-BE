@@ -10,8 +10,15 @@ import guesthouse.application.dto.QuestionAnswerDTO;
 import guesthouse.application.exception.SnapShotException;
 import guesthouse.application.repository.ApplicationRecordRepository;
 import guesthouse.application.repository.QuestionAnswerRepository;
+import guesthouse.application_record.dto.response.SubmittedApplicationDto;
+import guesthouse.application_record.dto.response.SubmittedApplicationsResponse;
+import guesthouse.application_record.exception.ApplicationRecordErrorCode;
+import guesthouse.application_record.exception.ApplicationRecordException;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentQuestion;
+import guesthouse.staffrecruitment.repository.StaffRecruitmentRepository;
 import guesthouse.staffrecruitment.service.StaffRecruitmentService;
+import guesthouse.user.domain.model.User;
+import guesthouse.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +34,9 @@ public class ApplicationRecordService {
     private final StaffRecruitmentService staffRecruitmentService;
     private final ApplicationRecordRepository applicationRecordRepository;
     private final QuestionAnswerRepository questionAnswerRepository;
+    private final StaffRecruitmentRepository staffRecruitmentRepository;
+    private final UserService userService;
+
 
     @Transactional
     public void apply(List<QuestionAnswerDTO> answers, Long recruitmentId, Long userId) {
@@ -68,5 +78,18 @@ public class ApplicationRecordService {
 
     private void saveQuestionAnswer(Long recordId, String question, String content) {
         questionAnswerRepository.save(new QuestionAnswer(recordId, question, content));
+    }
+
+
+    public SubmittedApplicationsResponse getApplicationRecords(Long userId, Long staffRecruitmentId) {
+        if (!staffRecruitmentRepository.existsByOwnerIdAndId(userId, staffRecruitmentId)) {
+            throw new ApplicationRecordException(ApplicationRecordErrorCode.NOT_ALLOWED);
+        }
+
+        List<ApplicationRecord> applicationRecords = applicationRecordRepository.findByStaffRecruitmentId(staffRecruitmentId);
+        List<User> users = applicationRecords.stream()
+                .map(a -> userService.findById(a.getUserId()))
+                .toList();
+        return new SubmittedApplicationsResponse(SubmittedApplicationDto.of(applicationRecords, users));
     }
 }
