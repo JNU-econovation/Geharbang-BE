@@ -109,9 +109,7 @@ public class ApplicationRecordService {
     }
 
     public ApplicationRecordResponse getApplicationRecord(Long userId, Long applicationRecordId) {
-        ApplicationRecord applicationRecord = applicationRecordRepository.findById(applicationRecordId)
-                .orElseThrow(() -> new ApplicationRecordException(ApplicationRecordErrorCode.NOT_ALLOWED));
-
+        ApplicationRecord applicationRecord = applicationRecordRepository.findByIdOrThrow(applicationRecordId);
         validateCanRead(userId, applicationRecord.getStaffRecruitmentId());
 
         User user = userService.findById(applicationRecord.getUserId());
@@ -121,9 +119,7 @@ public class ApplicationRecordService {
     }
 
     public ApplicationRecordQuestionsResponse getApplicationRecordQuestions(Long userId, Long applicationRecordId) {
-        ApplicationRecord applicationRecord = applicationRecordRepository.findById(applicationRecordId)
-                .orElseThrow(() -> new ApplicationRecordException(ApplicationRecordErrorCode.NOT_ALLOWED));
-
+        ApplicationRecord applicationRecord = applicationRecordRepository.findByIdOrThrow(applicationRecordId);
         validateCanRead(userId, applicationRecord.getStaffRecruitmentId());
 
         List<QuestionAnswer> questionAnswers = questionAnswerRepository.findAllByApplicationRecordId(applicationRecordId);
@@ -142,9 +138,7 @@ public class ApplicationRecordService {
     }
 
     public void approveApplicationRecord(Long userId, Long applicationRecordId) {
-        ApplicationRecord applicationRecord = applicationRecordRepository.findById(applicationRecordId)
-                .orElseThrow(() -> new ApplicationRecordException(ApplicationRecordErrorCode.NOT_ALLOWED));
-
+        ApplicationRecord applicationRecord = applicationRecordRepository.findByIdOrThrow(applicationRecordId);
         validateCanRead(userId, applicationRecord.getStaffRecruitmentId());
 
         applicationRecord.approve();
