@@ -2,15 +2,12 @@ package guesthouse.application_record.controller;
 
 import guesthouse.application_record.dto.response.ApplicationRecordQuestionsResponse;
 import guesthouse.application_record.dto.response.ApplicationRecordResponse;
-import guesthouse.application_record.service.ApplicationRecordService;
 import guesthouse.application_record.dto.response.SubmittedApplicationsResponse;
+import guesthouse.application_record.service.ApplicationRecordService;
 import guesthouse.common.annotation.UserId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/v1/application-records")
 @RestController
@@ -45,6 +42,15 @@ public class ApplicationRecordController {
     ) {
         ApplicationRecordQuestionsResponse response = applicationRecordService.getApplicationRecordQuestions(userId, applicationRecordId);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{recordId}")
+    public ResponseEntity<Void> approveApplicationRecord(
+            @UserId Long userId,
+            @PathVariable("recordId") Long applicationRecordId
+    ) {
+        applicationRecordService.approveApplicationRecord(userId, applicationRecordId);
+        return ResponseEntity.ok().build();
     }
 
 }

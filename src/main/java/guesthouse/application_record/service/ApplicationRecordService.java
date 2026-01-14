@@ -141,5 +141,14 @@ public class ApplicationRecordService {
         return new ApplicationRecordQuestionsResponse(dtos);
     }
 
+    public void approveApplicationRecord(Long userId, Long applicationRecordId) {
+        ApplicationRecord applicationRecord = applicationRecordRepository.findById(applicationRecordId)
+                .orElseThrow(() -> new ApplicationRecordException(ApplicationRecordErrorCode.NOT_ALLOWED));
 
+        if (!staffRecruitmentRepository.existsByOwnerIdAndId(userId, applicationRecord.getStaffRecruitmentId())) {
+            throw new ApplicationRecordException(ApplicationRecordErrorCode.NOT_ALLOWED);
+        }
+
+        applicationRecord.approve();
+    }
 }

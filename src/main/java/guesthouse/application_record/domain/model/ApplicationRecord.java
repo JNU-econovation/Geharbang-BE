@@ -37,4 +37,8 @@ public class ApplicationRecord extends TimeEntity {
         this.applicationSnapShot = applicationSnapShot;
         this.status = Status.대기중;
     }
+
+    public void approve() {
+        this.status = Status.합격;
+    }
 }
