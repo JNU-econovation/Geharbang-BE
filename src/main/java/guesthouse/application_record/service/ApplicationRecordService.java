@@ -3,19 +3,22 @@ package guesthouse.application_record.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import guesthouse.application.domain.model.Application;
-import guesthouse.application.service.ApplicationService;
-import guesthouse.application_record.domain.model.ApplicationRecord;
 import guesthouse.application.domain.model.QuestionAnswer;
 import guesthouse.application.dto.ApplicationSnapShotDTO;
 import guesthouse.application.dto.QuestionAnswerDTO;
 import guesthouse.application.exception.SnapShotException;
-import guesthouse.application_record.repository.ApplicationRecordRepository;
 import guesthouse.application.repository.QuestionAnswerRepository;
+import guesthouse.application.service.ApplicationService;
+import guesthouse.application_record.domain.model.ApplicationRecord;
 import guesthouse.application_record.dto.response.SubmittedApplicationDto;
 import guesthouse.application_record.dto.response.SubmittedApplicationsResponse;
 import guesthouse.application_record.exception.ApplicationRecordErrorCode;
 import guesthouse.application_record.exception.ApplicationRecordException;
+import guesthouse.application_record.repository.ApplicationRecordRepository;
+import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentQuestion;
+import guesthouse.staffrecruitment.exception.StaffRecruitmentErrorCode;
+import guesthouse.staffrecruitment.exception.StaffRecruitmentException;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentRepository;
 import guesthouse.staffrecruitment.service.StaffRecruitmentService;
 import guesthouse.user.domain.model.User;
@@ -87,10 +90,13 @@ public class ApplicationRecordService {
             throw new ApplicationRecordException(ApplicationRecordErrorCode.NOT_ALLOWED);
         }
 
+        StaffRecruitment staffRecruitment = staffRecruitmentRepository.findById(staffRecruitmentId)
+                .orElseThrow(() -> new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND));
+
         List<ApplicationRecord> applicationRecords = applicationRecordRepository.findByStaffRecruitmentId(staffRecruitmentId);
         List<User> users = applicationRecords.stream()
                 .map(a -> userService.findById(a.getUserId()))
                 .toList();
-        return new SubmittedApplicationsResponse(SubmittedApplicationDto.of(applicationRecords, users));
+        return new SubmittedApplicationsResponse(staffRecruitment.getTitle(), SubmittedApplicationDto.of(applicationRecords, users));
     }
 }
