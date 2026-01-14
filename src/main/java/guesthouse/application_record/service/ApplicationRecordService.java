@@ -10,9 +10,7 @@ import guesthouse.application.exception.SnapShotException;
 import guesthouse.application.repository.QuestionAnswerRepository;
 import guesthouse.application.service.ApplicationService;
 import guesthouse.application_record.domain.model.ApplicationRecord;
-import guesthouse.application_record.dto.response.ApplicationRecordResponse;
-import guesthouse.application_record.dto.response.SubmittedApplicationDto;
-import guesthouse.application_record.dto.response.SubmittedApplicationsResponse;
+import guesthouse.application_record.dto.response.*;
 import guesthouse.application_record.exception.ApplicationRecordErrorCode;
 import guesthouse.application_record.exception.ApplicationRecordException;
 import guesthouse.application_record.repository.ApplicationRecordRepository;
@@ -29,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -123,6 +122,23 @@ public class ApplicationRecordService {
         ApplicationSnapShotDTO applicationSnapShotDTO = convertToSnapshot(applicationRecord.getApplicationSnapShot());
 
         return ApplicationRecordResponse.of(applicationSnapShotDTO, user);
+    }
+
+    public ApplicationRecordQuestionsResponse getApplicationRecordQuestions(Long userId, Long applicationRecordId) {
+        ApplicationRecord applicationRecord = applicationRecordRepository.findById(applicationRecordId)
+                .orElseThrow(() -> new ApplicationRecordException(ApplicationRecordErrorCode.NOT_ALLOWED));
+
+        if (!staffRecruitmentRepository.existsByOwnerIdAndId(userId, applicationRecord.getStaffRecruitmentId())) {
+            throw new ApplicationRecordException(ApplicationRecordErrorCode.NOT_ALLOWED);
+        }
+
+        List<QuestionAnswer> questionAnswers = questionAnswerRepository.findAllByApplicationRecordId(applicationRecordId);
+
+        List<ApplicationRecordQuestionDto> dtos = questionAnswers.stream()
+                .map(qa -> new ApplicationRecordQuestionDto(qa.getQuestion(), qa.getContent()))
+                .sorted(Comparator.comparing(ApplicationRecordQuestionDto::question))
+                .toList();
+        return new ApplicationRecordQuestionsResponse(dtos);
     }
 
 
