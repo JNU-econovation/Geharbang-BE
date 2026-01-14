@@ -5,8 +5,10 @@ import guesthouse.common.exception.ErrorCode;
 public enum ApplicationRecordErrorCode implements ErrorCode {
 
     NOT_ALLOWED("권한이 없습니다."),
-    ;
+    NOT_FOUND("해당 지원 기록이 없습니다."),
+    DESERIALIZATION_FAILED("역직렬화에 실패했습니다.", 500),
 
+    ;
     private final String message;
     private final int statusCode;
 
@@ -33,5 +35,5 @@ public enum ApplicationRecordErrorCode implements ErrorCode {
     public String getErrorCode() {
         return this.name();
     }
-}
+    }
 

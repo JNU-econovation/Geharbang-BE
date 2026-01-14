@@ -10,6 +10,7 @@ import guesthouse.application.exception.SnapShotException;
 import guesthouse.application.repository.QuestionAnswerRepository;
 import guesthouse.application.service.ApplicationService;
 import guesthouse.application_record.domain.model.ApplicationRecord;
+import guesthouse.application_record.dto.response.ApplicationRecordResponse;
 import guesthouse.application_record.dto.response.SubmittedApplicationDto;
 import guesthouse.application_record.dto.response.SubmittedApplicationsResponse;
 import guesthouse.application_record.exception.ApplicationRecordErrorCode;
@@ -22,6 +23,7 @@ import guesthouse.staffrecruitment.exception.StaffRecruitmentException;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentRepository;
 import guesthouse.staffrecruitment.service.StaffRecruitmentService;
 import guesthouse.user.domain.model.User;
+import guesthouse.user.repository.UserRepository;
 import guesthouse.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,7 @@ public class ApplicationRecordService {
     private final QuestionAnswerRepository questionAnswerRepository;
     private final StaffRecruitmentRepository staffRecruitmentRepository;
     private final UserService userService;
+    private final UserRepository userRepository;
 
 
     @Transactional
@@ -66,6 +69,14 @@ public class ApplicationRecordService {
             return objectMapper.writeValueAsString(snapShot);
         } catch (JsonProcessingException e) {
             throw new SnapShotException();
+        }
+    }
+
+    private ApplicationSnapShotDTO convertToSnapshot(String applicationSnapShot) {
+        try {
+            return objectMapper.readValue(applicationSnapShot, ApplicationSnapShotDTO.class);
+        } catch (JsonProcessingException e) {
+            throw new ApplicationRecordException(ApplicationRecordErrorCode.DESERIALIZATION_FAILED);
         }
     }
 
@@ -99,4 +110,20 @@ public class ApplicationRecordService {
                 .toList();
         return new SubmittedApplicationsResponse(staffRecruitment.getTitle(), SubmittedApplicationDto.of(applicationRecords, users));
     }
+
+    public ApplicationRecordResponse getApplicationRecord(Long userId, Long applicationRecordId) {
+        ApplicationRecord applicationRecord = applicationRecordRepository.findById(applicationRecordId)
+                .orElseThrow(() -> new ApplicationRecordException(ApplicationRecordErrorCode.NOT_ALLOWED));
+
+        if (!staffRecruitmentRepository.existsByOwnerIdAndId(userId, applicationRecord.getStaffRecruitmentId())) {
+            throw new ApplicationRecordException(ApplicationRecordErrorCode.NOT_ALLOWED);
+        }
+
+        User user = userService.findById(applicationRecord.getUserId());
+        ApplicationSnapShotDTO applicationSnapShotDTO = convertToSnapshot(applicationRecord.getApplicationSnapShot());
+
+        return ApplicationRecordResponse.of(applicationSnapShotDTO, user);
+    }
+
+
 }
