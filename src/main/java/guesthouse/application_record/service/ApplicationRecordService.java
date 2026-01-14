@@ -101,7 +101,7 @@ public class ApplicationRecordService {
         StaffRecruitment staffRecruitment = staffRecruitmentRepository.findById(staffRecruitmentId)
                 .orElseThrow(() -> new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND));
 
-        List<ApplicationRecord> applicationRecords = applicationRecordRepository.findByStaffRecruitmentId(staffRecruitmentId);
+        List<ApplicationRecord> applicationRecords = applicationRecordRepository.findAllByStaffRecruitmentId(staffRecruitmentId);
         List<User> users = applicationRecords.stream()
                 .map(a -> userService.findById(a.getUserId()))
                 .toList();

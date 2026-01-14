@@ -12,7 +12,7 @@ import java.util.List;
 public interface ApplicationRecordRepository extends JpaRepository<ApplicationRecord, Long> {
     Boolean existsByStaffRecruitmentIdAndUserId(Long recruitmentId, Long userId);
 
-    List<ApplicationRecord> findByStaffRecruitmentId(Long recruitmentId);
+    List<ApplicationRecord> findAllByStaffRecruitmentId(Long recruitmentId);
 
     default ApplicationRecord findByIdOrThrow(Long applicationRecordId) {
         return findById(applicationRecordId)
