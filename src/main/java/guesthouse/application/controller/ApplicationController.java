@@ -5,7 +5,7 @@ import guesthouse.application.dto.requset.ApplicationApplyRequest;
 import guesthouse.application.dto.requset.ApplicationSaveRequest;
 import guesthouse.application.dto.response.ApplicationExistenceResponse;
 import guesthouse.application.dto.response.ApplicationSaveResponse;
-import guesthouse.application.service.ApplicationRecordService;
+import guesthouse.application_record.service.ApplicationRecordService;
 import guesthouse.application.service.ApplicationService;
 import guesthouse.common.annotation.UserId;
 import jakarta.validation.Valid;

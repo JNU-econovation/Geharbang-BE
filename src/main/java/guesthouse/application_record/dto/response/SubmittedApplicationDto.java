@@ -1,6 +1,6 @@
 package guesthouse.application_record.dto.response;
 
-import guesthouse.application.domain.model.ApplicationRecord;
+import guesthouse.application_record.domain.model.ApplicationRecord;
 import guesthouse.application_record.domain.vo.Status;
 import guesthouse.user.domain.model.User;
 

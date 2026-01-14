@@ -1,4 +1,4 @@
-package guesthouse.application.domain.model;
+package guesthouse.application_record.domain.model;
 
 import guesthouse.application_record.domain.vo.Status;
 import guesthouse.common.domain.TimeEntity;

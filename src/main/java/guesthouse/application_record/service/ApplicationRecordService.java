@@ -1,14 +1,15 @@
-package guesthouse.application.service;
+package guesthouse.application_record.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import guesthouse.application.domain.model.Application;
-import guesthouse.application.domain.model.ApplicationRecord;
+import guesthouse.application.service.ApplicationService;
+import guesthouse.application_record.domain.model.ApplicationRecord;
 import guesthouse.application.domain.model.QuestionAnswer;
 import guesthouse.application.dto.ApplicationSnapShotDTO;
 import guesthouse.application.dto.QuestionAnswerDTO;
 import guesthouse.application.exception.SnapShotException;
-import guesthouse.application.repository.ApplicationRecordRepository;
+import guesthouse.application_record.repository.ApplicationRecordRepository;
 import guesthouse.application.repository.QuestionAnswerRepository;
 import guesthouse.application_record.dto.response.SubmittedApplicationDto;
 import guesthouse.application_record.dto.response.SubmittedApplicationsResponse;
@@ -44,8 +45,8 @@ public class ApplicationRecordService {
         Application application = applicationService.getApplication(userId);
         String snapShot = convertToSnapshot(application);
 
-        ApplicationRecord record= applicationRecordRepository.save(new ApplicationRecord(recruitmentId, userId, snapShot));
-        if(hasQuestions(recruitmentId)) {
+        ApplicationRecord record = applicationRecordRepository.save(new ApplicationRecord(recruitmentId, userId, snapShot));
+        if (hasQuestions(recruitmentId)) {
             saveQuestionAnswers(answers, recruitmentId, record.getId());
         }
     }
@@ -57,7 +58,7 @@ public class ApplicationRecordService {
     }
 
     private String convertToSnapshot(Application application) {
-        ApplicationSnapShotDTO  snapShot = ApplicationSnapShotDTO.from(application);
+        ApplicationSnapShotDTO snapShot = ApplicationSnapShotDTO.from(application);
         try {
             return objectMapper.writeValueAsString(snapShot);
         } catch (JsonProcessingException e) {
@@ -71,8 +72,8 @@ public class ApplicationRecordService {
 
     private void saveQuestionAnswers(List<QuestionAnswerDTO> answers, Long recruitmentId, Long recordId) {
         answers.forEach(answer -> {
-           StaffRecruitmentQuestion question = staffRecruitmentService.getStaffRecruitmentQuestion(answer.questionId(), recruitmentId);
-           saveQuestionAnswer(recordId, question.getContent(), answer.content());
+            StaffRecruitmentQuestion question = staffRecruitmentService.getStaffRecruitmentQuestion(answer.questionId(), recruitmentId);
+            saveQuestionAnswer(recordId, question.getContent(), answer.content());
         });
     }
 

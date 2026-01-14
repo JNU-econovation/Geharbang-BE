@@ -1,6 +1,6 @@
-package guesthouse.application.repository;
+package guesthouse.application_record.repository;
 
-import guesthouse.application.domain.model.ApplicationRecord;
+import guesthouse.application_record.domain.model.ApplicationRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

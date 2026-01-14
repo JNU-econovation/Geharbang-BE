@@ -1,6 +1,6 @@
 package guesthouse.application_record.controller;
 
-import guesthouse.application.service.ApplicationRecordService;
+import guesthouse.application_record.service.ApplicationRecordService;
 import guesthouse.application_record.dto.response.SubmittedApplicationsResponse;
 import guesthouse.common.annotation.UserId;
 import lombok.RequiredArgsConstructor;
