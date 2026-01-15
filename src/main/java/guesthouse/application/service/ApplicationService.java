@@ -34,7 +34,8 @@ public class ApplicationService {
     }
 
     public Application getApplication(Long userId) {
-        return applicationRepository.findById(userId)
+        User user = userService.findById(userId);
+        return applicationRepository.findByUser(user)
                 .orElseThrow(() -> new IllegalArgumentException("유저의 지원서가 존재하지 않습니다"));
     }
   
