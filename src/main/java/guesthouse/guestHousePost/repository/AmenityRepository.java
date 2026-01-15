@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface AmenityRepository extends JpaRepository<Amenity, Long> {
     List<Amenity> findByGuestHousePostId(Long guestHousePostId);
+
+    void deleteByGuestHousePostId(Long guestHousePostId);
 }
