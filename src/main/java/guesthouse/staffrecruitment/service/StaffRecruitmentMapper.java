@@ -3,6 +3,7 @@ package guesthouse.staffrecruitment.service;
 import guesthouse.staffrecruitment.domain.model.Contact;
 import guesthouse.staffrecruitment.domain.model.Feature;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
+import guesthouse.staffrecruitment.domain.vo.Status;
 import guesthouse.staffrecruitment.dto.request.StaffRecruitmentCreateRequest;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -44,6 +45,7 @@ public final class StaffRecruitmentMapper {
                 .feature(createFeature(feature))
                 .content(introduction.content())
                 .ownerMessage(request.ownerMessage())
+                .status(Status.ACTIVE)
                 .build();
     }
 

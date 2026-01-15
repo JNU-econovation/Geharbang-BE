@@ -2,6 +2,7 @@ package guesthouse.staffrecruitment.domain.model;
 
 import guesthouse.common.domain.TimeEntity;
 import guesthouse.staffrecruitment.domain.vo.Region;
+import guesthouse.staffrecruitment.domain.vo.Status;
 import guesthouse.staffrecruitment.domain.vo.WorkingPeriod;
 import jakarta.persistence.*;
 import lombok.*;
@@ -53,6 +54,8 @@ public class StaffRecruitment extends TimeEntity {
 
     @Column(nullable = false)
     private int viewCount;
+
+    private Status status;
 
     public void plusViewCount() {
         this.viewCount += 1;
