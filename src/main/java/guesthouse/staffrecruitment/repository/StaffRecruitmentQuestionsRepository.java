@@ -16,4 +16,5 @@ public interface StaffRecruitmentQuestionsRepository extends JpaRepository<Staff
   
     List<StaffRecruitmentQuestion> findAllByStaffRecruitmentId(Long id);
 
+    void deleteByStaffRecruitmentId(Long staffRecruitmentId);
 }

@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface StaffRecruitmentJobRepository extends JpaRepository<StaffRecruitmentJob,Long> {
     List<StaffRecruitmentJob> findJobsByStaffRecruitmentId(Long id);
+
+    void deleteByStaffRecruitmentId(Long staffRecruitmentId);
 }

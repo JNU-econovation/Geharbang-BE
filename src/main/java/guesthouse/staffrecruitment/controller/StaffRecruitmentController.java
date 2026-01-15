@@ -94,4 +94,13 @@ public class StaffRecruitmentController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStaffRecruitment(
+            @UserId Long userId,
+            @PathVariable("id") Long staffRecruitmentId
+    ) {
+        staffRecruitmentService.deleteStaffRecruitment(userId, staffRecruitmentId);
+        return ResponseEntity.ok().build();
+    }
+
 }
