@@ -55,9 +55,14 @@ public class StaffRecruitment extends TimeEntity {
     @Column(nullable = false)
     private int viewCount;
 
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     public void plusViewCount() {
         this.viewCount += 1;
+    }
+
+    public void changeStatus(Status status) {
+        this.status = status;
     }
 }
