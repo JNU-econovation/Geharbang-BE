@@ -96,7 +96,7 @@ public class ApplicationRecordService {
 
 
     public SubmittedApplicationsResponse getApplicationRecords(Long userId, Long staffRecruitmentId) {
-        validateCanRead(userId, staffRecruitmentId);
+        validateOwner(userId, staffRecruitmentId);
 
         StaffRecruitment staffRecruitment = staffRecruitmentRepository.findById(staffRecruitmentId)
                 .orElseThrow(() -> new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND));
@@ -110,7 +110,7 @@ public class ApplicationRecordService {
 
     public ApplicationRecordResponse getApplicationRecord(Long userId, Long applicationRecordId) {
         ApplicationRecord applicationRecord = applicationRecordRepository.findByIdOrThrow(applicationRecordId);
-        validateCanRead(userId, applicationRecord.getStaffRecruitmentId());
+        validateOwner(userId, applicationRecord.getStaffRecruitmentId());
 
         User user = userService.findById(applicationRecord.getUserId());
         ApplicationSnapShotDTO applicationSnapShotDTO = convertToSnapshot(applicationRecord.getApplicationSnapShot());
@@ -120,7 +120,7 @@ public class ApplicationRecordService {
 
     public ApplicationRecordQuestionsResponse getApplicationRecordQuestions(Long userId, Long applicationRecordId) {
         ApplicationRecord applicationRecord = applicationRecordRepository.findByIdOrThrow(applicationRecordId);
-        validateCanRead(userId, applicationRecord.getStaffRecruitmentId());
+        validateOwner(userId, applicationRecord.getStaffRecruitmentId());
 
         List<QuestionAnswer> questionAnswers = questionAnswerRepository.findAllByApplicationRecordId(applicationRecordId);
 
@@ -131,15 +131,15 @@ public class ApplicationRecordService {
         return new ApplicationRecordQuestionsResponse(dtos);
     }
 
-    private void validateCanRead(Long userId, Long applicationRecord) {
-        if (!staffRecruitmentRepository.existsByOwnerIdAndId(userId, applicationRecord)) {
+    private void validateOwner(Long userId, Long staffRecruitmentId) {
+        if (!staffRecruitmentRepository.existsByOwnerIdAndId(userId, staffRecruitmentId)) {
             throw new ApplicationRecordException(ApplicationRecordErrorCode.NOT_ALLOWED);
         }
     }
 
     public void approveApplicationRecord(Long userId, Long applicationRecordId) {
         ApplicationRecord applicationRecord = applicationRecordRepository.findByIdOrThrow(applicationRecordId);
-        validateCanRead(userId, applicationRecord.getStaffRecruitmentId());
+        validateOwner(userId, applicationRecord.getStaffRecruitmentId());
 
         applicationRecord.approve();
     }
