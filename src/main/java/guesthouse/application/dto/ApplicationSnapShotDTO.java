@@ -20,6 +20,8 @@ public class ApplicationSnapShotDTO {
     private String selfIntroduction;
     private Mbti mbti;
     private Set<Style> style;
+    private String instagramId;
+    private String imageUrl;
 
     public static ApplicationSnapShotDTO from (Application application){
         return ApplicationSnapShotDTO.builder()
@@ -28,6 +30,8 @@ public class ApplicationSnapShotDTO {
                 .selfIntroduction(application.getSelfIntroduction())
                 .mbti(application.getMbti())
                 .style(application.getStyle())
+                .instagramId(application.getInstagramId())
+                .imageUrl(application.getImageUrl())
                 .build();
     }
 }
