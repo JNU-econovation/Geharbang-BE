@@ -4,7 +4,6 @@ import guesthouse.application.domain.vo.DayOfWeek;
 import guesthouse.application.domain.vo.Mbti;
 import guesthouse.application.domain.vo.Style;
 import guesthouse.application.dto.ApplicationSnapShotDTO;
-import guesthouse.application_record.domain.model.ApplicationRecord;
 import guesthouse.user.domain.model.User;
 import guesthouse.user.domain.vo.Gender;
 
@@ -21,7 +20,8 @@ public record ApplicationRecordResponse(
         String introduction,
         Mbti mbti,
         String instagramId,
-        List<Style> styles
+        List<Style> styles,
+        String imageUrl
 ) {
 
     public static ApplicationRecordResponse of(ApplicationSnapShotDTO applicationSnapShotDTO, User user) {
@@ -35,7 +35,8 @@ public record ApplicationRecordResponse(
                 applicationSnapShotDTO.getSelfIntroduction(),
                 applicationSnapShotDTO.getMbti(),
                 applicationSnapShotDTO.getInstagramId(),
-                applicationSnapShotDTO.getStyle().stream().sorted().toList()
+                applicationSnapShotDTO.getStyle().stream().sorted().toList(),
+                applicationSnapShotDTO.getImageUrl()
         );
     }
 }

@@ -21,6 +21,7 @@ public class ApplicationSnapShotDTO {
     private Mbti mbti;
     private Set<Style> style;
     private String instagramId;
+    private String imageUrl;
 
     public static ApplicationSnapShotDTO from (Application application){
         return ApplicationSnapShotDTO.builder()
@@ -30,6 +31,7 @@ public class ApplicationSnapShotDTO {
                 .mbti(application.getMbti())
                 .style(application.getStyle())
                 .instagramId(application.getInstagramId())
+                .imageUrl(application.getImageUrl())
                 .build();
     }
 }
