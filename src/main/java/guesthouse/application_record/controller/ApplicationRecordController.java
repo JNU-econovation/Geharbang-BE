@@ -16,7 +16,7 @@ public class ApplicationRecordController {
 
     private final ApplicationRecordService applicationRecordService;
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/all")
     public ResponseEntity<SubmittedApplicationsResponse> getApplicationRecords(
             @UserId Long userId,
             @PathVariable("id") Long staffRecruitmentId
