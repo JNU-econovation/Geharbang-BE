@@ -2,6 +2,7 @@ package guesthouse.guestHousePost.domain.model;
 
 import guesthouse.guestHousePost.domain.vo.Contact;
 import guesthouse.guestHousePost.domain.vo.Mood;
+import guesthouse.guestHousePost.domain.vo.Status;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import jakarta.persistence.*;
 import lombok.*;
@@ -55,4 +56,6 @@ public class GuestHousePost {
     private Contact contact;
 
     private String ownerMessage;
+
+    private Status status;
 }
