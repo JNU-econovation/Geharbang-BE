@@ -2,12 +2,16 @@ package guesthouse.guestHousePost.service;
 
 import guesthouse.guestHousePost.domain.model.*;
 import guesthouse.guestHousePost.domain.vo.GuestHouseFilter;
+import guesthouse.guestHousePost.domain.vo.Status;
 import guesthouse.guestHousePost.dto.*;
 import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
 import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostDto;
 import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostsResponse;
 import guesthouse.guestHousePost.repository.*;
+import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.vo.Region;
+import guesthouse.staffrecruitment.exception.StaffRecruitmentErrorCode;
+import guesthouse.staffrecruitment.exception.StaffRecruitmentException;
 import guesthouse.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -197,6 +201,20 @@ public class GuestHousePostService {
                 .toList();
         List<OwnerGuestHousePostDto> dtos = OwnerGuestHousePostDto.of(guestHousePosts, imageUrls);
         return new OwnerGuestHousePostsResponse(dtos);
+    }
+
+    @Transactional
+    public void changeStatus(Status status, Long userId, Long guestHousePostId) {
+        GuestHousePost guestHousePost = getGuestHousePostById(guestHousePostId);
+
+        if (!existsByOwnerIdAndId(userId, guestHousePostId))
+            throw new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND);
+
+        guestHousePost.changeStatus(status);
+    }
+
+    public boolean existsByOwnerIdAndId(Long userId, Long guestHousePostId) {
+        return guestHousePostRepository.existsByOwnerIdAndId(userId, guestHousePostId);
     }
 
 }

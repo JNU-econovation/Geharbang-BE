@@ -57,5 +57,11 @@ public class GuestHousePost {
 
     private String ownerMessage;
 
+    @Enumerated(EnumType.STRING)
     private Status status;
+
+
+    public void changeStatus(Status status) {
+        this.status = status;
+    }
 }
