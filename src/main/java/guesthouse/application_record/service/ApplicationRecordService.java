@@ -10,6 +10,8 @@ import guesthouse.application.exception.SnapShotException;
 import guesthouse.application.repository.QuestionAnswerRepository;
 import guesthouse.application.service.ApplicationService;
 import guesthouse.application_record.domain.model.ApplicationRecord;
+import guesthouse.application_record.domain.vo.Status;
+import guesthouse.application_record.dto.ApplicationRecordDTO;
 import guesthouse.application_record.dto.response.*;
 import guesthouse.application_record.exception.ApplicationRecordErrorCode;
 import guesthouse.application_record.exception.ApplicationRecordException;
@@ -29,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -142,5 +146,34 @@ public class ApplicationRecordService {
         validateOwner(userId, applicationRecord.getStaffRecruitmentId());
 
         applicationRecord.approve();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ApplicationRecordDTO> getMyApplicationRecords(Boolean onlyAccepted, int pageNumber, Long userId) {
+        User user = userService.findById(userId);
+
+        List<ApplicationRecord> applicationRecords = findMyApplicationRecords(onlyAccepted, userId);
+
+        List<StaffRecruitment> staffRecruitments = applicationRecords.stream()
+                .map(record -> staffRecruitmentService.getStaffRecruitmentById(record.getStaffRecruitmentId()))
+                .toList();
+
+
+
+        return IntStream.range(0, applicationRecords.size())
+                .mapToObj(index -> {
+                    ApplicationRecord applicationRecord = applicationRecords.get(index);
+                    StaffRecruitment staffRecruitment = staffRecruitments.get(index);
+
+                    return ApplicationRecordDTO.from(applicationRecord, staffRecruitment, user);
+                })
+                .toList();
+    }
+
+    private List<ApplicationRecord> findMyApplicationRecords(Boolean onlyAccepted, Long userId) {
+        if (onlyAccepted) {
+            return applicationRecordRepository.findAllByUserIdAndStatus(userId, Status.합격);
+        }
+        return applicationRecordRepository.findAllByUserId(userId);
     }
 }
