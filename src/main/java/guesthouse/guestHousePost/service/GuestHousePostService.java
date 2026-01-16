@@ -7,6 +7,8 @@ import guesthouse.guestHousePost.dto.*;
 import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
 import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostDto;
 import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostsResponse;
+import guesthouse.guestHousePost.exception.GuestHousePostErrorCode;
+import guesthouse.guestHousePost.exception.GuestHousePostException;
 import guesthouse.guestHousePost.repository.*;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.vo.Region;
@@ -208,7 +210,7 @@ public class GuestHousePostService {
         GuestHousePost guestHousePost = getGuestHousePostById(guestHousePostId);
 
         if (!existsByOwnerIdAndId(userId, guestHousePostId))
-            throw new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND);
+            throw new GuestHousePostException(GuestHousePostErrorCode.NOT_FOUND);
 
         guestHousePost.changeStatus(status);
     }
