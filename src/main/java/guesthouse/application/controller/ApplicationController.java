@@ -1,10 +1,12 @@
 package guesthouse.application.controller;
 
+import guesthouse.application.dto.MyApplicationDTO;
 import guesthouse.application.dto.QuestionAnswerDTO;
 import guesthouse.application.dto.requset.ApplicationApplyRequest;
 import guesthouse.application.dto.requset.ApplicationSaveRequest;
 import guesthouse.application.dto.response.ApplicationExistenceResponse;
 import guesthouse.application.dto.response.ApplicationSaveResponse;
+import guesthouse.application.dto.response.MyApplicationResponse;
 import guesthouse.application_record.service.ApplicationRecordService;
 import guesthouse.application.service.ApplicationService;
 import guesthouse.common.annotation.UserId;
@@ -49,5 +51,13 @@ public class ApplicationController {
     ) {
         Boolean isExist = applicationService.hasApplication(userId);
         return ResponseEntity.ok(new ApplicationExistenceResponse(isExist));
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<MyApplicationResponse> getMyApplication(
+            @UserId Long userId
+    ) {
+        MyApplicationDTO myApplication = applicationService.getMyApplication(userId);
+        return ResponseEntity.ok(MyApplicationResponse.from(myApplication));
     }
 }
