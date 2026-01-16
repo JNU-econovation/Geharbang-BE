@@ -1,0 +1,65 @@
+name: build & deploy to mac-mini
+
+on : 
+  workflow_dispatch:
+  push:
+    branches:
+      - build/#1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+            java-version: 21
+            distribution: temurin
+
+      - name: grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: build with gradle
+        run: ./gradlew build
+
+      - name: upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-result
+          path: build/libs/dev.jar
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-result
+          path: build/libs
+
+      - name: scp to mac mini
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.ON_PREM_SERVER_HOST }}
+          username: ${{ secrets.ON_PREM_SERVER_USERNAME }}
+          password: ${{ secrets.ON_PREM_SERVER_PASSWORD }}
+          port: ${{ secrets.PORT }}
+          source: "./build/libs/dev.jar"
+          target: "./jeju/archive"
+
+      - name: exec.deploy.sh
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.ON_PREM_SERVER_HOST }}
+          username: ${{ secrets.ON_PREM_SERVER_USERNAME }}
+          password: ${{ secrets.ON_PREM_SERVER_PASSWORD }}
+          port: ${{ secrets.ON_PREM_SERVER_PORT }}
+          script: |
+            cd jeju
+            sh deploy.sh
+    
