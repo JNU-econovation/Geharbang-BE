@@ -86,6 +86,11 @@ public class StaffRecruitmentService {
     }
 
     @Transactional(readOnly = true)
+    public String getFirstRepresentativeImageUrls(Long recruitmentId) {
+        return staffRecruitmentImageRepository.getRepresentativeImageByStaffRecruitmentId(recruitmentId).getImageUrl();
+    }
+
+    @Transactional(readOnly = true)
     public List<String> getContentImageUrls(Long recruitmentId) {
         return staffRecruitmentImageRepository.findByStaffRecruitmentIdAndType(recruitmentId, StaffRecruitmentImageType.내용이미지)
                 .stream()

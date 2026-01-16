@@ -17,14 +17,14 @@ public record ApplicationRecordDTO(
         Boolean isAccepted,
         String imageUrl
 ) {
-    public static ApplicationRecordDTO from (ApplicationRecord record, StaffRecruitment staffRecruitment, User user) {
+    public static ApplicationRecordDTO from (ApplicationRecord record, StaffRecruitment staffRecruitment, String representativeImageUrl) {
         return ApplicationRecordDTO.builder()
                 .id(record.getId())
                 .title(staffRecruitment.getTitle())
                 .region(staffRecruitment.getRegion())
                 .appliedAt(record.getCreatedAt().toLocalDate())
                 .isAccepted(record.getStatus().isAccepted())
-                .imageUrl(user.getProfileImageUrl())
+                .imageUrl(representativeImageUrl)
                 .build();
     }
 }

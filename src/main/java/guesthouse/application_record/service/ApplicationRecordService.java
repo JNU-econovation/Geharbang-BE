@@ -150,22 +150,24 @@ public class ApplicationRecordService {
 
     @Transactional(readOnly = true)
     public List<ApplicationRecordDTO> getMyApplicationRecords(Boolean onlyAccepted, int pageNumber, Long userId) {
-        User user = userService.findById(userId);
-
         List<ApplicationRecord> applicationRecords = findMyApplicationRecords(onlyAccepted, userId);
 
         List<StaffRecruitment> staffRecruitments = applicationRecords.stream()
                 .map(record -> staffRecruitmentService.getStaffRecruitmentById(record.getStaffRecruitmentId()))
                 .toList();
 
+        List<String> representativeImageUrls = staffRecruitments.stream()
+                .map(staffRecruitment -> staffRecruitmentService.getFirstRepresentativeImageUrls(staffRecruitment.getId()))
+                .toList();
 
 
         return IntStream.range(0, applicationRecords.size())
                 .mapToObj(index -> {
                     ApplicationRecord applicationRecord = applicationRecords.get(index);
                     StaffRecruitment staffRecruitment = staffRecruitments.get(index);
+                    String representativeImageUrl = representativeImageUrls.get(index);
 
-                    return ApplicationRecordDTO.from(applicationRecord, staffRecruitment, user);
+                    return ApplicationRecordDTO.from(applicationRecord, staffRecruitment, representativeImageUrl);
                 })
                 .toList();
     }
