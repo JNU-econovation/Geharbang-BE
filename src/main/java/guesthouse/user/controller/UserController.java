@@ -18,7 +18,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/profile")
-    public ResponseEntity<ProfileResponse> hasApplication(
+    public ResponseEntity<ProfileResponse> getProfile(
             @UserId Long userId
     ) {
         ProfileDTO profile = userService.getProfile(userId);
