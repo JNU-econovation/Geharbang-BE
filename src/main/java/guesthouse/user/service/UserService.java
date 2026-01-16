@@ -47,7 +47,7 @@ public class UserService {
                     Status status = certificate.getStatus();
                     return status.isInReview();
                 })
-                .orElse(null);
+                .orElse(false);
 
 
         return new ProfileDTO(
