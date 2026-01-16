@@ -31,4 +31,10 @@ public class UserService {
         User user = findById(userId);
         user.updatePersonalInfo(name, phoneNumber, birthDate, gender);
     }
+
+    public void validateAdmin(Long userId) {
+        User user = findById(userId);
+        if (!user.isAdmin())
+            throw new UserException(UserErrorCode.NOT_ADMIN);
+    }
 }

@@ -9,7 +9,7 @@ public enum UserErrorCode implements ErrorCode {
     PHONE_NUMBER_REQUIRED("휴대폰 번호는 null이거나 비어있을 수 없습니다"),
     BIRTH_DATE_REQUIRED("출생년도는 null일 수 없습니다"),
     GENDER_REQUIRED("성별은 null일 수 없습니다"),
-
+    NOT_ADMIN("운영진이 아닙니다")
     ;
 
     private final String message;
