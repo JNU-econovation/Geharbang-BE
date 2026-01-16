@@ -1,6 +1,8 @@
 package guesthouse.certificate.controller;
 
+import guesthouse.certificate.dto.CertificateDTO;
 import guesthouse.certificate.dto.request.SubmitCertificateRequest;
+import guesthouse.certificate.dto.response.SubmittedCertificatesResponse;
 import guesthouse.certificate.service.CertificateService;
 import guesthouse.common.annotation.UserId;
 import jakarta.validation.Valid;
@@ -8,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -33,5 +37,11 @@ public class CertificateController {
         return ResponseEntity.ok().body(new FileUploadedResponse(fileUrl));
     }
 
-
+    @GetMapping("/api/v1/certificate")
+    public ResponseEntity<SubmittedCertificatesResponse> getCertificateList(
+            @UserId Long userId
+    ) {
+        List<CertificateDTO> certificates= certificateService.getSubmittedCertificates(userId);
+        return ResponseEntity.ok(new SubmittedCertificatesResponse(certificates));
+    }
 }

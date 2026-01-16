@@ -1,10 +1,14 @@
 package guesthouse.certificate.service;
 
 import guesthouse.certificate.domain.model.Certificate;
+import guesthouse.certificate.domain.vo.Status;
+import guesthouse.certificate.dto.CertificateDTO;
 import guesthouse.certificate.dto.request.SubmitCertificateRequest;
 import guesthouse.certificate.exception.CertificateErrorCode;
 import guesthouse.certificate.exception.CertificateException;
 import guesthouse.certificate.repository.CertificateRepository;
+import guesthouse.user.domain.model.User;
+import guesthouse.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -29,6 +34,7 @@ public class CertificateService {
             Set.of("jpeg", "jpg", "pdf", "png");
 
     private final CertificateRepository certificateRepository;
+    private final UserService userService;
 
     @Value("${certificate.directory.path}")
     private String DIR_PATH;
@@ -70,4 +76,14 @@ public class CertificateService {
         Files.write(path, image.getBytes());
     }
 
+    @Transactional(readOnly = true)
+    public List<CertificateDTO> getSubmittedCertificates(Long userId) {
+        userService.validateAdmin(userId);
+
+        List<Certificate> certificates = certificateRepository.findAllByStatus(Status.검토_대기);
+
+        return certificates.stream()
+                .map(CertificateDTO::from)
+                .toList();
+    }
 }
