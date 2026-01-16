@@ -60,4 +60,8 @@ public class Certificate extends TimeEntity {
     public String getFileName() {
         return fileUrl.substring(URL_PREFIX.length() + 8, fileUrl.length());
     }
+
+    public void decide(Boolean isApproved) {
+        this.status = isApproved ? Status.승인_완료 : Status.거부됨;
+    }
 }

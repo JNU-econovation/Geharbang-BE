@@ -1,5 +1,6 @@
 package guesthouse.certificate.controller;
 
+import guesthouse.certificate.dto.request.CertificateDecisionRequest;
 import guesthouse.certificate.dto.request.SubmitCertificateRequest;
 import guesthouse.certificate.service.CertificateService;
 import guesthouse.common.annotation.UserId;
@@ -33,5 +34,13 @@ public class CertificateController {
         return ResponseEntity.ok().body(new FileUploadedResponse(fileUrl));
     }
 
-
+    @PostMapping("/api/v1/certificate/{certificateId}")
+    public ResponseEntity<Void> getCertificateList(
+            @UserId Long userId,
+            @PathVariable Long certificateId,
+            @RequestBody CertificateDecisionRequest request
+    ) {
+        certificateService.decide(userId, certificateId, request.approved());
+        return ResponseEntity.ok().build();
+    }
 }

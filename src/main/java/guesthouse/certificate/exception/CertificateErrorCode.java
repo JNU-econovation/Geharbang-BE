@@ -6,6 +6,7 @@ public enum CertificateErrorCode implements ErrorCode {
 
     FILE_TYPE_NOT_SUPPORTED("파일타입을 확인해주세요"),
     FILE_UPLOAD_FAILED("인증서 파일 저장에 실패하였습니다.", 500),
+    NOT_FOUND("인증서 요청 기록을 찾을 수 없습니다.", 404)
     ;
 
     private final String message;
