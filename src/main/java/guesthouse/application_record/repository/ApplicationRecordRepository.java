@@ -4,6 +4,9 @@ import guesthouse.application_record.domain.model.ApplicationRecord;
 import guesthouse.application_record.domain.vo.Status;
 import guesthouse.application_record.exception.ApplicationRecordErrorCode;
 import guesthouse.application_record.exception.ApplicationRecordException;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -20,7 +23,7 @@ public interface ApplicationRecordRepository extends JpaRepository<ApplicationRe
                 .orElseThrow(() -> new ApplicationRecordException(ApplicationRecordErrorCode.NOT_FOUND));
     }
 
-    List<ApplicationRecord> findAllByUserId(Long userId);
+    Page<ApplicationRecord> findAllByUserId(Pageable pageable, Long userId);
 
-    List<ApplicationRecord> findAllByUserIdAndStatus(Long userId, Status status);
+    Page<ApplicationRecord> findAllByUserIdAndStatus(Pageable pageable, Long userId, Status status);
 }

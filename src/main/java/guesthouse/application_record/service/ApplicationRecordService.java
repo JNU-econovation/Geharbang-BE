@@ -26,6 +26,9 @@ import guesthouse.user.domain.model.User;
 import guesthouse.user.repository.UserRepository;
 import guesthouse.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -150,7 +153,12 @@ public class ApplicationRecordService {
 
     @Transactional(readOnly = true)
     public List<ApplicationRecordDTO> getMyApplicationRecords(Boolean onlyAccepted, int pageNumber, Long userId) {
-        List<ApplicationRecord> applicationRecords = findMyApplicationRecords(onlyAccepted, userId);
+        Pageable pageable = PageRequest.of(pageNumber, 10);
+
+        List<ApplicationRecord> applicationRecords = findMyApplicationRecords(pageable, onlyAccepted, userId);
+
+        applicationRecords.stream()
+                .forEach(applicationRecord -> System.out.println(applicationRecord.getStaffRecruitmentId()));
 
         List<StaffRecruitment> staffRecruitments = applicationRecords.stream()
                 .map(record -> staffRecruitmentService.getStaffRecruitmentById(record.getStaffRecruitmentId()))
@@ -172,10 +180,13 @@ public class ApplicationRecordService {
                 .toList();
     }
 
-    private List<ApplicationRecord> findMyApplicationRecords(Boolean onlyAccepted, Long userId) {
+    private List<ApplicationRecord> findMyApplicationRecords(Pageable pageable, Boolean onlyAccepted, Long userId) {
+        Page<ApplicationRecord> myApplicationRecords;
         if (onlyAccepted) {
-            return applicationRecordRepository.findAllByUserIdAndStatus(userId, Status.합격);
+            myApplicationRecords = applicationRecordRepository.findAllByUserIdAndStatus(pageable, userId, Status.합격);
+            return myApplicationRecords.getContent();
         }
-        return applicationRecordRepository.findAllByUserId(userId);
+        myApplicationRecords = applicationRecordRepository.findAllByUserId(pageable, userId);
+        return myApplicationRecords.getContent();
     }
 }
