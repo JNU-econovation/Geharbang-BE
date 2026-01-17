@@ -1,6 +1,6 @@
 name: build & deploy to mac-mini
 
-on : 
+on :
   workflow_dispatch:
   push:
     branches:
@@ -18,8 +18,8 @@ jobs:
       - name: set up JDK 21
         uses: actions/setup-java@v4
         with:
-            java-version: 21
-            distribution: temurin
+          java-version: 21
+          distribution: temurin
 
       - name: grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -49,9 +49,9 @@ jobs:
           host: ${{ secrets.ON_PREM_SERVER_HOST }}
           username: ${{ secrets.ON_PREM_SERVER_USERNAME }}
           password: ${{ secrets.ON_PREM_SERVER_PASSWORD }}
-          port: ${{ secrets.PORT }}
+          port: ${{ secrets.ON_PREM_SERVER_PORT }}
           source: "./build/libs/dev.jar"
-          target: "./jeju/archive"
+          target: "./guesthouse/jeju/archive"
 
       - name: exec.deploy.sh
         uses: appleboy/ssh-action@v1.0.3
@@ -61,6 +61,6 @@ jobs:
           password: ${{ secrets.ON_PREM_SERVER_PASSWORD }}
           port: ${{ secrets.ON_PREM_SERVER_PORT }}
           script: |
-            cd jeju
+            cd guesthouse/jeju
             sh deploy.sh
     
