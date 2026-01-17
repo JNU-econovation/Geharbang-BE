@@ -36,7 +36,8 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
                         restDaysEq(filter.getRestDays()),
                         workingPeriodsIn(filter.getWorkingPeriods()),
                         workScheduleIn(filter.getWorkScheduleType()),
-                        keywordContains(filter.getKeyword())
+                        keywordContains(filter.getKeyword()),
+                        isActive()
                 )
                 .orderBy(orderBy(filter.getSortType()))
                 .offset(pageable.getOffset())
@@ -90,6 +91,10 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
         return staffRecruitmentJob.workDays.in(workDayValues);
     }
 
+    private BooleanExpression isActive() {
+        return staffRecruitment.status.eq(Status.ACTIVE);
+    }
+
 
     private OrderSpecifier<?> orderBy(SortType sortType) {
         return switch (sortType) {
@@ -104,7 +109,8 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
     public List<StaffRecruitment> findRandom(int count, Region region) {
         return jpaQueryFactory
                 .selectFrom(staffRecruitment)
-                .where(staffRecruitment.region.eq(region))
+                .where(staffRecruitment.region.eq(region),
+                        isActive())
                 .orderBy(Expressions.numberTemplate(Double.class, "RAND()").asc())
                 .limit(count)
                 .fetch();
