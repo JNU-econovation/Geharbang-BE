@@ -1,7 +1,10 @@
 package guesthouse.user.service;
 
+import guesthouse.certificate.domain.vo.Status;
+import guesthouse.certificate.repository.CertificateRepository;
 import guesthouse.user.domain.model.User;
 import guesthouse.user.domain.vo.Gender;
+import guesthouse.user.dto.ProfileDTO;
 import guesthouse.user.exception.UserErrorCode;
 import guesthouse.user.exception.UserException;
 import guesthouse.user.repository.UserRepository;
@@ -16,6 +19,7 @@ import java.time.LocalDate;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final CertificateRepository certificateRepository;
 
     @Transactional(readOnly = true)
     public User findById(Long id) {
@@ -32,6 +36,25 @@ public class UserService {
         user.updatePersonalInfo(name, phoneNumber, birthDate, gender);
     }
 
+    @Transactional(readOnly = true)
+    public ProfileDTO getProfile(Long userId) {
+        User user = findById(userId);
+        Boolean isOwner =certificateRepository.existsByUserId(userId);
+        Boolean inReview = certificateRepository.findByUserId(userId)
+                .map(certificate ->  {
+                    Status status = certificate.getStatus();
+                    return status.isInReview();
+                })
+                .orElse(false);
+
+
+        return new ProfileDTO(
+                user.getPersonalInfo().getName(),
+                user.getProfileImageUrl(),
+                isOwner,
+                inReview
+        );
+    
     public void validateAdmin(Long userId) {
         User user = findById(userId);
         if (!user.isAdmin())
