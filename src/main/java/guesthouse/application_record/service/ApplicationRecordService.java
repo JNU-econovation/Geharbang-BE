@@ -10,6 +10,8 @@ import guesthouse.application.exception.SnapShotException;
 import guesthouse.application.repository.QuestionAnswerRepository;
 import guesthouse.application.service.ApplicationService;
 import guesthouse.application_record.domain.model.ApplicationRecord;
+import guesthouse.application_record.domain.vo.Status;
+import guesthouse.application_record.dto.ApplicationRecordDTO;
 import guesthouse.application_record.dto.response.*;
 import guesthouse.application_record.exception.ApplicationRecordErrorCode;
 import guesthouse.application_record.exception.ApplicationRecordException;
@@ -24,11 +26,16 @@ import guesthouse.user.domain.model.User;
 import guesthouse.user.repository.UserRepository;
 import guesthouse.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -142,5 +149,41 @@ public class ApplicationRecordService {
         validateOwner(userId, applicationRecord.getStaffRecruitmentId());
 
         applicationRecord.approve();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ApplicationRecordDTO> getMyApplicationRecords(Boolean onlyAccepted, int pageNumber, Long userId) {
+        Pageable pageable = PageRequest.of(pageNumber, 10);
+
+        List<ApplicationRecord> applicationRecords = findMyApplicationRecords(pageable, onlyAccepted, userId);
+
+        List<StaffRecruitment> staffRecruitments = applicationRecords.stream()
+                .map(record -> staffRecruitmentService.getStaffRecruitmentById(record.getStaffRecruitmentId()))
+                .toList();
+
+        List<String> representativeImageUrls = staffRecruitments.stream()
+                .map(staffRecruitment -> staffRecruitmentService.getFirstRepresentativeImageUrls(staffRecruitment.getId()))
+                .toList();
+
+
+        return IntStream.range(0, applicationRecords.size())
+                .mapToObj(index -> {
+                    ApplicationRecord applicationRecord = applicationRecords.get(index);
+                    StaffRecruitment staffRecruitment = staffRecruitments.get(index);
+                    String representativeImageUrl = representativeImageUrls.get(index);
+
+                    return ApplicationRecordDTO.from(applicationRecord, staffRecruitment, representativeImageUrl);
+                })
+                .toList();
+    }
+
+    private List<ApplicationRecord> findMyApplicationRecords(Pageable pageable, Boolean onlyAccepted, Long userId) {
+        Page<ApplicationRecord> myApplicationRecords;
+        if (onlyAccepted) {
+            myApplicationRecords = applicationRecordRepository.findAllByUserIdAndStatus(pageable, userId, Status.합격);
+            return myApplicationRecords.getContent();
+        }
+        myApplicationRecords = applicationRecordRepository.findAllByUserId(pageable, userId);
+        return myApplicationRecords.getContent();
     }
 }
