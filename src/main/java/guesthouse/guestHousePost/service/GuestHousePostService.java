@@ -1,5 +1,6 @@
 package guesthouse.guestHousePost.service;
 
+import guesthouse.common.exception.GuestHouseException;
 import guesthouse.guestHousePost.domain.model.*;
 import guesthouse.guestHousePost.domain.vo.GuestHouseFilter;
 import guesthouse.guestHousePost.domain.vo.Status;
@@ -217,6 +218,29 @@ public class GuestHousePostService {
 
     public boolean existsByOwnerIdAndId(Long userId, Long guestHousePostId) {
         return guestHousePostRepository.existsByOwnerIdAndId(userId, guestHousePostId);
+    }
+
+    @Transactional
+    public void deleteGuestHousePost(Long userId, Long guestHousePostId) {
+        if (!existsByOwnerIdAndId(userId, guestHousePostId))
+            throw new GuestHousePostException(GuestHousePostErrorCode.NOT_FOUND);
+
+        List<Party> parties = partyRepository.findByGuestHousePostId(guestHousePostId);
+        for (Party party : parties) {
+            partyImageRepository.deleteByPartyId(party.getId());
+        }
+        partyRepository.deleteByGuestHousePostId(guestHousePostId);
+
+        List<Room> rooms = roomRepository.findByGuestHousePostId(guestHousePostId);
+        for (Room room : rooms) {
+            roomImageRepository.deleteByRoomId(room.getId());
+        }
+        roomRepository.deleteByGuestHousePostId(guestHousePostId);
+
+        amenityRepository.deleteByGuestHousePostId(guestHousePostId);
+
+        guestHousePostImageRepository.deleteByGuestHousePostId(guestHousePostId);
+        guestHousePostRepository.deleteById(guestHousePostId);
     }
 
 }

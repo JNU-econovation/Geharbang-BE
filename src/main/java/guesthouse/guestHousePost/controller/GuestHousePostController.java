@@ -93,4 +93,13 @@ public class GuestHousePostController {
         guestHousePostService.changeStatus(changeStatusRequest.status(), userId, guestHousePostId);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteGuestHousePost(
+            @UserId Long userId,
+            @PathVariable("id") Long guestHousePostId
+    ) {
+        guestHousePostService.deleteGuestHousePost(userId, guestHousePostId);
+        return ResponseEntity.ok().build();
+    }
 }

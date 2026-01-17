@@ -17,4 +17,5 @@ public interface StaffRecruitmentImageRepository extends JpaRepository<StaffRecr
 
     StaffRecruitmentImage findByStaffRecruitmentIdAndIndexAndType(Long staffRecruitmentId, int index, StaffRecruitmentImageType type);
 
+    void deleteByStaffRecruitmentId(Long staffRecruitmentId);
 }

@@ -17,4 +17,5 @@ public interface GuestHousePostImageRepository extends JpaRepository<GuestHouseP
 
     List<GuestHousePostImage> findByGuestHousePostId(Long guestHousePostId);
 
+    void deleteByGuestHousePostId(Long guestHousePostId);
 }

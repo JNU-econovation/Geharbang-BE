@@ -9,4 +9,3 @@ public class GuestHousePostException extends GuestHouseException {
         super(errorCode);
     }
 }
-

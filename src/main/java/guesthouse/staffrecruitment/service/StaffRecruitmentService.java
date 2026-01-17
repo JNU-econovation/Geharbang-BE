@@ -200,4 +200,15 @@ public class StaffRecruitmentService {
     public boolean existsByOwnerIdAndId(Long userId, Long staffRecruitmentId) {
         return staffRecruitmentRepository.existsByOwnerIdAndId(userId, staffRecruitmentId);
     }
+
+    @Transactional
+    public void deleteStaffRecruitment(Long userId, Long staffRecruitmentId) {
+        if (!existsByOwnerIdAndId(userId, staffRecruitmentId))
+            throw new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND);
+
+        staffRecruitmentRepository.deleteById(staffRecruitmentId);
+        staffRecruitmentQuestionsRepository.deleteByStaffRecruitmentId(staffRecruitmentId);
+        staffRecruitmentImageRepository.deleteByStaffRecruitmentId(staffRecruitmentId);
+        staffRecruitmentJobRepository.deleteByStaffRecruitmentId(staffRecruitmentId);
+    }
 }
