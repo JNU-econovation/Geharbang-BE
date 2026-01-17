@@ -70,7 +70,7 @@ public record StaffRecruitmentCreateRequest(
 
     public record WorkingInformation(
 
-            @NotBlank
+            @NotNull
             LocalDate startDate,
 
             @NotNull
