@@ -8,7 +8,6 @@ import guesthouse.certificate.dto.response.CertificateDetailsDTO;
 import guesthouse.certificate.exception.CertificateErrorCode;
 import guesthouse.certificate.exception.CertificateException;
 import guesthouse.certificate.repository.CertificateRepository;
-import guesthouse.user.domain.model.User;
 import guesthouse.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -77,6 +76,16 @@ public class CertificateService {
         Files.write(path, image.getBytes());
     }
 
+    @Transactional
+    public void decide(Long userId, Long certificateId, Boolean isApproved) {
+        userService.validateAdmin(userId);
+
+        Certificate certificate = certificateRepository.findById(certificateId)
+                .orElseThrow(()-> new CertificateException(CertificateErrorCode.NOT_FOUND));
+
+        certificate.decide(isApproved);
+    }
+  
     @Transactional(readOnly = true)
     public List<CertificateDTO> getSubmittedCertificates(Long userId) {
         userService.validateAdmin(userId);
@@ -86,6 +95,7 @@ public class CertificateService {
         return certificates.stream()
                 .map(CertificateDTO::from)
                 .toList();
+    }
       
     public CertificateDetailsDTO getDetails(Long userId, Long certificateId) {
         userService.validateAdmin(userId);

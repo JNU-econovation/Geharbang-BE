@@ -54,6 +54,7 @@ public class UserService {
                 isOwner,
                 inReview
         );
+    }
     
     public void validateAdmin(Long userId) {
         User user = findById(userId);
