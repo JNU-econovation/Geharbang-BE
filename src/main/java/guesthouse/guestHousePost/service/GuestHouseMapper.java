@@ -2,6 +2,7 @@ package guesthouse.guestHousePost.service;
 
 import guesthouse.guestHousePost.domain.model.GuestHousePost;
 import guesthouse.guestHousePost.domain.vo.Contact;
+import guesthouse.guestHousePost.domain.vo.Status;
 import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
 import lombok.experimental.UtilityClass;
 import org.locationtech.jts.geom.Coordinate;
@@ -30,6 +31,7 @@ public class GuestHouseMapper {
                 .moods(request.moods())
                 .contact(createContact(contact))
                 .ownerMessage(request.ownerMessage())
+                .status(Status.ACTIVE)
                 .build();
     }
 

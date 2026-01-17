@@ -4,6 +4,7 @@ import guesthouse.common.annotation.UserId;
 import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostsResponse;
 import guesthouse.staffrecruitment.domain.vo.*;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
+import guesthouse.staffrecruitment.dto.request.ChangeStatusRequest;
 import guesthouse.staffrecruitment.dto.request.StaffRecruitmentCreateRequest;
 import guesthouse.staffrecruitment.dto.response.*;
 import guesthouse.staffrecruitment.random.RandomStaffRecruitmentPostsResponse;
@@ -83,4 +84,22 @@ public class StaffRecruitmentController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<Void> changeStatus(
+            @RequestBody ChangeStatusRequest changeStatusRequest,
+            @UserId Long userId,
+            @PathVariable("id") Long staffRecruitmentId
+    ) {
+        staffRecruitmentService.changeStatus(changeStatusRequest.status(), userId, staffRecruitmentId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStaffRecruitment(
+            @UserId Long userId,
+            @PathVariable("id") Long staffRecruitmentId
+    ) {
+        staffRecruitmentService.deleteStaffRecruitment(userId, staffRecruitmentId);
+        return ResponseEntity.ok().build();
+    }
 }

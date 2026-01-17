@@ -1,13 +1,20 @@
 package guesthouse.guestHousePost.service;
 
+import guesthouse.common.exception.GuestHouseException;
 import guesthouse.guestHousePost.domain.model.*;
 import guesthouse.guestHousePost.domain.vo.GuestHouseFilter;
+import guesthouse.guestHousePost.domain.vo.Status;
 import guesthouse.guestHousePost.dto.*;
 import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
 import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostDto;
 import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostsResponse;
+import guesthouse.guestHousePost.exception.GuestHousePostErrorCode;
+import guesthouse.guestHousePost.exception.GuestHousePostException;
 import guesthouse.guestHousePost.repository.*;
+import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.vo.Region;
+import guesthouse.staffrecruitment.exception.StaffRecruitmentErrorCode;
+import guesthouse.staffrecruitment.exception.StaffRecruitmentException;
 import guesthouse.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -197,6 +204,43 @@ public class GuestHousePostService {
                 .toList();
         List<OwnerGuestHousePostDto> dtos = OwnerGuestHousePostDto.of(guestHousePosts, imageUrls);
         return new OwnerGuestHousePostsResponse(dtos);
+    }
+
+    @Transactional
+    public void changeStatus(Status status, Long userId, Long guestHousePostId) {
+        GuestHousePost guestHousePost = getGuestHousePostById(guestHousePostId);
+
+        if (!existsByOwnerIdAndId(userId, guestHousePostId))
+            throw new GuestHousePostException(GuestHousePostErrorCode.NOT_FOUND);
+
+        guestHousePost.changeStatus(status);
+    }
+
+    public boolean existsByOwnerIdAndId(Long userId, Long guestHousePostId) {
+        return guestHousePostRepository.existsByOwnerIdAndId(userId, guestHousePostId);
+    }
+
+    @Transactional
+    public void deleteGuestHousePost(Long userId, Long guestHousePostId) {
+        if (!existsByOwnerIdAndId(userId, guestHousePostId))
+            throw new GuestHousePostException(GuestHousePostErrorCode.NOT_FOUND);
+
+        List<Party> parties = partyRepository.findByGuestHousePostId(guestHousePostId);
+        for (Party party : parties) {
+            partyImageRepository.deleteByPartyId(party.getId());
+        }
+        partyRepository.deleteByGuestHousePostId(guestHousePostId);
+
+        List<Room> rooms = roomRepository.findByGuestHousePostId(guestHousePostId);
+        for (Room room : rooms) {
+            roomImageRepository.deleteByRoomId(room.getId());
+        }
+        roomRepository.deleteByGuestHousePostId(guestHousePostId);
+
+        amenityRepository.deleteByGuestHousePostId(guestHousePostId);
+
+        guestHousePostImageRepository.deleteByGuestHousePostId(guestHousePostId);
+        guestHousePostRepository.deleteById(guestHousePostId);
     }
 
 }

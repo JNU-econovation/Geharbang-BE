@@ -5,6 +5,7 @@ import guesthouse.guestHousePost.domain.vo.*;
 import guesthouse.guestHousePost.dto.GuestHousePostDetailsDTO;
 import guesthouse.guestHousePost.dto.GuestHousePostsResponse;
 import guesthouse.guestHousePost.dto.RandomGuestHousePostsResponse;
+import guesthouse.guestHousePost.dto.request.ChangeStatusRequest;
 import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
 import guesthouse.guestHousePost.dto.response.GuestHouseCreateResponse;
 import guesthouse.guestHousePost.dto.response.GuestHousePostDetailsResponse;
@@ -81,5 +82,24 @@ public class GuestHousePostController {
     public ResponseEntity<OwnerGuestHousePostsResponse> getOwnGuestHousePosts(@UserId Long userId) {
         OwnerGuestHousePostsResponse response = guestHousePostService.getOwnGuestHousePosts(userId);
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Void> changeStatus(
+            @RequestBody ChangeStatusRequest changeStatusRequest,
+            @UserId Long userId,
+            @PathVariable("id") Long guestHousePostId
+    ) {
+        guestHousePostService.changeStatus(changeStatusRequest.status(), userId, guestHousePostId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteGuestHousePost(
+            @UserId Long userId,
+            @PathVariable("id") Long guestHousePostId
+    ) {
+        guestHousePostService.deleteGuestHousePost(userId, guestHousePostId);
+        return ResponseEntity.ok().build();
     }
 }

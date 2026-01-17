@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface PartyRepository extends JpaRepository<Party,Long> {
     List<Party> findByGuestHousePostId(Long guestHousePostId);
+
+    void deleteByGuestHousePostId(Long guestHousePostId);
 }
