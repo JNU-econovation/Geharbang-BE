@@ -1,6 +1,8 @@
 package guesthouse.application.service;
 
 import guesthouse.application.domain.model.Application;
+import guesthouse.application.dto.ApplicationSnapShotDTO;
+import guesthouse.application.dto.MyApplicationDTO;
 import guesthouse.user.domain.vo.Gender;
 import guesthouse.application.dto.requset.ApplicationSaveRequest;
 import guesthouse.application.mapper.ApplicationMapper;
@@ -34,13 +36,18 @@ public class ApplicationService {
     }
 
     public Application getApplication(Long userId) {
-        User user = userService.findById(userId);
-        return applicationRepository.findByUser(user)
+        return applicationRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저의 지원서가 존재하지 않습니다"));
     }
   
     @Transactional(readOnly = true)
     public Boolean hasApplication(Long userId) {
         return applicationRepository.existsByUserId(userId);
+    }
+
+
+    @Transactional(readOnly = true)
+    public MyApplicationDTO getMyApplication(Long userId) {
+        return MyApplicationDTO.from(getApplication(userId));
     }
 }

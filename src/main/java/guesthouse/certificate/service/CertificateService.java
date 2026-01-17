@@ -2,9 +2,11 @@ package guesthouse.certificate.service;
 
 import guesthouse.certificate.domain.model.Certificate;
 import guesthouse.certificate.dto.request.SubmitCertificateRequest;
+import guesthouse.certificate.dto.response.CertificateDetailsDTO;
 import guesthouse.certificate.exception.CertificateErrorCode;
 import guesthouse.certificate.exception.CertificateException;
 import guesthouse.certificate.repository.CertificateRepository;
+import guesthouse.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +31,7 @@ public class CertificateService {
             Set.of("jpeg", "jpg", "pdf", "png");
 
     private final CertificateRepository certificateRepository;
+    private final UserService userService;
 
     @Value("${certificate.directory.path}")
     private String DIR_PATH;
@@ -70,4 +73,12 @@ public class CertificateService {
         Files.write(path, image.getBytes());
     }
 
+    @Transactional(readOnly = true)
+    public CertificateDetailsDTO getDetails(Long userId, Long certificateId) {
+        userService.validateAdmin(userId);
+
+        return certificateRepository.findById(certificateId)
+                .map(CertificateDetailsDTO::from)
+                .orElseThrow(()-> new CertificateException(CertificateErrorCode.NOT_FOUND));
+    }
 }
