@@ -1,6 +1,8 @@
 package guesthouse.certificate.controller;
 
+import guesthouse.certificate.dto.request.CertificateDetailsResponse;
 import guesthouse.certificate.dto.request.SubmitCertificateRequest;
+import guesthouse.certificate.dto.response.CertificateDetailsDTO;
 import guesthouse.certificate.service.CertificateService;
 import guesthouse.common.annotation.UserId;
 import jakarta.validation.Valid;
@@ -33,5 +35,12 @@ public class CertificateController {
         return ResponseEntity.ok().body(new FileUploadedResponse(fileUrl));
     }
 
-
+    @GetMapping("/api/v1/certificate/{certificateId}")
+    public ResponseEntity<CertificateDetailsResponse> getCertificateList(
+            @UserId Long userId,
+            @PathVariable Long certificateId
+    ) {
+        CertificateDetailsDTO details= certificateService.getDetails(userId, certificateId);
+        return ResponseEntity.ok(CertificateDetailsResponse.from(details));
+    }
 }
