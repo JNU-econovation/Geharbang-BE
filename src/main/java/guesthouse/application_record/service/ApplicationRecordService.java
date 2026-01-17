@@ -157,9 +157,6 @@ public class ApplicationRecordService {
 
         List<ApplicationRecord> applicationRecords = findMyApplicationRecords(pageable, onlyAccepted, userId);
 
-        applicationRecords.stream()
-                .forEach(applicationRecord -> System.out.println(applicationRecord.getStaffRecruitmentId()));
-
         List<StaffRecruitment> staffRecruitments = applicationRecords.stream()
                 .map(record -> staffRecruitmentService.getStaffRecruitmentById(record.getStaffRecruitmentId()))
                 .toList();
