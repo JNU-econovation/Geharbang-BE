@@ -80,7 +80,7 @@ public class CertificateService {
     public List<CertificateDTO> getSubmittedCertificates(Long userId) {
         userService.validateAdmin(userId);
 
-        List<Certificate> certificates = certificateRepository.findAllByStatus(Status.검토_대기);
+        List<Certificate> certificates = certificateRepository.findAll();
 
         return certificates.stream()
                 .map(CertificateDTO::from)
