@@ -4,6 +4,7 @@ import guesthouse.certificate.domain.model.Certificate;
 import guesthouse.certificate.domain.vo.Status;
 import guesthouse.certificate.dto.CertificateDTO;
 import guesthouse.certificate.dto.request.SubmitCertificateRequest;
+import guesthouse.certificate.dto.response.CertificateDetailsDTO;
 import guesthouse.certificate.exception.CertificateErrorCode;
 import guesthouse.certificate.exception.CertificateException;
 import guesthouse.certificate.repository.CertificateRepository;
@@ -85,5 +86,12 @@ public class CertificateService {
         return certificates.stream()
                 .map(CertificateDTO::from)
                 .toList();
+      
+    public CertificateDetailsDTO getDetails(Long userId, Long certificateId) {
+        userService.validateAdmin(userId);
+
+        return certificateRepository.findById(certificateId)
+                .map(CertificateDetailsDTO::from)
+                .orElseThrow(()-> new CertificateException(CertificateErrorCode.NOT_FOUND));
     }
 }

@@ -1,5 +1,6 @@
 package guesthouse.application.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import guesthouse.application.exception.MbtiNotMatchedException;
 import guesthouse.application.exception.StyleNotMatchedException;
 import lombok.AllArgsConstructor;
@@ -15,6 +16,7 @@ public enum Style {
     HUMOROUS("유머"),
     RESPONSIBLE("책임감");
 
+    @JsonValue
     private String value;
 
     public static Style fromValue(String value) {

@@ -11,4 +11,5 @@ public interface GuestHousePostRepository extends JpaRepository<GuestHousePost, 
 
     List<GuestHousePost> findByOwnerId(Long ownerId);
 
+    boolean existsByOwnerIdAndId(Long userId, Long guestHousePostId);
 }

@@ -7,6 +7,7 @@ import guesthouse.staffrecruitment.domain.model.StaffRecruitmentQuestion;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentFilter;
 import guesthouse.staffrecruitment.domain.vo.StaffRecruitmentImageType;
+import guesthouse.staffrecruitment.domain.vo.Status;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
 import guesthouse.staffrecruitment.dto.request.StaffRecruitmentCreateRequest;
 import guesthouse.staffrecruitment.dto.response.*;
@@ -83,6 +84,11 @@ public class StaffRecruitmentService {
                 .sorted(Comparator.comparing(StaffRecruitmentImage::getIndex))
                 .map(StaffRecruitmentImage::getImageUrl)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public String getFirstRepresentativeImageUrls(Long recruitmentId) {
+        return staffRecruitmentImageRepository.getRepresentativeImageByStaffRecruitmentId(recruitmentId).getImageUrl();
     }
 
     @Transactional(readOnly = true)
@@ -181,4 +187,28 @@ public class StaffRecruitmentService {
     }
 
 
+    @Transactional
+    public void changeStatus(Status status, Long userId, Long staffRecruitmentId) {
+        StaffRecruitment staffRecruitment = getStaffRecruitmentById(staffRecruitmentId);
+
+        if (!existsByOwnerIdAndId(userId, staffRecruitmentId))
+            throw new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND);
+
+        staffRecruitment.changeStatus(status);
+    }
+
+    public boolean existsByOwnerIdAndId(Long userId, Long staffRecruitmentId) {
+        return staffRecruitmentRepository.existsByOwnerIdAndId(userId, staffRecruitmentId);
+    }
+
+    @Transactional
+    public void deleteStaffRecruitment(Long userId, Long staffRecruitmentId) {
+        if (!existsByOwnerIdAndId(userId, staffRecruitmentId))
+            throw new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND);
+
+        staffRecruitmentRepository.deleteById(staffRecruitmentId);
+        staffRecruitmentQuestionsRepository.deleteByStaffRecruitmentId(staffRecruitmentId);
+        staffRecruitmentImageRepository.deleteByStaffRecruitmentId(staffRecruitmentId);
+        staffRecruitmentJobRepository.deleteByStaffRecruitmentId(staffRecruitmentId);
+    }
 }

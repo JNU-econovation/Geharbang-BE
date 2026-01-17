@@ -8,6 +8,7 @@ import guesthouse.guestHousePost.domain.model.GuestHousePost;
 import guesthouse.guestHousePost.domain.vo.*;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.staffrecruitment.domain.vo.SortType;
+import guesthouse.staffrecruitment.domain.vo.Status;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 
@@ -17,6 +18,7 @@ import static guesthouse.guestHousePost.domain.model.QAmenity.amenity;
 import static guesthouse.guestHousePost.domain.model.QGuestHousePost.guestHousePost;
 import static guesthouse.guestHousePost.domain.model.QParty.party;
 import static guesthouse.guestHousePost.domain.model.QRoom.room;
+import static guesthouse.staffrecruitment.domain.model.QStaffRecruitment.staffRecruitment;
 
 @RequiredArgsConstructor
 public class GuestHousePostRepositoryImpl implements GuestHousePostCustomRepository {
@@ -41,7 +43,8 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
                         headCountTypeIn(filter.getHeadCountTypes()),
                         partyTypeIn(filter.getPartyTypes()),
                         moodAllMatch(filter.getMoods()),
-                        amenityIn(filter.getAmenities())
+                        amenityIn(filter.getAmenities()),
+                        isActive()
                 )
                 .groupBy(guestHousePost.id)
                 .having(
@@ -104,6 +107,10 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
         return amenity.value.in(amenities);
     }
 
+    private BooleanExpression isActive() {
+        return staffRecruitment.status.eq(Status.ACTIVE);
+    }
+
 
     private BooleanExpression keywordContains(String keyword) {
         return keyword == null ? null : guestHousePost.guestHouseName.contains(keyword);
@@ -129,7 +136,8 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
     public List<GuestHousePost> findRandom(int count, Region region) {
         return jpaQueryFactory
                 .selectFrom(guestHousePost)
-                .where(guestHousePost.region.eq(region))
+                .where(guestHousePost.region.eq(region),
+                        isActive())
                 .orderBy(Expressions.numberTemplate(Double.class, "RAND()").asc())
                 .limit(count)
                 .fetch();
