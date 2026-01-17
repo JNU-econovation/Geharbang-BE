@@ -137,6 +137,7 @@ public class ApplicationRecordService {
         }
     }
 
+    @Transactional
     public void approveApplicationRecord(Long userId, Long applicationRecordId) {
         ApplicationRecord applicationRecord = applicationRecordRepository.findByIdOrThrow(applicationRecordId);
         validateOwner(userId, applicationRecord.getStaffRecruitmentId());
