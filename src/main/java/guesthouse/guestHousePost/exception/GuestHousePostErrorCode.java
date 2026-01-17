@@ -1,23 +1,21 @@
-package guesthouse.certificate.exception;
+package guesthouse.guestHousePost.exception;
 
 import guesthouse.common.exception.ErrorCode;
 
-public enum CertificateErrorCode implements ErrorCode {
+public enum GuestHousePostErrorCode implements ErrorCode {
 
-    FILE_TYPE_NOT_SUPPORTED("파일타입을 확인해주세요"),
-    FILE_UPLOAD_FAILED("인증서 파일 저장에 실패하였습니다.", 500),
-    NOT_FOUND("인증서 요청 기록을 찾을 수 없습니다.", 404)
+    NOT_FOUND("게스트하우스 게시글이 존재하지 않습니다.", 404),
     ;
 
     private final String message;
     private final int statusCode;
 
-    CertificateErrorCode(String message, int statusCode) {
+    GuestHousePostErrorCode(String message, int statusCode) {
         this.message = message;
         this.statusCode = statusCode;
     }
 
-    CertificateErrorCode(String message) {
+    GuestHousePostErrorCode(String message) {
         this(message, 400);
     }
 

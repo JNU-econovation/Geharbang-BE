@@ -54,5 +54,10 @@ public class UserService {
                 isOwner,
                 inReview
         );
+    
+    public void validateAdmin(Long userId) {
+        User user = findById(userId);
+        if (!user.isAdmin())
+            throw new UserException(UserErrorCode.NOT_ADMIN);
     }
 }

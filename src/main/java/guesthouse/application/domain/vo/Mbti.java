@@ -1,5 +1,6 @@
 package guesthouse.application.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import guesthouse.application.exception.MbtiNotMatchedException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,6 +25,7 @@ public enum Mbti {
     ENFJ("ENFJ"),
     ENTJ("ENTJ");
 
+    @JsonValue
     private String value;
 
     public static Mbti fromValue(String value) {
