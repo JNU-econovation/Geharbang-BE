@@ -61,6 +61,6 @@ jobs:
           password: ${{ secrets.ON_PREM_SERVER_PASSWORD }}
           port: ${{ secrets.ON_PREM_SERVER_PORT }}
           script: |
-            cd jeju
+            cd guesthouse/jeju
             sh deploy.sh
     
