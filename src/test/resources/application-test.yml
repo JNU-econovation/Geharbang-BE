@@ -45,3 +45,7 @@ jwt:
 image:
   directory:
     path: /home/test/test/test
+
+certificate:
+  directory:
+    path: /home/test/test/test

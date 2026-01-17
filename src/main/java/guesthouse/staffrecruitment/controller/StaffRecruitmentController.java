@@ -102,5 +102,4 @@ public class StaffRecruitmentController {
         staffRecruitmentService.deleteStaffRecruitment(userId, staffRecruitmentId);
         return ResponseEntity.ok().build();
     }
-
 }

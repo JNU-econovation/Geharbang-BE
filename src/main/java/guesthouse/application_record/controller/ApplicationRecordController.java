@@ -1,13 +1,17 @@
 package guesthouse.application_record.controller;
 
+import guesthouse.application_record.dto.ApplicationRecordDTO;
 import guesthouse.application_record.dto.response.ApplicationRecordQuestionsResponse;
 import guesthouse.application_record.dto.response.ApplicationRecordResponse;
+import guesthouse.application_record.dto.response.MyApplicationRecordsResponse;
 import guesthouse.application_record.dto.response.SubmittedApplicationsResponse;
 import guesthouse.application_record.service.ApplicationRecordService;
 import guesthouse.common.annotation.UserId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequestMapping("/api/v1/application-records")
 @RestController
@@ -51,6 +55,16 @@ public class ApplicationRecordController {
     ) {
         applicationRecordService.approveApplicationRecord(userId, applicationRecordId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<MyApplicationRecordsResponse> getMyApplicationRecords(
+            @RequestParam Boolean onlyAccepted,
+            @RequestParam int pageNumber,
+            @UserId Long userId
+    ) {
+        List<ApplicationRecordDTO> myApplicationRecords = applicationRecordService.getMyApplicationRecords(onlyAccepted, pageNumber, userId);
+        return ResponseEntity.ok(new MyApplicationRecordsResponse(myApplicationRecords));
     }
 
 }

@@ -3,6 +3,7 @@ package guesthouse.user.domain.model;
 import guesthouse.common.domain.TimeEntity;
 import guesthouse.user.domain.vo.Gender;
 import guesthouse.user.domain.vo.PersonalInfo;
+import guesthouse.user.domain.vo.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -22,7 +23,11 @@ public class User extends TimeEntity {
 
     private String profileImageUrl;
 
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
     public User() {
+        this.role = Role.사용자;
     }
 
     public void updatePersonalInfo(String name, String phoneNumber, LocalDate birthDate, Gender gender) {
@@ -34,5 +39,9 @@ public class User extends TimeEntity {
             return "";
         }
         return profileImageUrl;
+    }
+
+    public boolean isAdmin() {
+        return this.role == Role.운영자;
     }
 }

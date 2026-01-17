@@ -2,5 +2,9 @@ package guesthouse.application_record.domain.vo;
 
 public enum Status {
     합격,
-    대기중
+    대기중;
+
+    public Boolean isAccepted () {
+        return this == 합격;
+    }
 }

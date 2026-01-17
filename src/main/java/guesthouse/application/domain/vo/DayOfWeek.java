@@ -1,5 +1,6 @@
 package guesthouse.application.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import guesthouse.application.exception.DayOfWeekNotMatchedException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +16,7 @@ public enum DayOfWeek {
     SATURDAY("토"),
     SUNDAY("일");
 
+    @JsonValue
     private String value;
 
     public static DayOfWeek fromValue(String value) {
