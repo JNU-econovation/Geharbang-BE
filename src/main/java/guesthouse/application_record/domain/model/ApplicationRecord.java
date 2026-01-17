@@ -24,7 +24,7 @@ public class ApplicationRecord extends TimeEntity {
     private Long userId;
 
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String applicationSnapShot;
 
     @Column(nullable = false)

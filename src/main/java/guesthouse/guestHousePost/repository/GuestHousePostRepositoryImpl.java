@@ -8,7 +8,6 @@ import guesthouse.guestHousePost.domain.model.GuestHousePost;
 import guesthouse.guestHousePost.domain.vo.*;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.staffrecruitment.domain.vo.SortType;
-import guesthouse.staffrecruitment.domain.vo.Status;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 
@@ -18,7 +17,6 @@ import static guesthouse.guestHousePost.domain.model.QAmenity.amenity;
 import static guesthouse.guestHousePost.domain.model.QGuestHousePost.guestHousePost;
 import static guesthouse.guestHousePost.domain.model.QParty.party;
 import static guesthouse.guestHousePost.domain.model.QRoom.room;
-import static guesthouse.staffrecruitment.domain.model.QStaffRecruitment.staffRecruitment;
 
 @RequiredArgsConstructor
 public class GuestHousePostRepositoryImpl implements GuestHousePostCustomRepository {
@@ -108,7 +106,7 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
     }
 
     private BooleanExpression isActive() {
-        return staffRecruitment.status.eq(Status.ACTIVE);
+        return guestHousePost.status.eq(Status.ACTIVE);
     }
 
 
