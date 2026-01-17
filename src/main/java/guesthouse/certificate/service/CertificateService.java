@@ -1,11 +1,14 @@
 package guesthouse.certificate.service;
 
 import guesthouse.certificate.domain.model.Certificate;
+import guesthouse.certificate.domain.vo.Status;
+import guesthouse.certificate.dto.CertificateDTO;
 import guesthouse.certificate.dto.request.SubmitCertificateRequest;
 import guesthouse.certificate.dto.response.CertificateDetailsDTO;
 import guesthouse.certificate.exception.CertificateErrorCode;
 import guesthouse.certificate.exception.CertificateException;
 import guesthouse.certificate.repository.CertificateRepository;
+import guesthouse.user.domain.model.User;
 import guesthouse.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -74,6 +78,15 @@ public class CertificateService {
     }
 
     @Transactional(readOnly = true)
+    public List<CertificateDTO> getSubmittedCertificates(Long userId) {
+        userService.validateAdmin(userId);
+
+        List<Certificate> certificates = certificateRepository.findAll();
+
+        return certificates.stream()
+                .map(CertificateDTO::from)
+                .toList();
+      
     public CertificateDetailsDTO getDetails(Long userId, Long certificateId) {
         userService.validateAdmin(userId);
 
