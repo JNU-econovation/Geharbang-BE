@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -69,15 +68,5 @@ public class CertificateService {
         Path path = Paths.get(filePath);
         Files.createDirectories(path.getParent());
         Files.write(path, image.getBytes());
-    }
-
-    @Transactional(readOnly = true)
-    public Boolean isOwner(Long userId) {
-        return certificateRepository.existsByUserId(userId);
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<Certificate> findByUserId(Long userId) {
-        return certificateRepository.findByUserId(userId);
     }
 }

@@ -1,8 +1,7 @@
 package guesthouse.user.service;
 
-import guesthouse.certificate.domain.model.Certificate;
 import guesthouse.certificate.domain.vo.Status;
-import guesthouse.certificate.service.CertificateService;
+import guesthouse.certificate.repository.CertificateRepository;
 import guesthouse.user.domain.model.User;
 import guesthouse.user.domain.vo.Gender;
 import guesthouse.user.dto.ProfileDTO;
@@ -14,14 +13,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
-    private final CertificateService certificateService;
+    private final CertificateRepository certificateRepository;
 
     @Transactional(readOnly = true)
     public User findById(Long id) {
@@ -41,8 +39,8 @@ public class UserService {
     @Transactional(readOnly = true)
     public ProfileDTO getProfile(Long userId) {
         User user = findById(userId);
-        Boolean isOwner =certificateService.isOwner(userId);
-        Boolean inReview = certificateService.findByUserId(userId)
+        Boolean isOwner =certificateRepository.existsByUserId(userId);
+        Boolean inReview = certificateRepository.findByUserId(userId)
                 .map(certificate ->  {
                     Status status = certificate.getStatus();
                     return status.isInReview();
