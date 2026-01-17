@@ -222,7 +222,6 @@ public class GuestHousePostService {
 
     @Transactional
     public void deleteGuestHousePost(Long userId, Long guestHousePostId) {
-        System.out.println(guestHousePostId);
         if (!existsByOwnerIdAndId(userId, guestHousePostId))
             throw new GuestHousePostException(GuestHousePostErrorCode.NOT_FOUND);
 
