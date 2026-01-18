@@ -1,6 +1,6 @@
 package guesthouse.certificate.domain.vo;
 
 public enum CertificateType {
-    사업자등록증,
+    영업신고증,
     관광사업등록증
 }
