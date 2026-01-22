@@ -1,13 +1,12 @@
 package guesthouse.application.service;
 
 import guesthouse.application.domain.model.Application;
-import guesthouse.application.dto.ApplicationSnapShotDTO;
 import guesthouse.application.dto.MyApplicationDTO;
-import guesthouse.user.domain.vo.Gender;
 import guesthouse.application.dto.requset.ApplicationSaveRequest;
 import guesthouse.application.mapper.ApplicationMapper;
 import guesthouse.application.repository.ApplicationRepository;
 import guesthouse.user.domain.model.User;
+import guesthouse.user.domain.vo.Gender;
 import guesthouse.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,9 @@ public class ApplicationService {
                 request.phoneNumber(),
                 request.birthDate(),
                 Gender.fromValue(request.gender()),
-                userId);
+                request.imageUrl(),
+                userId
+        );
 
         User user = userService.findById(userId);
         Application application = ApplicationMapper.toEntity(request, user);
@@ -39,7 +40,7 @@ public class ApplicationService {
         return applicationRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저의 지원서가 존재하지 않습니다"));
     }
-  
+
     @Transactional(readOnly = true)
     public Boolean hasApplication(Long userId) {
         return applicationRepository.existsByUserId(userId);

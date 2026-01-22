@@ -30,8 +30,9 @@ public class User extends TimeEntity {
         this.role = Role.사용자;
     }
 
-    public void updatePersonalInfo(String name, String phoneNumber, LocalDate birthDate, Gender gender) {
+    public void updatePersonalInfo(String name, String phoneNumber, LocalDate birthDate, Gender gender, String profileImageUrl) {
         this.personalInfo = new PersonalInfo(name, phoneNumber, birthDate, gender);
+        this.profileImageUrl = profileImageUrl;
     }
 
     public String getProfileImageUrl() {

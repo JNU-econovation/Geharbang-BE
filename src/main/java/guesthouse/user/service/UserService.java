@@ -1,7 +1,6 @@
 package guesthouse.user.service;
 
 import guesthouse.certificate.domain.model.Certificate;
-import guesthouse.certificate.domain.vo.Status;
 import guesthouse.certificate.repository.CertificateRepository;
 import guesthouse.user.domain.model.User;
 import guesthouse.user.domain.vo.Gender;
@@ -33,9 +32,10 @@ public class UserService {
                                    String phoneNumber,
                                    LocalDate birthDate,
                                    Gender gender,
+                                   String profileImageUrl,
                                    Long userId) {
         User user = findById(userId);
-        user.updatePersonalInfo(name, phoneNumber, birthDate, gender);
+        user.updatePersonalInfo(name, phoneNumber, birthDate, gender, profileImageUrl);
     }
 
     @Transactional(readOnly = true)
