@@ -12,5 +12,5 @@ import java.util.Optional;
 public interface CertificateRepository extends JpaRepository<Certificate,Long> {
     Boolean existsByUserId(Long userId);
 
-    Optional<Certificate> findByUserId(Long userId);
+    List<Certificate> findByUserId(Long userId);
 }
