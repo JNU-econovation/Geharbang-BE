@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @Builder
 public record ApplicationRecordDTO(
         Long id,
+        Long staffRecruitmentId,
         String title,
         Region region,
         LocalDate appliedAt,
@@ -20,6 +21,7 @@ public record ApplicationRecordDTO(
     public static ApplicationRecordDTO from (ApplicationRecord record, StaffRecruitment staffRecruitment, String representativeImageUrl) {
         return ApplicationRecordDTO.builder()
                 .id(record.getId())
+                .staffRecruitmentId(staffRecruitment.getId())
                 .title(staffRecruitment.getTitle())
                 .region(staffRecruitment.getRegion())
                 .appliedAt(record.getCreatedAt().toLocalDate())
