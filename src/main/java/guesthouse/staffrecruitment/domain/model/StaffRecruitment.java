@@ -65,4 +65,5 @@ public class StaffRecruitment extends TimeEntity {
     public void changeStatus(Status status) {
         this.status = status;
     }
+
 }

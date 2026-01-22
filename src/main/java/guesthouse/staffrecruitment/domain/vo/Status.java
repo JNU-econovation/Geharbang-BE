@@ -3,4 +3,9 @@ package guesthouse.staffrecruitment.domain.vo;
 public enum Status {
     ACTIVE,
     INACTIVE
+    ;
+
+    public boolean isClosed(){
+        return this == INACTIVE;
+    }
 }

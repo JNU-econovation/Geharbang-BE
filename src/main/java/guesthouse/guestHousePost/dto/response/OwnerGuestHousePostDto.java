@@ -19,7 +19,7 @@ public record OwnerGuestHousePostDto(
                 guestHousePost.getGuestHouseName(),
                 guestHousePost.getRoadNameAddress(),
                 imageUrl,
-                false
+                guestHousePost.getStatus().isClosed()
         );
     }
 

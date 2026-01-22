@@ -19,7 +19,7 @@ public record OwnerStaffRecruitmentPostDto(
                 staffRecruitment.getTitle(),
                 staffRecruitment.getRoadNameAddress(),
                 imageUrl,
-                false
+                staffRecruitment.getStatus().isClosed()
         );
     }
 
