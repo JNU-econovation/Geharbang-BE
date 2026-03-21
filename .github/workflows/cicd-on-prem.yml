@@ -1,6 +1,6 @@
 name: build & deploy to mac-mini
 
-on :
+on:
   workflow_dispatch:
   push:
     branches:
@@ -10,7 +10,7 @@ on :
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
@@ -63,4 +63,30 @@ jobs:
           script: |
             cd guesthouse/jeju
             sh deploy.sh
-    
+
+      - name: Discord 배포 성공 알림
+        if: success()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          status: success
+          title: "서버 배포 완료"
+          description: |
+            브랜치: `${{ github.ref_name }}`
+            커밋: ${{ github.event.head_commit.message }}
+            배포자: ${{ github.actor }}
+          color: 0x00FF00
+
+      - name: Discord 배포 실패 알림
+        if: failure()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          status: failure
+          title: "서버 배포 실패"
+          description: |
+            브랜치: `${{ github.ref_name }}`
+            커밋: ${{ github.event.head_commit.message }}
+            배포자: ${{ github.actor }}
+            워크플로우를 확인해주세요!
+          color: 0xFF0000
