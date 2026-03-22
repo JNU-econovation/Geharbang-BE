@@ -34,35 +34,19 @@ jobs:
           path: build/libs/dev.jar
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build
     steps:
       - name: download build artifact
         uses: actions/download-artifact@v4
         with:
           name: build-result
-          path: build/libs
-
-      - name: scp to mac mini
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.ON_PREM_SERVER_HOST }}
-          username: ${{ secrets.ON_PREM_SERVER_USERNAME }}
-          password: ${{ secrets.ON_PREM_SERVER_PASSWORD }}
-          port: ${{ secrets.ON_PREM_SERVER_PORT }}
-          source: "./build/libs/dev.jar"
-          target: "./guesthouse/jeju/archive"
+          path: guesthouse/jeju/archive
 
       - name: exec.deploy.sh
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.ON_PREM_SERVER_HOST }}
-          username: ${{ secrets.ON_PREM_SERVER_USERNAME }}
-          password: ${{ secrets.ON_PREM_SERVER_PASSWORD }}
-          port: ${{ secrets.ON_PREM_SERVER_PORT }}
-          script: |
-            cd guesthouse/jeju
-            sh deploy.sh
+        run: |
+          cd guesthouse/jeju
+          sh deploy.sh
 
       - name: Discord 배포 성공 알림
         if: success()
