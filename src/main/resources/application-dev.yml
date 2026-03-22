@@ -20,6 +20,10 @@ spring:
         jdbc:
           time_zone: Asia/Seoul
 
+sentry:
+  dsn: ${SENTRY_DSN}
+  traces-sample-rate: 1.0
+
 management:
   endpoints:
     web:
