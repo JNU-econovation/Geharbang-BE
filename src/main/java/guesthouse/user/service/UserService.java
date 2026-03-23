@@ -4,6 +4,7 @@ import guesthouse.certificate.domain.model.Certificate;
 import guesthouse.certificate.repository.CertificateRepository;
 import guesthouse.user.domain.model.User;
 import guesthouse.user.domain.vo.Gender;
+import guesthouse.user.domain.vo.PersonalInfo;
 import guesthouse.user.dto.ProfileDTO;
 import guesthouse.user.exception.UserErrorCode;
 import guesthouse.user.exception.UserException;
@@ -28,6 +29,7 @@ public class UserService {
                 .orElseThrow(() -> new UserException(UserErrorCode.NOT_FOUND));
     }
 
+    @Transactional
     public void updatePersonalInfo(String name,
                                    String phoneNumber,
                                    LocalDate birthDate,
@@ -47,8 +49,9 @@ public class UserService {
         boolean hasInReview = certificates.stream()
                 .anyMatch(certificate -> certificate.getStatus().isInReview());
 
+        PersonalInfo personalInfo = user.getPersonalInfo();
         return new ProfileDTO(
-                user.getPersonalInfo().getName(),
+                personalInfo != null ? personalInfo.getName() : null,
                 user.getProfileImageUrl(),
                 isOwner,
                 hasInReview
