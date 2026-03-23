@@ -64,14 +64,14 @@ jobs:
             (echo "Creating guesthouse network..." && docker network create guesthouse)
 
           # 4. DB 컨테이너 상태 확인 및 시작
-          echo "Checking geharbang-db status..."
-          if [ "$(docker ps -aq -f name=geharbang-db)" ]; then
-            docker start geharbang-db
-            
+          echo "Checking server-mysql status..."
+          if [ "$(docker ps -aq -f name=server-mysql)" ]; then
+            docker start server-mysql
+
             # 5. 네트워크가 끊어져 있을 경우를 대비해 다시 연결
-            docker network connect guesthouse geharbang-db || true
+            docker network connect guesthouse server-mysql || true
           else
-            echo "Error: geharbang-db container not found!"
+            echo "Error: server-mysql container not found!"
             exit 1
           fi
 
