@@ -37,6 +37,7 @@ public record MyApplicationDTO(
                 .gender(gender)
                 .phoneNumber(phoneNumber)
                 .birthDate(birthDate)
+                .availableStartDate(application.getAvailableStartDate())
                 .availableDayOfWeek(application.getAvailableDayOfWeek())
                 .introduction(application.getSelfIntroduction())
                 .mbti(application.getMbti())
