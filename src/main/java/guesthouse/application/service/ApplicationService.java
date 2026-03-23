@@ -3,6 +3,8 @@ package guesthouse.application.service;
 import guesthouse.application.domain.model.Application;
 import guesthouse.application.dto.MyApplicationDTO;
 import guesthouse.application.dto.requset.ApplicationSaveRequest;
+import guesthouse.application.exception.ApplicationErrorCode;
+import guesthouse.application.exception.ApplicationException;
 import guesthouse.application.mapper.ApplicationMapper;
 import guesthouse.application.repository.ApplicationRepository;
 import guesthouse.user.domain.model.User;
@@ -38,7 +40,7 @@ public class ApplicationService {
 
     public Application getApplication(Long userId) {
         return applicationRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저의 지원서가 존재하지 않습니다"));
+                .orElseThrow(() -> new ApplicationException(ApplicationErrorCode.NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
