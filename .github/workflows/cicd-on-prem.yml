@@ -45,6 +45,36 @@ jobs:
           name: build-result
           path: guesthouse/jeju/archive
 
+      - name: Revive Docker and Infrastructure
+        run: |
+          # 1. 도커 데스크탑 실행 (맥 전용)
+          echo "Starting Docker Desktop..."
+          open -a Docker
+
+          # 2. 도커 데몬이 완전히 뜰 때까지 대기 (최대 1분)
+          ITER=0
+          until docker info >/dev/null 2>&1 || [ $ITER -eq 12 ]; do
+            echo "Waiting for Docker daemon... ($((ITER*5))s)"
+            sleep 5
+            ITER=$((ITER+1))
+          done
+
+          # 3. 필수 네트워크 존재 여부 확인 및 생성 (지난번 발생한 guesthouse 오류 방지)
+          docker network inspect guesthouse >/dev/null 2>&1 || \
+            (echo "Creating guesthouse network..." && docker network create guesthouse)
+
+          # 4. DB 컨테이너 상태 확인 및 시작
+          echo "Checking geharbang-db status..."
+          if [ "$(docker ps -aq -f name=geharbang-db)" ]; then
+            docker start geharbang-db
+            
+            # 5. 네트워크가 끊어져 있을 경우를 대비해 다시 연결
+            docker network connect guesthouse geharbang-db || true
+          else
+            echo "Error: geharbang-db container not found!"
+            exit 1
+          fi
+
       - name: exec.deploy.sh
         run: |
           cd guesthouse/jeju
