@@ -77,7 +77,8 @@ jobs:
 
       - name: exec.deploy.sh
         run: |
-          cd guesthouse/jeju
+          cp $GITHUB_WORKSPACE/guesthouse/jeju/archive/dev.jar /Users/brains/guesthouse/jeju/archive/build/libs/dev.jar
+          cd /Users/brains/guesthouse/jeju
           sh deploy.sh
 
       - name: Discord 배포 성공 알림
