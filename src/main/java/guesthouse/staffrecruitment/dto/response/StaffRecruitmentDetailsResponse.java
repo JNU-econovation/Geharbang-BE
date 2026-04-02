@@ -2,6 +2,7 @@ package guesthouse.staffrecruitment.dto.response;
 
 import guesthouse.staffrecruitment.domain.vo.Gender;
 import guesthouse.staffrecruitment.domain.vo.Region;
+import guesthouse.staffrecruitment.domain.vo.WorkScheduleType;
 import guesthouse.staffrecruitment.domain.vo.WorkType;
 import guesthouse.staffrecruitment.domain.vo.WorkingPeriod;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
@@ -90,7 +91,8 @@ public record StaffRecruitmentDetailsResponse(
             String job,
             Integer workDays,
             Integer restDays,
-            WorkType workType
+            WorkType workType,
+            WorkScheduleType weeklyWorkingDays
     ) {
         private static JobSummaryDTO from(StaffRecruitmentJobDTO dto) {
             return new JobSummaryDTO(
@@ -100,7 +102,8 @@ public record StaffRecruitmentDetailsResponse(
                     dto.job(),
                     dto.workDays(),
                     dto.restDays(),
-                    dto.workType()
+                    dto.workType(),
+                    dto.weeklyWorkingDays()
             );
         }
     }

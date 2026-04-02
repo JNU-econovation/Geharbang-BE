@@ -1,6 +1,7 @@
 package guesthouse.staffrecruitment.dto;
 
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentJob;
+import guesthouse.staffrecruitment.domain.vo.WorkScheduleType;
 import guesthouse.staffrecruitment.domain.vo.WorkType;
 import lombok.Builder;
 
@@ -15,7 +16,8 @@ public record StaffRecruitmentJobDTO(
         String job,
         Integer workDays,
         Integer restDays,
-        WorkType workType
+        WorkType workType,
+        WorkScheduleType weeklyWorkingDays
 ) {
     public static StaffRecruitmentJobDTO from(StaffRecruitmentJob job) {
         return StaffRecruitmentJobDTO.builder()
@@ -27,6 +29,7 @@ public record StaffRecruitmentJobDTO(
                 .workDays(job.getWorkDays())
                 .restDays(job.getRestDays())
                 .workType(job.getStandard())
+                .weeklyWorkingDays(job.getWorkScheduleType())
                 .build();
     }
 }
