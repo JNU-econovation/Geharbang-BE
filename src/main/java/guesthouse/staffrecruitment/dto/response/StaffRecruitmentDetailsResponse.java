@@ -51,11 +51,11 @@ public record StaffRecruitmentDetailsResponse(
                 .build();
     }
 
-    private record Location(
+    public static record Location(
             String address,
             double[] coordinates
     ) {
-        private static Location from(String address, Point coordinates) {
+        public static Location from(String address, Point coordinates) {
             return new Location(
                     address,
                     new double[]{coordinates.getY(),  coordinates.getX()}
@@ -63,13 +63,13 @@ public record StaffRecruitmentDetailsResponse(
         }
     }
 
-    private record WorkingInformation(
+    public static record WorkingInformation(
             LocalDate startDate,
             Boolean isStartDateNegotiable,
             WorkingPeriod workingPeriod,
             List<JobSummaryDTO> jobs
     ) {
-        private static WorkingInformation from(LocalDate startDate,
+        public static WorkingInformation from(LocalDate startDate,
                                                Boolean isStartDateNegotiable,
                                                WorkingPeriod workingPeriod,
                                                List<StaffRecruitmentJobDTO> jobs) {
@@ -84,7 +84,7 @@ public record StaffRecruitmentDetailsResponse(
         }
     }
 
-    private record JobSummaryDTO(
+    public static record JobSummaryDTO(
             String name,
             LocalTime startTIme,
             LocalTime endTime,
@@ -94,7 +94,7 @@ public record StaffRecruitmentDetailsResponse(
             WorkType workType,
             WorkScheduleType weeklyWorkingDays
     ) {
-        private static JobSummaryDTO from(StaffRecruitmentJobDTO dto) {
+        public static JobSummaryDTO from(StaffRecruitmentJobDTO dto) {
             return new JobSummaryDTO(
                     dto.name(),
                     dto.startTIme(),
@@ -108,13 +108,13 @@ public record StaffRecruitmentDetailsResponse(
         }
     }
 
-    private record Introduction(
+    public static record Introduction(
             String content,
             List<String> images
     ) {
     }
 
-    private record Feature(
+    public static record Feature(
             Gender gender,
             List<String> advantages,
             List<String> employeeBenefits
@@ -140,7 +140,7 @@ public record StaffRecruitmentDetailsResponse(
         }
     }
 
-    private record Contact(
+    public static record Contact(
             String instagramId,
             String phoneNumber,
             String webSite
