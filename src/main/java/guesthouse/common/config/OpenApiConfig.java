@@ -29,7 +29,7 @@ public class OpenApiConfig {
                         .title("Geharbang API 명세서")
                         .version("v1.0.0")
                         .description("제주 게스트하우스 스텝 매칭 플랫폼 API"))
-                .addSecurityRequirements(securityRequirement)
-                .setComponents(components);
+                .addSecurityItem(securityRequirement)
+                .components(components);
     }
 }
