@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface CertificateRepository extends JpaRepository<Certificate,Long> {
-    Boolean existsByUserId(Long userId);
+    Boolean existsByUserIdAndStatus(Long userId, Status status);
 
     List<Certificate> findByUserId(Long userId);
 }

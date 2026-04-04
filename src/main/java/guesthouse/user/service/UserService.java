@@ -1,6 +1,7 @@
 package guesthouse.user.service;
 
 import guesthouse.certificate.domain.model.Certificate;
+import guesthouse.certificate.domain.vo.Status;
 import guesthouse.certificate.repository.CertificateRepository;
 import guesthouse.user.domain.model.User;
 import guesthouse.user.domain.vo.Gender;
@@ -43,7 +44,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public ProfileDTO getProfile(Long userId) {
         User user = findById(userId);
-        Boolean isOwner = certificateRepository.existsByUserId(userId);
+        Boolean isOwner = certificateRepository.existsByUserIdAndStatus(userId, Status.승인_완료);
         List<Certificate> certificates = certificateRepository.findByUserId(userId);
 
         boolean hasInReview = certificates.stream()
