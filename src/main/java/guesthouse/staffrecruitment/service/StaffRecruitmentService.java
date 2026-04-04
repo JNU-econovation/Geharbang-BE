@@ -161,6 +161,7 @@ public class StaffRecruitmentService {
 
     @Transactional
     public Long createStaffRecruitment(Long userId, StaffRecruitmentCreateRequest request) {
+        userService.validateOwnerStatus(userId);
         StaffRecruitment staffRecruitment = StaffRecruitmentMapper.from(request, userId);
         staffRecruitmentRepository.save(staffRecruitment);
 
