@@ -39,6 +39,7 @@ public class GuestHousePostService {
     private final RoomRepository roomRepository;
     private final RoomImageRepository roomImageRepository;
     private final WishService wishService;
+    private final UserService userService;
 
     @Transactional(readOnly = true)
     public GuestHousePostsResponse getGuestHousePosts(Long userId, int pageNumber, GuestHouseFilter filter) {
@@ -88,6 +89,7 @@ public class GuestHousePostService {
 
     @Transactional
     public Long create(GuestHouseCreateRequest request, Long userId) {
+        userService.validateOwnerStatus(userId);
         GuestHousePost post = GuestHouseMapper.toPost(request, userId);
         guestHousePostRepository.save(post);
         Long postId = post.getId();
