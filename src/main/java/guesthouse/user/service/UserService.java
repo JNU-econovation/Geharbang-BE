@@ -3,6 +3,7 @@ package guesthouse.user.service;
 import guesthouse.certificate.domain.model.Certificate;
 import guesthouse.certificate.domain.vo.Status;
 import guesthouse.certificate.repository.CertificateRepository;
+import java.util.Comparator;
 import guesthouse.user.domain.model.User;
 import guesthouse.user.domain.vo.Gender;
 import guesthouse.user.domain.vo.PersonalInfo;
@@ -51,12 +52,18 @@ public class UserService {
                 .anyMatch(certificate -> certificate.getStatus().isInReview());
 
         PersonalInfo personalInfo = user.getPersonalInfo();
+        String certificateStatus = certificates.stream()
+                .max(Comparator.comparing(Certificate::getCreatedAt))
+                .map(c -> c.getStatus().name())
+                .orElse(null);
+
         return new ProfileDTO(
                 personalInfo != null ? personalInfo.getName() : null,
                 user.getProfileImageUrl(),
                 isOwner,
                 hasInReview,
-                user.isAdmin()
+                user.isAdmin(),
+                certificateStatus
         );
     }
 

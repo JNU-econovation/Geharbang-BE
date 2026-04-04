@@ -5,6 +5,7 @@ public record ProfileDTO(
         String imageUrl,
         Boolean isOwner,
         Boolean isReview,
-        Boolean isAdmin
+        Boolean isAdmin,
+        String certificateStatus
 ) {
 }

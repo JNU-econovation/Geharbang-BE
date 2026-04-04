@@ -9,7 +9,8 @@ public record ProfileResponse(
         String imageUrl,
         Boolean isOwner,
         Boolean inReview,
-        Boolean isAdmin
+        Boolean isAdmin,
+        String certificateStatus
 ) {
     public static ProfileResponse from(ProfileDTO profile) {
         return ProfileResponse.builder()
@@ -18,6 +19,7 @@ public record ProfileResponse(
                 .isOwner(profile.isOwner())
                 .inReview(profile.isReview())
                 .isAdmin(profile.isAdmin())
+                .certificateStatus(profile.certificateStatus())
                 .build();
     }
 }
