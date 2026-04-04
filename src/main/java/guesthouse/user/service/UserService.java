@@ -54,7 +54,8 @@ public class UserService {
                 personalInfo != null ? personalInfo.getName() : null,
                 user.getProfileImageUrl(),
                 isOwner,
-                hasInReview
+                hasInReview,
+                user.isAdmin()
         );
     }
 

@@ -8,7 +8,8 @@ public record ProfileResponse(
         String name,
         String imageUrl,
         Boolean isOwner,
-        Boolean inReview
+        Boolean inReview,
+        Boolean isAdmin
 ) {
     public static ProfileResponse from(ProfileDTO profile) {
         return ProfileResponse.builder()
@@ -16,6 +17,7 @@ public record ProfileResponse(
                 .imageUrl(profile.imageUrl())
                 .isOwner(profile.isOwner())
                 .inReview(profile.isReview())
+                .isAdmin(profile.isAdmin())
                 .build();
     }
 }

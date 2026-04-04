@@ -4,6 +4,7 @@ public record ProfileDTO(
         String name,
         String imageUrl,
         Boolean isOwner,
-        Boolean isReview
+        Boolean isReview,
+        Boolean isAdmin
 ) {
 }
