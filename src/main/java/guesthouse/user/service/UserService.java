@@ -72,4 +72,9 @@ public class UserService {
         if (!user.isAdmin())
             throw new UserException(UserErrorCode.NOT_ADMIN);
     }
+
+    public void validateOwnerStatus(Long userId) {
+        if (!certificateRepository.existsByUserIdAndStatus(userId, Status.승인_완료))
+            throw new UserException(UserErrorCode.NOT_APPROVED_OWNER);
+    }
 }
