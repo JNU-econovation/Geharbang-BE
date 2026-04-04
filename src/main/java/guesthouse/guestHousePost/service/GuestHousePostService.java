@@ -15,6 +15,7 @@ import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.staffrecruitment.exception.StaffRecruitmentErrorCode;
 import guesthouse.staffrecruitment.exception.StaffRecruitmentException;
+import guesthouse.user.service.UserService;
 import guesthouse.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
