@@ -1,3 +1,4 @@
+
 # Geharbang-BE 코드 구조 설명
 
 ## 목차
@@ -27,7 +28,8 @@ Geharbang은 **제주 게스트하우스 스텝 구인/구직 플랫폼**이다.
 |------|------|-------------|
 | 비로그인 | - | 게스트하우스/공고 목록 조회, 추천 조회 |
 | 로그인 (사용자) | 소셜 로그인 | 지원서 작성, 공고 지원, 찜하기, 내 정보 조회 |
-| 운영자 | 인증서 심사 승인 후 Role = 운영자 | 게스트하우스 등록, 공고 등록, 지원자 관리 |
+| 사장님 | 인증서 `승인_완료` | 게스트하우스 등록, 공고 등록, 지원자 관리 (`isOwner: true`) |
+| 시스템 운영자 | `User.role = 운영자` (DB 직접 설정) | 인증서 심사 승인/거부 (`isAdmin: true`) |
 
 ---
 
@@ -336,7 +338,7 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| GET | `/api/v1/user/profile` | 필요 | 내 프로필 조회 (이름, 이미지, 운영자 여부, 인증 심사 상태) |
+| GET | `/api/v1/user/profile` | 필요 | 내 프로필 조회 (이름, 이미지, isOwner, inReview, isAdmin) |
 
 ### 지원서 (Application)
 
@@ -520,7 +522,38 @@ Role role;                      // "사용자" 또는 "운영자" (한글 Enum)
 즉, 인증서가 승인돼도 Role은 자동으로 `운영자`로 바뀌지 않음.
 운영자 기능(인증서 목록, 지원자 관리 등)은 `userService.validateAdmin(userId)`로 Role을 직접 확인하는 방식으로 보호됨.
 
-프로필에서 "운영자" 배지 표시는 `certificateRepository.existsByUserId(userId)`로 판단 (Role이 아닌 Certificate 존재 여부 기준).
+프로필에서 사장님/운영진 여부는 `GET /api/v1/user/profile` 응답 필드로 FE에 전달됨.
+
+**FE 권한 분기용 필드 정리:**
+
+| 필드 | 기준 | 의미 |
+|------|------|------|
+| `isOwner` | 인증서 `승인_완료` 상태 (`existsByUserIdAndStatus`) | 사장님 권한 — 공고 등록, 지원자 관리 |
+| `inReview` | 인증서 `검토_대기` 상태 | 심사 진행 중 배지 표시 |
+| `isAdmin` | `User.role == Role.운영자` | 시스템 운영진 — 인증서 심사 승인/거부 |
+| `certificateStatus` | 최근 인증서 status 문자열 (`null` \| `검토_대기` \| `승인_완료` \| `거부됨`) | 거절 상태 등 세부 UX 분기 |
+
+`isAdmin`은 DB에서 직접 `role = 운영자`로 설정된 경우에만 `true`. 인증서 승인으로는 변경되지 않음.
+운영자 지정 API는 없으며, 현재는 DB 직접 수정으로만 가능.
+
+---
+
+### 사장님 전용 API 보호
+
+게스트하우스/공고 **등록**은 `승인_완료` 인증서 보유자만 가능. `UserService.validateOwnerStatus()`로 일괄 검증.
+
+```java
+// UserService.validateOwnerStatus()
+if (!certificateRepository.existsByUserIdAndStatus(userId, Status.승인_완료))
+    throw new UserException(UserErrorCode.NOT_APPROVED_OWNER);  // 403
+```
+
+| API | 권한 체크 | 미인증 시 응답 |
+|-----|----------|--------------|
+| `POST /api/v1/guest-houses` | `validateOwnerStatus()` | 403 `NOT_APPROVED_OWNER` |
+| `POST /api/v1/staff-recruitment` | `validateOwnerStatus()` | 403 `NOT_APPROVED_OWNER` |
+| `PATCH /api/v1/guest-houses/{id}` | `existsByOwnerIdAndId()` (본인 글 확인) | 기존 에러 |
+| `DELETE /api/v1/guest-houses/{id}` | `existsByOwnerIdAndId()` (본인 글 확인) | 기존 에러 |
 
 ---
 
@@ -612,3 +645,25 @@ GET /images/application/{fileName}
   → nginx가 /home/jeju/images/{fileName} 파일을 직접 서빙
   (Spring Boot를 거치지 않음)
 ```
+
+---
+
+## 13. API 문서 (Swagger)
+
+`springdoc-openapi`를 사용하며, nginx를 통해 외부에서 접근 가능.
+
+**접속 URL:** `https://geharbang.org/swagger-ui/index.html`
+
+**인증 방법:**
+1. 우측 상단 **Authorize 🔒** 클릭
+2. 로그인 후 발급받은 `accessToken` 입력 (`Bearer` 없이 토큰값만)
+3. 이후 모든 API 호출에 `Authorization: Bearer {token}` 헤더 자동 첨부
+
+**설정 구조:**
+
+| 파일 | 역할 |
+|------|------|
+| `common/config/OpenApiConfig.java` | JWT Bearer Authorize 버튼 설정, 명세서 기본 정보 |
+| `common/config/UserIdParameterCustomizer.java` | `@UserId` 파라미터를 Swagger UI에서 전역 숨김 처리 |
+
+`@UserId`는 JWT 토큰에서 자동 주입되는 파라미터로, `ParameterCustomizer`를 구현해 컨트롤러 31곳을 수정하지 않고 전역으로 숨김 처리.
