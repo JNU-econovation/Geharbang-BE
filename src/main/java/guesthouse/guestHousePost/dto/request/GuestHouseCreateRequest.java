@@ -29,7 +29,7 @@ public record GuestHouseCreateRequest (
         List<String> imageUrls,
 
         @NotBlank
-        @Length(min = 10, max = 500)
+        @Length(min = 10, max = 2000)
         String introduction,
 
         @NotEmpty
@@ -108,7 +108,7 @@ public record GuestHouseCreateRequest (
             Long externalGuestFee,
 
             @NotBlank
-            @Length(min = 10, max = 500)
+            @Length(min = 10, max = 2000)
             String information
     ) {
     }
