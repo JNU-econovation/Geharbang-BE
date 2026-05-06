@@ -1,7 +1,6 @@
 package guesthouse.staffrecruitment.controller;
 
 import guesthouse.common.annotation.UserId;
-import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostsResponse;
 import guesthouse.staffrecruitment.domain.vo.*;
 import guesthouse.staffrecruitment.dto.StaffRecruitmentDetailsDTO;
 import guesthouse.staffrecruitment.dto.request.ChangeStatusRequest;
@@ -9,6 +8,8 @@ import guesthouse.staffrecruitment.dto.request.StaffRecruitmentCreateRequest;
 import guesthouse.staffrecruitment.dto.response.*;
 import guesthouse.staffrecruitment.random.RandomStaffRecruitmentPostsResponse;
 import guesthouse.staffrecruitment.service.StaffRecruitmentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/staff-recruitment")
 @RequiredArgsConstructor
+@Tag(name = "Staff Recruitment", description = "스텝 구인 공고 API")
 public class StaffRecruitmentController {
 
     private final StaffRecruitmentService staffRecruitmentService;
@@ -85,6 +87,7 @@ public class StaffRecruitmentController {
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "스텝 구인 공고 수정", description = "운영자가 본인이 등록한 스텝 구인 공고 내용을 수정한다.")
     public ResponseEntity<Void> updateStaffRecruitment(
             @UserId Long userId,
             @PathVariable Long id,
@@ -95,8 +98,9 @@ public class StaffRecruitmentController {
     }
 
     @PatchMapping("/{id}")
+    @Operation(summary = "스텝 구인 공고 상태 변경", description = "운영자가 본인이 등록한 스텝 구인 공고 상태를 ACTIVE 또는 INACTIVE로 변경한다.")
     public ResponseEntity<Void> changeStatus(
-            @RequestBody ChangeStatusRequest changeStatusRequest,
+            @RequestBody @Valid ChangeStatusRequest changeStatusRequest,
             @UserId Long userId,
             @PathVariable("id") Long staffRecruitmentId
     ) {
