@@ -49,12 +49,12 @@ public final class StaffRecruitmentMapper {
                 .build();
     }
 
-    private static Point createPoint(List<Double> coordinates) {
+    public static Point createPoint(List<Double> coordinates) {
         GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
         return geometryFactory.createPoint(new Coordinate(coordinates.getFirst(), coordinates.getLast()));
     }
 
-    private static Contact createContact(StaffRecruitmentCreateRequest.Contact contact) {
+    public static Contact createContact(StaffRecruitmentCreateRequest.Contact contact) {
         return new Contact(
                 Objects.requireNonNullElse(contact.instagramId(), ""),
                 Objects.requireNonNullElse(contact.phoneNumber(), ""),
@@ -62,7 +62,7 @@ public final class StaffRecruitmentMapper {
         );
     }
 
-    private static Feature createFeature(StaffRecruitmentCreateRequest.Feature feature) {
+    public static Feature createFeature(StaffRecruitmentCreateRequest.Feature feature) {
         return new Feature(
                 feature.gender(),
                 Optional.ofNullable(feature.advantages())
