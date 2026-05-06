@@ -13,7 +13,10 @@
 8. [API 엔드포인트 전체 목록](#8-api-엔드포인트-전체-목록)
 9. [Enum / 값 목록](#9-enum--값-목록)
 10. [DB 테이블 ↔ 엔티티 매핑](#10-db-테이블--엔티티-매핑)
-11. [요청 처리 흐름](#11-요청-처리-흐름)
+11. [중요한 설계 결정 및 특이사항](#11-중요한-설계-결정-및-특이사항)
+12. [요청 처리 흐름](#12-요청-처리-흐름)
+13. [인프라 및 실행 환경](#13-인프라-및-실행-환경)
+14. [API 문서 (Swagger)](#14-api-문서-swagger)
 
 ---
 
@@ -161,7 +164,7 @@ application/
 
 ## 5. 공통 컴포넌트 (common)
 
-### 4-1. 예외 처리
+### 5-1. 예외 처리
 
 ```
 common/exception/
@@ -183,7 +186,7 @@ public interface ErrorCode {
 
 도메인별 예외 코드가 이 인터페이스를 구현하고, `GuestHouseException`을 상속한 예외 클래스를 던지면 `GlobalExceptionHandler`가 통일된 형식으로 응답을 내려줌.
 
-### 4-2. @UserId 어노테이션
+### 5-2. @UserId 어노테이션
 
 컨트롤러 파라미터에 `@UserId`를 붙이면 JWT 토큰에서 userId를 자동으로 파싱해서 주입함.
 
@@ -213,7 +216,7 @@ public ResponseEntity<?> getPosts(@UserId(required = false) Long userId) {
 }
 ```
 
-### 4-3. 설정 파일
+### 5-3. 설정 파일
 
 ```
 common/config/
@@ -330,74 +333,76 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
 | GET | `/api/v1/oauth/kakao/login` | 불필요 | 카카오 로그인 URI 반환 |
-| GET | `/api/v1/oauth/kakao/callback` | 불필요 | 카카오 인가코드 처리 → accessToken 발급 |
+| GET | `/api/v1/oauth/kakao/callback` | 불필요 | 카카오 인가코드 처리 → `accessToken`을 응답 헤더에 담아 반환 |
 | GET | `/api/v1/oauth/google/login` | 불필요 | 구글 로그인 URI 반환 |
-| GET | `/api/v1/oauth/google/callback` | 불필요 | 구글 인가코드 처리 → accessToken 발급 |
+| GET | `/api/v1/oauth/google/callback` | 불필요 | 구글 인가코드 처리 → `accessToken`을 응답 헤더에 담아 반환 |
 
 ### 유저 (User)
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| GET | `/api/v1/user/profile` | 필요 | 내 프로필 조회 (이름, 이미지, isOwner, inReview, isAdmin) |
+| GET | `/api/v1/user/profile` | 필요 | 내 프로필 조회 (이름, 이미지, `isOwner`, `inReview`, `isAdmin`, `certificateStatus`) |
 
 ### 지원서 (Application)
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| POST | `/api/v1/application/` | 필요 | 지원서 작성/저장 |
+| POST | `/api/v1/application` | 필요 | 지원서 작성/저장 |
 | GET | `/api/v1/application/my` | 필요 | 내 지원서 조회 |
 | GET | `/api/v1/application/my/exist` | 필요 | 내 지원서 존재 여부 확인 |
-| POST | `/api/v1/application/images` | 필요 | 지원서 프로필 이미지 업로드 (1장) |
+| POST | `/api/v1/application/images` | 필요 | 지원서 프로필 이미지 업로드 (1장, multipart) |
 | POST | `/api/v1/application/staff-recruitment/{recruitmentId}` | 필요 | 특정 공고에 지원서 제출 |
 
 ### 지원 내역 (Application Record)
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| GET | `/api/v1/application-records/my` | 필요 | 내 지원 내역 조회 (합격 필터, 페이지네이션) |
+| GET | `/api/v1/application-records/my` | 필요 | 내 지원 내역 조회 (`?onlyAccepted=true`, `?pageNumber=0`) |
 | GET | `/api/v1/application-records/{recordId}` | 필요 | 특정 지원 내역 상세 조회 |
 | GET | `/api/v1/application-records/questions/{recordId}` | 필요 | 지원 내역의 질문/답변 조회 |
-| GET | `/api/v1/application-records/{id}/all` | 필요 | (운영자) 특정 공고의 전체 지원자 목록 |
-| POST | `/api/v1/application-records/{recordId}` | 필요 | (운영자) 합격/불합격 처리 |
+| GET | `/api/v1/application-records/{id}/all` | 필요 | (운영자) 특정 공고에 지원한 전체 지원자 목록 |
+| POST | `/api/v1/application-records/{recordId}` | 필요 | (운영자) 지원자 합격 처리 |
 
 ### 운영자 인증 (Certificate)
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| POST | `/api/v1/certificate/file-upload` | 필요 | 인증서 파일 업로드 |
+| POST | `/api/v1/certificate/file-upload` | 필요 | 인증서 파일 업로드 (multipart, `fileType`, `fileName` 파라미터 포함) |
 | POST | `/api/v1/certificate/owner` | 필요 | 인증서 제출 (심사 요청) |
-| GET | `/api/v1/certificate` | 필요 | 제출된 인증서 목록 조회 |
-| GET | `/api/v1/certificate/{certificateId}` | 필요 | 인증서 상세 조회 |
-| POST | `/api/v1/certificate/{certificateId}` | 필요 | (관리자) 인증서 승인/거부 |
+| GET | `/api/v1/certificate` | 필요 | (관리자) 전체 제출된 인증서 목록 조회 |
+| GET | `/api/v1/certificate/{certificateId}` | 필요 | (관리자) 인증서 상세 조회 |
+| POST | `/api/v1/certificate/{certificateId}` | 필요 | (관리자) 인증서 승인/거부 결정 |
 
 ### 게스트하우스 게시글 (GuestHousePost)
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| GET | `/api/v1/guest-houses/` | 선택 | 게시글 목록 (필터/정렬) |
-| GET | `/api/v1/guest-houses/recommendation` | 불필요 | 지역별 랜덤 추천 |
-| GET | `/api/v1/guest-houses/{id}/details` | 불필요 | 게시글 상세 조회 |
-| POST | `/api/v1/guest-houses/` | 필요 | 게스트하우스 게시글 등록 |
+| GET | `/api/v1/guest-houses` | 선택 | 게시글 목록 (필터/정렬) |
+| GET | `/api/v1/guest-houses/recommendation` | 불필요 | 지역별 랜덤 추천 (`?region=제주시`) |
+| GET | `/api/v1/guest-houses/{guestHousePostId}/details` | 선택 | 게시글 상세 조회 |
+| POST | `/api/v1/guest-houses` | 필요 | 게스트하우스 게시글 등록 (승인_완료 사장님만 가능, 미충족 시 403) |
 | GET | `/api/v1/guest-houses/owner` | 필요 | 내 게스트하우스 게시글 목록 |
+| PUT | `/api/v1/guest-houses/{id}` | 필요 | 게시글 수정 (승인_완료 사장님 + 본인 게시글만 가능) |
 | PATCH | `/api/v1/guest-houses/{id}` | 필요 | 게시글 상태 변경 (ACTIVE/INACTIVE) |
 | DELETE | `/api/v1/guest-houses/{id}` | 필요 | 게시글 삭제 |
 
-**조회 필터:** `sort`, `region`, `keyword`, `lowestRoomPrice`, `highestRoomPrice`, `partyType`, `roomType`, `headCountType`, `amenities`, `moods`, `pageNumber`
+**조회 필터 (`GET /api/v1/guest-houses`):** `sort`, `region`, `keyword`, `lowestRoomPrice`, `highestRoomPrice`, `partyType`, `roomType`, `headCountType`, `amenities`, `moods`, `pageNumber`
 
 ### 스텝 구인 공고 (StaffRecruitment)
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| GET | `/api/v1/staff-recruitment/` | 선택 | 공고 목록 (필터/정렬) |
-| GET | `/api/v1/staff-recruitment/recommendation` | 불필요 | 지역별 랜덤 추천 |
-| GET | `/api/v1/staff-recruitment/{id}/details` | 선택 | 공고 상세 조회 |
-| GET | `/api/v1/staff-recruitment/{id}/questions` | 필요 | 공고 지원 질문 조회 |
-| POST | `/api/v1/staff-recruitment/` | 필요 | 공고 등록 |
+| GET | `/api/v1/staff-recruitment` | 선택 | 공고 목록 (필터/정렬) |
+| GET | `/api/v1/staff-recruitment/recommendation` | 불필요 | 지역별 랜덤 추천 (`?region=제주시`) |
+| GET | `/api/v1/staff-recruitment/{id}/details` | 선택 | 공고 상세 조회 (`weeklyWorkingDays` 포함) |
+| GET | `/api/v1/staff-recruitment/{id}/questions` | 필요 | 공고 지원 질문 조회 (지원 전 확인용) |
+| POST | `/api/v1/staff-recruitment` | 필요 | 공고 등록 (승인_완료 사장님만 가능, 미충족 시 403) |
 | GET | `/api/v1/staff-recruitment/owner` | 필요 | 내 공고 목록 |
+| PUT | `/api/v1/staff-recruitment/{id}` | 필요 | 공고 수정 (승인_완료 사장님 + 본인 공고만 가능) |
 | PATCH | `/api/v1/staff-recruitment/{id}` | 필요 | 공고 상태 변경 (ACTIVE/INACTIVE) |
 | DELETE | `/api/v1/staff-recruitment/{id}` | 필요 | 공고 삭제 |
 
-**조회 필터:** `sort`, `keyword`, `region`, `workType`, `workDays`, `restDays`, `period`, `workScheduleType`, `gender`, `pageNumber`
+**조회 필터 (`GET /api/v1/staff-recruitment`):** `sort`, `keyword`, `region`, `workType`, `workDays`, `restDays`, `period`, `workScheduleType`, `gender`, `pageNumber`
 
 ### 찜 (Wish)
 
@@ -410,8 +415,8 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| POST | `/api/v1/application/images` | 필요 | 단일 이미지 업로드 |
-| POST | `/api/v1/images` | 필요 | 다중 이미지 업로드 |
+| POST | `/api/v1/application/images` | 필요 | 지원서 프로필 이미지 업로드 (1장, `image` 파라미터) |
+| POST | `/api/v1/images` | 필요 | 게스트하우스/공고 이미지 다중 업로드 (`images` 파라미터, URL 배열 반환) |
 
 ---
 
@@ -540,7 +545,8 @@ Role role;                      // "사용자" 또는 "운영자" (한글 Enum)
 
 ### 사장님 전용 API 보호
 
-게스트하우스/공고 **등록**은 `승인_완료` 인증서 보유자만 가능. `UserService.validateOwnerStatus()`로 일괄 검증.
+게스트하우스/공고 **등록 및 수정**은 `승인_완료` 인증서 보유자만 가능. `UserService.validateOwnerStatus()`로 일괄 검증.
+수정/상태 변경/삭제처럼 특정 게시글을 대상으로 하는 API는 추가로 `existsByOwnerIdAndId()`로 본인 글인지 확인한다.
 
 ```java
 // UserService.validateOwnerStatus()
@@ -552,15 +558,32 @@ if (!certificateRepository.existsByUserIdAndStatus(userId, Status.승인_완료)
 |-----|----------|--------------|
 | `POST /api/v1/guest-houses` | `validateOwnerStatus()` | 403 `NOT_APPROVED_OWNER` |
 | `POST /api/v1/staff-recruitment` | `validateOwnerStatus()` | 403 `NOT_APPROVED_OWNER` |
+| `PUT /api/v1/guest-houses/{id}` | `validateOwnerStatus()` + `existsByOwnerIdAndId()` | 403 또는 404 |
+| `PUT /api/v1/staff-recruitment/{id}` | `validateOwnerStatus()` + `existsByOwnerIdAndId()` | 403 또는 404 |
 | `PATCH /api/v1/guest-houses/{id}` | `existsByOwnerIdAndId()` (본인 글 확인) | 기존 에러 |
 | `DELETE /api/v1/guest-houses/{id}` | `existsByOwnerIdAndId()` (본인 글 확인) | 기존 에러 |
+
+---
+
+### 게시글/공고 수정 방식
+
+게스트하우스 게시글과 스텝 구인 공고 수정 API는 **전체 교체형 PUT**으로 동작한다.
+
+| 도메인 | 기본 엔티티 | 하위 목록 처리 |
+|--------|------------|----------------|
+| GuestHousePost | `GuestHousePost.update()`로 기본 정보 변경 | 이미지, 편의시설, 파티, 객실 및 각 이미지 삭제 후 재저장 |
+| StaffRecruitment | `StaffRecruitment.update()`로 기본 정보 변경 | 직무, 이미지, 추가 질문 삭제 후 재저장 |
+
+하위 목록은 항목별 diff/update를 하지 않고 요청 body 기준으로 다시 구성한다.
+따라서 프론트는 수정 요청 시 기존에 유지할 이미지/파티/객실/질문도 모두 포함해서 보내야 한다.
 
 ---
 
 ### 중복 지원 방지
 
 공고에 중복 지원 시 `existsByStaffRecruitmentIdAndUserId()` 로 체크 후 `IllegalArgumentException` 발생.
-(현재 `GuestHouseException` 계층이 아닌 `IllegalArgumentException` 사용 중 — GlobalExceptionHandler가 못 잡아 500 반환될 수 있음)
+
+> ⚠️ **알려진 버그**: `GuestHouseException` 계층이 아닌 `IllegalArgumentException`을 사용 중 — `GlobalExceptionHandler`가 못 잡아서 중복 지원 시 **500** 반환됨. 추후 `ApplicationException`으로 교체 필요.
 
 ---
 
@@ -648,7 +671,150 @@ GET /images/application/{fileName}
 
 ---
 
-## 13. API 문서 (Swagger)
+## 13. 인프라 및 실행 환경
+
+운영 환경은 **Mac mini self-hosted runner + Docker 컨테이너** 기반으로 구성되어 있다.
+Spring Boot 애플리케이션, MySQL, nginx가 각각 별도 컨테이너로 실행되고, `guesthouse` Docker network를 통해 통신한다.
+
+### 전체 구성
+
+```
+Client
+  │
+  ▼
+nginx container: server-nginx
+  - host 80/443 → container 80/443
+  - HTTPS 종료, API reverse proxy, 정적 파일 서빙
+  │
+  ├── /api/*, /swagger-ui/*, /v3/api-docs
+  │       ▼
+  │   Spring Boot container: server-dev
+  │     - host 8080 → container 8080
+  │     - image: server:geharbang
+  │     - profile: dev
+  │
+  └── /images/*, /files/certifications/*
+          ▼
+      nginx mounted directory
+
+Spring Boot container
+  │
+  ▼
+MySQL container: server-mysql
+  - current running image: mysql:8.0
+  - internal port: 3306
+```
+
+### Docker 구성
+
+서버 운영 파일은 배포 서버의 `/Users/brains/guesthouse/jeju` 기준으로 관리된다.
+
+| 구성 | 컨테이너 | 역할 |
+|------|----------|------|
+| `server-docker-compose.yml` | `server-dev` | Spring Boot JAR 실행 |
+| `mysql-docker-compose.yml` | `server-mysql` | MySQL 데이터베이스 |
+| `nginx-docker-compose.yml` | `server-nginx` | HTTPS, reverse proxy, 정적 파일 서빙 |
+| `server-dockerfile` | `server:geharbang` image | `dev.jar`를 Java 21로 실행 |
+| `deploy.sh` | - | 서버 이미지 빌드 후 `server-dev` 재생성 |
+
+`server-dev`, `server-mysql`, `server-nginx`는 모두 외부 Docker network인 `guesthouse`에 연결된다.
+GitHub Actions 배포 과정에서는 네트워크가 없으면 생성하고, `server-mysql` 컨테이너가 중지되어 있으면 다시 시작한다.
+
+`deploy.sh`는 Docker Desktop이 설치된 Mac mini self-hosted runner에서 실행되므로, Docker credential helper 경로를 명시적으로 PATH에 추가한다.
+이 설정이 없으면 `docker build --no-cache`가 base image metadata를 조회할 때 `docker-credential-desktop`을 찾지 못해 build가 실패할 수 있다.
+
+```sh
+export PATH="/Applications/Docker.app/Contents/Resources/bin:$PATH"
+```
+
+### Spring Profile
+
+| profile | 설정 파일 | 용도 | DB |
+|---------|----------|------|----|
+| `local` | `application-local.yml` | 로컬 개발 기본값 | MySQL |
+| `dev` | `application-dev.yml` | 배포 서버 | MySQL |
+| `test` | `src/test/resources/application-test.yml` | 테스트 | H2 in-memory |
+
+`src/main/resources/application.yml`의 기본 profile은 `local`이다.
+서버 컨테이너는 `server-dockerfile`에서 `-Dspring.profiles.active=dev`로 실행된다.
+
+### DB 구성
+
+운영/로컬 개발 DB는 MySQL을 사용한다.
+
+| 항목 | 값 |
+|------|----|
+| MySQL image | 현재 실행 컨테이너는 `mysql:8.0` (`mysql-docker-compose.yml`은 `mysql:8.4.0` 선언) |
+| 컨테이너 이름 | `server-mysql` |
+| Docker network | `guesthouse` |
+| 데이터 볼륨 | `./db/data:/var/lib/mysql` |
+| 설정 볼륨 | `./db/config:/etc/mysql/conf.d` |
+| 초기화 SQL 볼륨 | `./db/init:/docker-entrypoint-initdb.d` |
+| Hibernate DDL | `ddl-auto: update` |
+| Dialect | `org.hibernate.dialect.MySQL8Dialect` |
+| Timezone | `Asia/Seoul` |
+
+애플리케이션은 `.env`에서 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`를 읽어 DB에 연결한다.
+테스트는 H2 in-memory DB를 사용하므로 MySQL 컨테이너 없이도 `./gradlew test`가 동작한다.
+
+### 파일 저장 및 nginx 볼륨
+
+업로드 파일은 Spring Boot 컨테이너 안에서 로컬 경로에 저장되지만, 실제로는 nginx 디렉토리와 Docker volume으로 공유된다.
+
+| 파일 종류 | Spring Boot 저장 경로 | nginx 서빙 경로 | 외부 URL 예시 |
+|----------|----------------------|----------------|--------------|
+| 이미지 | `/home/geharbang/images` | `/home/jeju/images` | `/images/{fileName}` |
+| 인증서 | `/home/geharbang/certs` | `/home/jeju/certs` | `/files/certifications/{fileName}` |
+
+Spring Boot는 DB에 파일의 URL 경로만 저장하고, 파일 다운로드/조회 요청은 nginx가 직접 처리한다.
+
+### CI/CD 흐름
+
+```
+push to dev or dev-test
+  → GitHub Actions ubuntu runner에서 ./gradlew build
+  → build/libs/dev.jar artifact 업로드
+  → self-hosted runner(Mac mini)에서 artifact 다운로드
+  → /Users/brains/guesthouse/jeju/archive/build/libs/dev.jar 로 복사
+  → artifact 파일 존재 여부 확인
+  → Docker Desktop 및 server-mysql 상태 확인
+  → /Users/brains/guesthouse/jeju/deploy.sh 실행
+  → server:geharbang 이미지 no-cache 재빌드
+  → server-dev 컨테이너 재생성
+```
+
+배포 성공/실패는 Discord webhook으로 알림을 보낸다.
+`dev` 브랜치 push 이후 새 코드가 운영에 반영되려면 artifact 복사, Docker image 재빌드, `server-dev` 컨테이너 재생성이 모두 성공해야 한다.
+
+### 배포 반영 확인
+
+배포 후에는 아래 순서로 실제 반영 여부를 확인한다.
+
+```bash
+# 서버 상태
+curl -s http://localhost:8080/actuator/health
+
+# 게스트하우스 수정 API 반영 여부 예시
+curl -i -X OPTIONS http://localhost:8080/api/v1/guest-houses/1
+# Allow 헤더에 PUT 포함 여부 확인
+
+# Swagger 문서 반영 여부
+curl -s http://localhost:8080/v3/api-docs
+
+# 새 이미지/JAR 반영 여부
+docker image inspect server:geharbang --format 'Created={{.Created}} Id={{.Id}}'
+docker exec server-dev stat /server/dev.jar
+```
+
+`server-dev`가 재시작되었더라도 Docker image가 새로 빌드되지 않았다면 이전 JAR로 뜰 수 있다.
+이 경우 `docker image inspect server:geharbang`의 생성 시각과 `docker exec server-dev stat /server/dev.jar` 결과를 함께 확인한다.
+
+배포 구조에서 `server-mysql`, `server-nginx`는 애플리케이션 코드 변경만으로 재시작하지 않는다.
+API 코드 변경은 새 JAR를 포함한 `server:geharbang` image를 다시 만들고 `server-dev`만 재생성하는 방식으로 반영한다.
+
+---
+
+## 14. API 문서 (Swagger)
 
 `springdoc-openapi`를 사용하며, nginx를 통해 외부에서 접근 가능.
 
