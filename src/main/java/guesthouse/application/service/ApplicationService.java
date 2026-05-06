@@ -1,6 +1,7 @@
 package guesthouse.application.service;
 
 import guesthouse.application.domain.model.Application;
+import guesthouse.application.domain.vo.Mbti;
 import guesthouse.application.dto.MyApplicationDTO;
 import guesthouse.application.dto.requset.ApplicationSaveRequest;
 import guesthouse.application.exception.ApplicationErrorCode;
@@ -32,10 +33,24 @@ public class ApplicationService {
                 userId
         );
 
-        User user = userService.findById(userId);
-        Application application = ApplicationMapper.toEntity(request, user);
-
-        return applicationRepository.save(application).getId();
+        return applicationRepository.findByUserId(userId)
+                .map(existing -> {
+                    existing.update(
+                            request.availableStartDate(),
+                            ApplicationMapper.toDayOfWeekSet(request.availableDayOfWeek()),
+                            request.selfIntroduction(),
+                            Mbti.fromValue(request.mbti()),
+                            ApplicationMapper.toStyleSet(request.style()),
+                            request.instagramId(),
+                            request.imageUrl()
+                    );
+                    return existing.getId();
+                })
+                .orElseGet(() -> {
+                    User user = userService.findById(userId);
+                    Application application = ApplicationMapper.toEntity(request, user);
+                    return applicationRepository.save(application).getId();
+                });
     }
 
     public Application getApplication(Long userId) {
