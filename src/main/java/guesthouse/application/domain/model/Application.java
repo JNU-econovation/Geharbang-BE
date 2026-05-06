@@ -56,4 +56,20 @@ public class Application {
     private String instagramId;
 
     private String imageUrl;
+
+    public void update(LocalDate availableStartDate,
+                       Set<DayOfWeek> availableDayOfWeek,
+                       String selfIntroduction,
+                       Mbti mbti,
+                       Set<Style> style,
+                       String instagramId,
+                       String imageUrl) {
+        this.availableStartDate = availableStartDate;
+        this.availableDayOfWeek = availableDayOfWeek;
+        this.selfIntroduction = selfIntroduction;
+        this.mbti = mbti;
+        this.style = style;
+        this.instagramId = instagramId;
+        this.imageUrl = imageUrl;
+    }
 }
