@@ -13,6 +13,8 @@ import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostsResponse;
 import guesthouse.guestHousePost.service.GuestHousePostService;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.staffrecruitment.domain.vo.SortType;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,7 @@ import java.util.List;
 @RequestMapping("/api/v1/guest-houses")
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Guest House", description = "게스트하우스 게시글 API")
 public class GuestHousePostController {
 
     private final GuestHousePostService guestHousePostService;
@@ -84,9 +87,21 @@ public class GuestHousePostController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/{id}")
+    @Operation(summary = "게스트하우스 게시글 수정", description = "운영자가 본인이 등록한 게스트하우스 게시글 내용을 수정한다.")
+    public ResponseEntity<Void> updateGuestHousePost(
+            @UserId Long userId,
+            @PathVariable Long id,
+            @RequestBody @Valid GuestHouseCreateRequest request
+    ) {
+        guestHousePostService.updateGuestHousePost(userId, id, request);
+        return ResponseEntity.ok().build();
+    }
+
     @PatchMapping("/{id}")
+    @Operation(summary = "게스트하우스 게시글 상태 변경", description = "운영자가 본인이 등록한 게스트하우스 게시글 상태를 ACTIVE 또는 INACTIVE로 변경한다.")
     public ResponseEntity<Void> changeStatus(
-            @RequestBody ChangeStatusRequest changeStatusRequest,
+            @RequestBody @Valid ChangeStatusRequest changeStatusRequest,
             @UserId Long userId,
             @PathVariable("id") Long guestHousePostId
     ) {
