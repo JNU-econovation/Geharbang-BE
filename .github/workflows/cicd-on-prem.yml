@@ -77,8 +77,12 @@ jobs:
 
       - name: exec.deploy.sh
         run: |
-          cp $GITHUB_WORKSPACE/guesthouse/jeju/archive/dev.jar /Users/brains/guesthouse/jeju/archive/build/libs/dev.jar
+          set -euo pipefail
+          mkdir -p /Users/brains/guesthouse/jeju/archive/build/libs
+          test -f "$GITHUB_WORKSPACE/guesthouse/jeju/archive/dev.jar"
+          cp "$GITHUB_WORKSPACE/guesthouse/jeju/archive/dev.jar" /Users/brains/guesthouse/jeju/archive/build/libs/dev.jar
           cd /Users/brains/guesthouse/jeju
+          test -f ./archive/build/libs/dev.jar
           sh deploy.sh
 
       - name: Discord 배포 성공 알림
