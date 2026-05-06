@@ -179,6 +179,8 @@ public class StaffRecruitmentService {
 
     @Transactional
     public void updateStaffRecruitment(Long userId, Long staffRecruitmentId, StaffRecruitmentCreateRequest request) {
+        userService.validateOwnerStatus(userId);
+
         if (!existsByOwnerIdAndId(userId, staffRecruitmentId))
             throw new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND);
 
