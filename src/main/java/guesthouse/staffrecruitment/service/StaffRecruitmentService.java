@@ -177,6 +177,40 @@ public class StaffRecruitmentService {
         return staffRecruitment.getId();
     }
 
+    @Transactional
+    public void updateStaffRecruitment(Long userId, Long staffRecruitmentId, StaffRecruitmentCreateRequest request) {
+        if (!existsByOwnerIdAndId(userId, staffRecruitmentId))
+            throw new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND);
+
+        StaffRecruitment staffRecruitment = getStaffRecruitmentById(staffRecruitmentId);
+
+        StaffRecruitmentCreateRequest.Location location = request.location();
+        StaffRecruitmentCreateRequest.WorkingInformation workingInformation = request.workingInformation();
+
+        staffRecruitment.update(
+                request.title(),
+                request.guestHouseName(),
+                request.region(),
+                location.lotNumberAddress(),
+                location.roadNameAddress(),
+                StaffRecruitmentMapper.createPoint(location.coordinates()),
+                workingInformation.startDate(),
+                workingInformation.workingPeriod(),
+                request.introduction().content(),
+                StaffRecruitmentMapper.createFeature(request.feature()),
+                StaffRecruitmentMapper.createContact(request.contact()),
+                request.ownerMessage()
+        );
+
+        staffRecruitmentJobRepository.deleteByStaffRecruitmentId(staffRecruitmentId);
+        staffRecruitmentImageRepository.deleteByStaffRecruitmentId(staffRecruitmentId);
+        staffRecruitmentQuestionsRepository.deleteByStaffRecruitmentId(staffRecruitmentId);
+
+        staffRecruitmentJobRepository.saveAll(StaffRecruitmentJobMapper.from(request, staffRecruitmentId));
+        staffRecruitmentImageRepository.saveAll(StaffRecruitmentImageMapper.from(request, staffRecruitmentId));
+        staffRecruitmentQuestionsRepository.saveAll(StaffRecruitmentQuestionMapper.from(request, staffRecruitmentId));
+    }
+
     public OwnerStaffRecruitmentPostsResponse getOwnStaffRecruitmentPosts(Long userId) {
         List<StaffRecruitment> staffRecruitments = staffRecruitmentRepository.findByOwnerId(userId);
         List<String> imageUrls = staffRecruitments.stream()
