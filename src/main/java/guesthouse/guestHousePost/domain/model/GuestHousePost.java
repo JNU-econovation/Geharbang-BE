@@ -64,4 +64,28 @@ public class GuestHousePost {
     public void changeStatus(Status status) {
         this.status = status;
     }
+
+    public void update(String guestHouseName,
+                       Region region,
+                       String lotNumberAddress,
+                       String roadNameAddress,
+                       Point coordinates,
+                       String introduction,
+                       Set<Mood> moods,
+                       Contact contact,
+                       String ownerMessage) {
+        this.guestHouseName = guestHouseName;
+        this.region = region;
+        this.lotNumberAddress = lotNumberAddress;
+        this.roadNameAddress = roadNameAddress;
+        this.coordinates = coordinates;
+        this.introduction = introduction;
+        if (this.moods == null) {
+            this.moods = new HashSet<>();
+        }
+        this.moods.clear();
+        this.moods.addAll(moods);
+        this.contact = contact;
+        this.ownerMessage = ownerMessage;
+    }
 }
