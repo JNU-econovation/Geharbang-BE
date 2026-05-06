@@ -126,6 +126,39 @@ public class GuestHousePostService {
                 });
     }
 
+    @Transactional
+    public void updateGuestHousePost(Long userId, Long guestHousePostId, GuestHouseCreateRequest request) {
+        userService.validateOwnerStatus(userId);
+
+        if (!existsByOwnerIdAndId(userId, guestHousePostId))
+            throw new GuestHousePostException(GuestHousePostErrorCode.NOT_FOUND);
+
+        GuestHousePost guestHousePost = getGuestHousePostById(guestHousePostId);
+        GuestHouseCreateRequest.Location location = request.location();
+
+        guestHousePost.update(
+                request.guestHouseName(),
+                request.region(),
+                location.lotNumberAddress(),
+                location.roadNameAddress(),
+                GuestHouseMapper.createPoint(location.coordinates()),
+                request.introduction(),
+                request.moods(),
+                GuestHouseMapper.createContact(request.contact()),
+                request.ownerMessage()
+        );
+
+        deleteParties(guestHousePostId);
+        deleteRooms(guestHousePostId);
+        amenityRepository.deleteByGuestHousePostId(guestHousePostId);
+        guestHousePostImageRepository.deleteByGuestHousePostId(guestHousePostId);
+
+        guestHousePostImageRepository.saveAll(ImageMapper.toGuestHousePostImages(request.imageUrls(), guestHousePostId));
+        amenityRepository.saveAll(AmenityMapper.toAmenities(request.amenities(), guestHousePostId));
+        saveParties(request.parties(), guestHousePostId);
+        saveRooms(request.rooms(), guestHousePostId);
+    }
+
     @Transactional(readOnly = true)
     public GuestHousePostDetailsDTO getDetails(Long guestHousePostId) {
         GuestHousePost guestHousePost = getGuestHousePostById(guestHousePostId);
@@ -228,22 +261,27 @@ public class GuestHousePostService {
         if (!existsByOwnerIdAndId(userId, guestHousePostId))
             throw new GuestHousePostException(GuestHousePostErrorCode.NOT_FOUND);
 
+        deleteParties(guestHousePostId);
+        deleteRooms(guestHousePostId);
+        amenityRepository.deleteByGuestHousePostId(guestHousePostId);
+        guestHousePostImageRepository.deleteByGuestHousePostId(guestHousePostId);
+        guestHousePostRepository.deleteById(guestHousePostId);
+    }
+
+    private void deleteParties(Long guestHousePostId) {
         List<Party> parties = partyRepository.findByGuestHousePostId(guestHousePostId);
         for (Party party : parties) {
             partyImageRepository.deleteByPartyId(party.getId());
         }
         partyRepository.deleteByGuestHousePostId(guestHousePostId);
+    }
 
+    private void deleteRooms(Long guestHousePostId) {
         List<Room> rooms = roomRepository.findByGuestHousePostId(guestHousePostId);
         for (Room room : rooms) {
             roomImageRepository.deleteByRoomId(room.getId());
         }
         roomRepository.deleteByGuestHousePostId(guestHousePostId);
-
-        amenityRepository.deleteByGuestHousePostId(guestHousePostId);
-
-        guestHousePostImageRepository.deleteByGuestHousePostId(guestHousePostId);
-        guestHousePostRepository.deleteById(guestHousePostId);
     }
 
 }
