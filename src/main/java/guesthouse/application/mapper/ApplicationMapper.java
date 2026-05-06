@@ -16,25 +16,27 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class ApplicationMapper {
     public static Application toEntity(ApplicationSaveRequest request, User user) {
-        Mbti mbti = Mbti.fromValue(request.mbti());
-        List<DayOfWeek> listOfAvailableDayOfWeek = request.availableDayOfWeek()
-                .stream()
-                .map(DayOfWeek::fromValue)
-                .toList();
-        Set<Style> listOfStyle = request.style()
-                .stream()
-                .map(Style::fromValue)
-                .collect(Collectors.toSet());;
-
         return Application.builder()
                 .user(user)
                 .availableStartDate(request.availableStartDate())
-                .availableDayOfWeek(new HashSet<>(listOfAvailableDayOfWeek))
+                .availableDayOfWeek(toDayOfWeekSet(request.availableDayOfWeek()))
                 .selfIntroduction(request.selfIntroduction())
-                .mbti(mbti)
-                .style(listOfStyle)
+                .mbti(Mbti.fromValue(request.mbti()))
+                .style(toStyleSet(request.style()))
                 .instagramId(request.instagramId())
                 .imageUrl(request.imageUrl())
                 .build();
+    }
+
+    public static Set<DayOfWeek> toDayOfWeekSet(List<String> values) {
+        return values.stream()
+                .map(DayOfWeek::fromValue)
+                .collect(Collectors.toSet());
+    }
+
+    public static Set<Style> toStyleSet(List<String> values) {
+        return values.stream()
+                .map(Style::fromValue)
+                .collect(Collectors.toSet());
     }
 }
