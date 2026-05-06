@@ -35,12 +35,16 @@ public class GuestHouseMapper {
                 .build();
     }
 
-    private static Point createPoint(List<Double> coordinates) {
+    public static Point createPoint(List<Double> coordinates) {
         GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
         return geometryFactory.createPoint(new Coordinate(coordinates.getFirst(), coordinates.getLast()));
     }
 
-    private static Contact createContact(GuestHouseCreateRequest.Contact contact) {
+    public static Contact createContact(GuestHouseCreateRequest.Contact contact) {
+        if (contact == null) {
+            return new Contact("", "", "");
+        }
+
         return new Contact(
                 Objects.requireNonNullElse(contact.instagramId(), ""),
                 Objects.requireNonNullElse(contact.phoneNumber(), ""),
