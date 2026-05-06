@@ -66,4 +66,30 @@ public class StaffRecruitment extends TimeEntity {
         this.status = status;
     }
 
+    public void update(String title,
+                       String guestHouseName,
+                       Region region,
+                       String lotNumberAddress,
+                       String roadNameAddress,
+                       Point coordinates,
+                       LocalDate startDate,
+                       WorkingPeriod workingPeriod,
+                       String content,
+                       Feature feature,
+                       Contact contact,
+                       String ownerMessage) {
+        this.title = title;
+        this.guestHouseName = guestHouseName;
+        this.region = region;
+        this.lotNumberAddress = lotNumberAddress;
+        this.roadNameAddress = roadNameAddress;
+        this.coordinates = coordinates;
+        this.startDate = startDate;
+        this.workingPeriod = workingPeriod;
+        this.content = content;
+        this.feature = feature;
+        this.contact = contact;
+        this.ownerMessage = ownerMessage;
+    }
+
 }
