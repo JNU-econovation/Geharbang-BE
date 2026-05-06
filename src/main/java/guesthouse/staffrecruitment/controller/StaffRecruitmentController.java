@@ -84,6 +84,16 @@ public class StaffRecruitmentController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateStaffRecruitment(
+            @UserId Long userId,
+            @PathVariable Long id,
+            @RequestBody @Valid StaffRecruitmentCreateRequest request
+    ) {
+        staffRecruitmentService.updateStaffRecruitment(userId, id, request);
+        return ResponseEntity.ok().build();
+    }
+
     @PatchMapping("/{id}")
     public ResponseEntity<Void> changeStatus(
             @RequestBody ChangeStatusRequest changeStatusRequest,
