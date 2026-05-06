@@ -2,6 +2,7 @@ package guesthouse.guestHousePost.dto.request;
 
 import guesthouse.guestHousePost.domain.vo.*;
 import guesthouse.staffrecruitment.domain.vo.Region;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.Length;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 
+@Schema(name = "GuestHouseCreateRequest")
 public record GuestHouseCreateRequest (
 
         @NotBlank
@@ -41,10 +43,12 @@ public record GuestHouseCreateRequest (
         Set<Mood> moods,
 
         @Valid
+        @NotNull
         @Size(min = 0, max = 10)
         List<Party> parties,
 
         @Valid
+        @NotEmpty
         @Size(min = 1, max =  10)
         List<Room> rooms,
 
@@ -56,6 +60,7 @@ public record GuestHouseCreateRequest (
 
 ) {
 
+    @Schema(name = "GuestHouseLocation")
     public record Location(
 
             @NotBlank
@@ -64,11 +69,13 @@ public record GuestHouseCreateRequest (
             @NotBlank
             String roadNameAddress,
 
+            @NotNull
             @Size(min = 2, max = 2)
             List<Double> coordinates
     ) {
     }
 
+    @Schema(name = "GuestHouseParty")
     public record Party (
 
             @NotNull
@@ -113,6 +120,7 @@ public record GuestHouseCreateRequest (
     ) {
     }
 
+    @Schema(name = "GuestHouseRoom")
     public record Room(
 
             @NotBlank
@@ -141,6 +149,7 @@ public record GuestHouseCreateRequest (
     ) {
     }
 
+    @Schema(name = "GuestHouseContact")
     public record Contact(
 
             @Length(min = 11, max = 13)
