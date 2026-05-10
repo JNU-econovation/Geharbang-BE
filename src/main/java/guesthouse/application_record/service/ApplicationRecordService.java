@@ -66,7 +66,7 @@ public class ApplicationRecordService {
     private void checkDuplicatedApplication(Long recruitmentId, Long userId) {
         Boolean isDuplicated = applicationRecordRepository.existsByStaffRecruitmentIdAndUserId(recruitmentId, userId);
         if (isDuplicated)
-            throw new IllegalArgumentException("이미 지원한 스탭 공고입니다");
+            throw new ApplicationRecordException(ApplicationRecordErrorCode.DUPLICATED_APPLICATION);
     }
 
     private String convertToSnapshot(Application application) {
