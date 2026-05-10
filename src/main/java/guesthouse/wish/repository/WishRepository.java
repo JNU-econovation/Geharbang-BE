@@ -1,9 +1,11 @@
 package guesthouse.wish.repository;
 
 import guesthouse.wish.domain.model.Wish;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,4 +19,8 @@ public interface WishRepository extends JpaRepository<Wish, Long> {
     void deleteByUserIdAndGuestHousePostId(Long userId, Long guestHousePostId);
 
     Optional<Wish> findByIdAndUserId(Long id, Long userId);
+
+    List<Wish> findByUserIdAndStaffRecruitmentIdIsNotNullOrderByIdDesc(Long userId, Pageable pageable);
+
+    List<Wish> findByUserIdAndGuestHousePostIdIsNotNullOrderByIdDesc(Long userId, Pageable pageable);
 }
