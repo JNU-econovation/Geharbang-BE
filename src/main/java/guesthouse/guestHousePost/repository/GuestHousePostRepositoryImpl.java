@@ -1,8 +1,10 @@
 package guesthouse.guestHousePost.repository;
 
+import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import guesthouse.guestHousePost.domain.model.GuestHousePost;
 import guesthouse.guestHousePost.domain.vo.*;
@@ -17,6 +19,7 @@ import static guesthouse.guestHousePost.domain.model.QAmenity.amenity;
 import static guesthouse.guestHousePost.domain.model.QGuestHousePost.guestHousePost;
 import static guesthouse.guestHousePost.domain.model.QParty.party;
 import static guesthouse.guestHousePost.domain.model.QRoom.room;
+import static guesthouse.wish.domain.model.QWish.wish;
 
 @RequiredArgsConstructor
 public class GuestHousePostRepositoryImpl implements GuestHousePostCustomRepository {
@@ -25,7 +28,7 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
 
     @Override
     public List<GuestHousePost> searchByFilter(Pageable pageable, GuestHouseFilter filter) {
-        return jpaQueryFactory.selectDistinct(guestHousePost)
+        var query = jpaQueryFactory.selectDistinct(guestHousePost)
                 .from(guestHousePost)
                 .leftJoin(room)
                 .on(guestHousePost.id.eq(room.guestHousePostId))
@@ -45,9 +48,14 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
                         isActive()
                 )
                 .groupBy(guestHousePost.id)
-                .having(
-                        amenityCountEq(filter.getAmenities())
-                )
+                .having(amenityCountEq(filter.getAmenities()));
+
+        OrderSpecifier<?> order = orderBy(filter.getSortType());
+        if (order != null) {
+            query = query.orderBy(order);
+        }
+
+        return query
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -123,10 +131,13 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
 
     private OrderSpecifier<?> orderBy(SortType sortType) {
         return switch (sortType) {
-            //조인 필요
-            case SortType.최신순 -> null;
-            case 조회순 -> null;
-            case 찜_많은순 -> null;
+            case 최신순, 조회순 -> null;
+            case 찜_많은순 -> new OrderSpecifier<>(
+                    Order.DESC,
+                    JPAExpressions.select(wish.count())
+                            .from(wish)
+                            .where(wish.guestHousePostId.eq(guestHousePost.id))
+            );
         };
     }
 
