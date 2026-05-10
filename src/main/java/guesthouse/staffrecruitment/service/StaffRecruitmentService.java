@@ -88,7 +88,8 @@ public class StaffRecruitmentService {
 
     @Transactional(readOnly = true)
     public String getFirstRepresentativeImageUrls(Long recruitmentId) {
-        return staffRecruitmentImageRepository.getRepresentativeImageByStaffRecruitmentId(recruitmentId).getImageUrl();
+        StaffRecruitmentImage image = staffRecruitmentImageRepository.getRepresentativeImageByStaffRecruitmentId(recruitmentId);
+        return image == null ? "" : image.getImageUrl();
     }
 
     @Transactional(readOnly = true)
@@ -133,7 +134,7 @@ public class StaffRecruitmentService {
         return StaffRecruitmentPostDto.of(
                 staffRecruitment,
                 isWished(staffRecruitment.getId(), userId),
-                image.getImageUrl()
+                image == null ? "" : image.getImageUrl()
         );
     }
 
