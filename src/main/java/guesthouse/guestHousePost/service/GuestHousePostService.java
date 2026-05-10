@@ -59,7 +59,7 @@ public class GuestHousePostService {
         return GuestHousePostDto.of(
                 guestHousePost,
                 isWished(guestHousePost.getId(), userId),
-                image.getImageUrl()
+                image == null ? "" : image.getImageUrl()
         );
     }
 
@@ -84,7 +84,7 @@ public class GuestHousePostService {
 
     private RandomGuestHousePostDto createRandomDto(GuestHousePost guestHousePost) {
         GuestHousePostImage image = guestHousePostImageRepository.getFirstImageByGuestHousePostId(guestHousePost.getId());
-        return RandomGuestHousePostDto.of(guestHousePost, image.getImageUrl());
+        return RandomGuestHousePostDto.of(guestHousePost, image == null ? "" : image.getImageUrl());
     }
 
     @Transactional
