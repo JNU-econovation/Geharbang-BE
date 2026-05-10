@@ -1,9 +1,11 @@
 package guesthouse.staffrecruitment.repository;
 
+import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.vo.*;
@@ -15,6 +17,7 @@ import java.util.List;
 import static guesthouse.staffrecruitment.domain.model.QStaffRecruitment.staffRecruitment;
 import static guesthouse.staffrecruitment.domain.model.QStaffRecruitmentJob.staffRecruitmentJob;
 import static guesthouse.staffrecruitment.domain.vo.SortType.*;
+import static guesthouse.wish.domain.model.QWish.wish;
 
 
 @RequiredArgsConstructor
@@ -100,7 +103,12 @@ public class StaffRecruitmentRepositoryImpl implements StaffRecruitmentCustomRep
         return switch (sortType) {
             case 최신순 -> staffRecruitment.createdAt.desc();
             case 조회순 -> staffRecruitment.viewCount.desc();
-            case 찜_많은순 -> null;
+            case 찜_많은순 -> new OrderSpecifier<>(
+                    Order.DESC,
+                    JPAExpressions.select(wish.count())
+                            .from(wish)
+                            .where(wish.staffRecruitmentId.eq(staffRecruitment.id))
+            );
         };
     }
 
