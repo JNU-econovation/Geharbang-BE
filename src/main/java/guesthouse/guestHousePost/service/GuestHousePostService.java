@@ -63,11 +63,11 @@ public class GuestHousePostService {
         );
     }
 
-    private Boolean isWished(Long staffRecruitmentId, Long userId) {
+    private Boolean isWished(Long guestHousePostId, Long userId) {
         if (isGuest(userId))
             return false;
 
-        return wishService.isWished(userId, staffRecruitmentId);
+        return wishService.isWishedGuestHousePost(userId, guestHousePostId);
     }
 
     private boolean isGuest(Long userId) {
