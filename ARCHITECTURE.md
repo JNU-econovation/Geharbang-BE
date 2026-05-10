@@ -69,6 +69,7 @@ Geharbang은 **제주 게스트하우스 스텝 구인/구직 플랫폼**이다.
 - 운영자가 숙소 게시글 등록/수정/삭제
 - 다양한 필터로 목록 조회: 지역, 가격, 파티 유형, 방 유형, 인원, 편의시설, 분위기
 - 정렬: 최신순 / 조회순 / 찜 많은순
+- 찜하기 가능
 - 지역 추천 (랜덤)
 - 게시글 상태: ACTIVE / INACTIVE
 
@@ -81,6 +82,8 @@ Geharbang은 **제주 게스트하우스 스텝 구인/구직 플랫폼**이다.
 
 #### 찜 (Wish)
 - 스텝 구인 공고 찜 추가 / 삭제
+- 게스트하우스 게시글 찜 추가 / 삭제
+- 목록 조회의 `isWished`와 `찜_많은순` 정렬은 `wish` 테이블 기준으로 계산
 
 #### 이미지 업로드
 - 지원서 프로필 이미지 업로드 (1장)
@@ -121,7 +124,7 @@ src/main/java/guesthouse/
 | `certificate` | 운영자 인증서 제출 및 관리자 심사 |
 | `guestHousePost` | 게스트하우스 숙소 게시글 CRUD |
 | `staffrecruitment` | 게스트하우스 스텝 구인 공고 CRUD |
-| `wish` | 공고 찜하기 기능 |
+| `wish` | 스텝 구인 공고 / 게스트하우스 게시글 찜하기 기능 |
 
 ---
 
@@ -377,9 +380,9 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| GET | `/api/v1/guest-houses` | 선택 | 게시글 목록 (필터/정렬) |
+| GET | `/api/v1/guest-houses` | 선택 | 게시글 목록 (필터/정렬, 로그인 시 `isWished` 포함) |
 | GET | `/api/v1/guest-houses/recommendation` | 불필요 | 지역별 랜덤 추천 (`?region=제주시`) |
-| GET | `/api/v1/guest-houses/{guestHousePostId}/details` | 선택 | 게시글 상세 조회 |
+| GET | `/api/v1/guest-houses/{guestHousePostId}/details` | 선택 | 게시글 상세 조회 (로그인 시 `isWished` 포함) |
 | POST | `/api/v1/guest-houses` | 필요 | 게스트하우스 게시글 등록 (승인_완료 사장님만 가능, 미충족 시 403) |
 | GET | `/api/v1/guest-houses/owner` | 필요 | 내 게스트하우스 게시글 목록 |
 | PUT | `/api/v1/guest-houses/{id}` | 필요 | 게시글 수정 (승인_완료 사장님 + 본인 게시글만 가능) |
@@ -388,13 +391,17 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 
 **조회 필터 (`GET /api/v1/guest-houses`):** `sort`, `region`, `keyword`, `lowestRoomPrice`, `highestRoomPrice`, `partyType`, `roomType`, `headCountType`, `amenities`, `moods`, `pageNumber`
 
+`sort=찜_많은순`은 `wish.guestHousePostId`별 wish count를 기준으로 정렬한다.
+대표 이미지가 없는 게시글은 목록 응답에서 `imageUrl`을 빈 문자열로 내려준다.
+목록과 상세 조회는 비회원 요청도 가능하지만, 로그인 토큰이 있으면 사용자별 `isWished`를 함께 내려준다.
+
 ### 스텝 구인 공고 (StaffRecruitment)
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| GET | `/api/v1/staff-recruitment` | 선택 | 공고 목록 (필터/정렬) |
+| GET | `/api/v1/staff-recruitment` | 선택 | 공고 목록 (필터/정렬, 로그인 시 `isWished` 포함) |
 | GET | `/api/v1/staff-recruitment/recommendation` | 불필요 | 지역별 랜덤 추천 (`?region=제주시`) |
-| GET | `/api/v1/staff-recruitment/{id}/details` | 선택 | 공고 상세 조회 (`weeklyWorkingDays` 포함) |
+| GET | `/api/v1/staff-recruitment/{id}/details` | 선택 | 공고 상세 조회 (`weeklyWorkingDays`, 로그인 시 `isWished` 포함) |
 | GET | `/api/v1/staff-recruitment/{id}/questions` | 필요 | 공고 지원 질문 조회 (지원 전 확인용) |
 | POST | `/api/v1/staff-recruitment` | 필요 | 공고 등록 (승인_완료 사장님만 가능, 미충족 시 403) |
 | GET | `/api/v1/staff-recruitment/owner` | 필요 | 내 공고 목록 |
@@ -404,12 +411,23 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 
 **조회 필터 (`GET /api/v1/staff-recruitment`):** `sort`, `keyword`, `region`, `workType`, `workDays`, `restDays`, `period`, `workScheduleType`, `gender`, `pageNumber`
 
+`sort=찜_많은순`은 `wish.staffRecruitmentId`별 wish count를 기준으로 정렬한다.
+대표 이미지가 없는 공고는 목록 응답에서 `imageUrl`을 빈 문자열로 내려준다.
+목록과 상세 조회는 비회원 요청도 가능하지만, 로그인 토큰이 있으면 사용자별 `isWished`를 함께 내려준다.
+
 ### 찜 (Wish)
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| POST | `/api/v1/wish/staff-recruitment/{id}` | 필요 | 공고 찜 추가 |
-| DELETE | `/api/v1/wish/{id}` | 필요 | 찜 삭제 |
+| GET | `/api/v1/wish/staff-recruitment/my` | 필요 | 내가 찜한 스텝 구인 공고 목록 조회 |
+| POST | `/api/v1/wish/staff-recruitment/{id}` | 필요 | 스텝 구인 공고 찜 추가 |
+| DELETE | `/api/v1/wish/staff-recruitment/{id}` | 필요 | 스텝 구인 공고 찜 삭제 |
+| GET | `/api/v1/wish/guest-houses/my` | 필요 | 내가 찜한 게스트하우스 게시글 목록 조회 |
+| POST | `/api/v1/wish/guest-houses/{id}` | 필요 | 게스트하우스 게시글 찜 추가 |
+| DELETE | `/api/v1/wish/guest-houses/{id}` | 필요 | 게스트하우스 게시글 찜 삭제 |
+
+찜 추가 API는 `WishResponse`로 `wishId`를 반환한다. 이미 찜한 대상이면 새로 생성하지 않고 기존 `wishId`를 반환한다.
+내가 찜한 목록 조회 API는 `pageNumber` query string을 받으며, 찜한 최신순으로 10개씩 반환한다.
 
 ### 이미지 (Image)
 
@@ -489,7 +507,7 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 | `certificate` | `Certificate` | |
 | `guest_house_post` | `GuestHousePost` | |
 | `staff_recruitment` | `StaffRecruitment` | |
-| `wish` | `Wish` | |
+| `wish` | `Wish` | `staffRecruitmentId` 또는 `guestHousePostId` 중 하나로 찜 대상을 구분 |
 
 ### User 엔티티 특이사항
 
@@ -581,9 +599,8 @@ if (!certificateRepository.existsByUserIdAndStatus(userId, Status.승인_완료)
 
 ### 중복 지원 방지
 
-공고에 중복 지원 시 `existsByStaffRecruitmentIdAndUserId()` 로 체크 후 `IllegalArgumentException` 발생.
-
-> ⚠️ **알려진 버그**: `GuestHouseException` 계층이 아닌 `IllegalArgumentException`을 사용 중 — `GlobalExceptionHandler`가 못 잡아서 중복 지원 시 **500** 반환됨. 추후 `ApplicationException`으로 교체 필요.
+공고에 중복 지원 시 `existsByStaffRecruitmentIdAndUserId()` 로 체크 후 `ApplicationRecordException(DUPLICATED_APPLICATION)`을 발생시킨다.
+`GlobalExceptionHandler`가 `GuestHouseException` 계층을 공통 에러 응답으로 변환하므로, 중복 지원은 500이 아니라 400 도메인 에러로 내려간다.
 
 ---
 
@@ -794,12 +811,26 @@ push to dev or dev-test
 # 서버 상태
 curl -s http://localhost:8080/actuator/health
 
-# 게스트하우스 수정 API 반영 여부 예시
-curl -i -X OPTIONS http://localhost:8080/api/v1/guest-houses/1
-# Allow 헤더에 PUT 포함 여부 확인
+# 공개 목록 API가 실제 운영 데이터로 200을 반환하는지 확인
+curl -i "http://localhost:8080/api/v1/guest-houses?pageNumber=0"
+curl -i "http://localhost:8080/api/v1/staff-recruitment?pageNumber=0"
+
+# 공개 상세 API가 200을 반환하고 isWished 필드를 포함하는지 확인
+curl -i "http://localhost:8080/api/v1/guest-houses/1/details"
+curl -i "http://localhost:8080/api/v1/staff-recruitment/1/details"
+
+# 찜 많은순 정렬이 200을 반환하는지 확인
+curl -i "http://localhost:8080/api/v1/guest-houses?pageNumber=0&sort=찜_많은순"
+curl -i "http://localhost:8080/api/v1/staff-recruitment?pageNumber=0&sort=찜_많은순"
 
 # Swagger 문서 반영 여부
 curl -s http://localhost:8080/v3/api-docs
+
+# 찜 API 반영 여부
+curl -i -X POST http://localhost:8080/api/v1/wish/guest-houses/1
+curl -i "http://localhost:8080/api/v1/wish/guest-houses/my?pageNumber=0"
+curl -i "http://localhost:8080/api/v1/wish/staff-recruitment/my?pageNumber=0"
+# 비로그인 요청이면 401 LOGIN_REQUIRED가 정상이다. 404면 아직 엔드포인트가 반영되지 않은 것이다.
 
 # 새 이미지/JAR 반영 여부
 docker image inspect server:geharbang --format 'Created={{.Created}} Id={{.Id}}'
@@ -808,6 +839,7 @@ docker exec server-dev stat /server/dev.jar
 
 `server-dev`가 재시작되었더라도 Docker image가 새로 빌드되지 않았다면 이전 JAR로 뜰 수 있다.
 이 경우 `docker image inspect server:geharbang`의 생성 시각과 `docker exec server-dev stat /server/dev.jar` 결과를 함께 확인한다.
+Swagger와 실제 API 응답 모두에서 게스트하우스 목록/상세 DTO의 찜 필드는 `isWished`로 내려가야 한다.
 
 배포 구조에서 `server-mysql`, `server-nginx`는 애플리케이션 코드 변경만으로 재시작하지 않는다.
 API 코드 변경은 새 JAR를 포함한 `server:geharbang` image를 다시 만들고 `server-dev`만 재생성하는 방식으로 반영한다.
@@ -831,5 +863,7 @@ API 코드 변경은 새 JAR를 포함한 `server:geharbang` image를 다시 만
 |------|------|
 | `common/config/OpenApiConfig.java` | JWT Bearer Authorize 버튼 설정, 명세서 기본 정보 |
 | `common/config/UserIdParameterCustomizer.java` | `@UserId` 파라미터를 Swagger UI에서 전역 숨김 처리 |
+| `wish/controller/WishController.java` | `Wish` 태그와 찜 추가/삭제 API 설명 |
+| `wish/dto/response/WishResponse.java` | 찜 추가 응답의 `wishId` schema 설명 |
 
 `@UserId`는 JWT 토큰에서 자동 주입되는 파라미터로, `ParameterCustomizer`를 구현해 컨트롤러 31곳을 수정하지 않고 전역으로 숨김 처리.
