@@ -698,10 +698,13 @@ public ResponseEntity<?> get(@PathVariable Long id, @UserId(required = false) Lo
 
 **언제 required = false를 쓰는가:**
 - 비로그인 유저도 조회할 수 있지만, 로그인한 경우 추가 정보(찜 여부 등)를 내려야 할 때
+- 게스트하우스/스텝 공고 목록과 상세처럼 비회원 조회는 허용하되 로그인 유저에게 `isWished`를 내려야 할 때
 
 **규칙:**
 - 로그인이 필요한 API는 `@UserId Long userId` (required = true가 기본값)
 - 조회 API 중 비로그인도 허용할 때만 `@UserId(required = false) Long userId`
+- `isWished`가 필요한 공개 조회 API는 별도 찜 확인 API를 추가하지 말고 기존 응답 DTO에 `isWished`를 포함한다
+- 마이페이지처럼 “내가 찜한 목록” 자체가 필요한 경우에만 `/api/v1/wish/.../my` 조회 API를 둔다
 - Spring Security 없음 — 인증 처리는 오직 `UserIdResolver`에서만
 
 ---
@@ -919,19 +922,33 @@ docker ps --filter name=server-dev
 # 2. 서버 health 확인
 curl -s http://localhost:8080/actuator/health
 
-# 3. 새 API가 실제로 열렸는지 확인
-curl -i -X OPTIONS http://localhost:8080/api/v1/guest-houses/1
+# 3. 공개 목록 API가 운영 데이터로 200을 반환하는지 확인
+curl -i "http://localhost:8080/api/v1/guest-houses?pageNumber=0"
+curl -i "http://localhost:8080/api/v1/staff-recruitment?pageNumber=0"
 
-# 4. Swagger 문서 확인
+# 4. 공개 상세 API가 200을 반환하고 isWished 필드를 포함하는지 확인
+curl -i "http://localhost:8080/api/v1/guest-houses/1/details"
+curl -i "http://localhost:8080/api/v1/staff-recruitment/1/details"
+
+# 5. 찜 정렬/API가 실제로 열렸는지 확인
+curl -i "http://localhost:8080/api/v1/guest-houses?pageNumber=0&sort=찜_많은순"
+curl -i "http://localhost:8080/api/v1/staff-recruitment?pageNumber=0&sort=찜_많은순"
+curl -i -X POST http://localhost:8080/api/v1/wish/guest-houses/1
+curl -i "http://localhost:8080/api/v1/wish/guest-houses/my?pageNumber=0"
+curl -i "http://localhost:8080/api/v1/wish/staff-recruitment/my?pageNumber=0"
+
+# 6. Swagger 문서 확인
 curl -s http://localhost:8080/v3/api-docs
 
-# 5. 새 이미지/JAR 반영 확인
+# 7. 새 이미지/JAR 반영 확인
 docker image inspect server:geharbang --format 'Created={{.Created}} Id={{.Id}}'
 docker exec server-dev stat /server/dev.jar
 ```
 
 `OPTIONS` 응답의 `Allow` 헤더에 새 method가 없으면 운영 서버에 아직 반영되지 않은 것이다.
 예를 들어 게스트하우스 수정 API가 반영된 상태라면 `Allow`에 `PUT`이 포함된다.
+찜 API는 비로그인 요청에서 `401 LOGIN_REQUIRED`가 나오면 엔드포인트와 인증 처리가 정상이고, `404`면 아직 운영 서버에 반영되지 않은 것이다.
+게스트하우스 목록/상세 응답의 찜 필드는 `isWished`여야 하며, 대표 이미지가 없는 데이터는 `imageUrl: ""`로 내려간다.
 `server-dev` 재시작 로그만으로 반영 완료를 판단하지 말고, API 응답과 image/JAR 시각을 같이 본다.
 
 **배포 실패/미반영 체크리스트:**
