@@ -124,6 +124,8 @@
 ### 직접 해볼 것
 
 - `GET /api/v1/guest-houses`에서 로그인/비로그인일 때 `isWished`가 어떻게 달라지는지 따라가기
+- `GET /api/v1/guest-houses/{guestHousePostId}/details`에서 `@UserId(required = false)`가 상세 응답의 `isWished`로 이어지는 흐름 따라가기
+- 목록 DTO에서 boolean 필드가 `wished`가 아니라 `isWished`로 직렬화되어야 하는 이유를 확인하기
 - 만료된 JWT가 들어오면 어떤 예외 코드가 내려가는지 `TokenProcessor`와 예외 계층에서 확인하기
 
 ---
@@ -185,7 +187,8 @@
 ### 직접 해볼 것
 
 - 게스트하우스 목록에서 `region`, `amenities`, `moods` 조건이 각각 어떤 SQL 조건으로 바뀌는지 설명해 보기
-- 현재 게스트하우스 정렬 로직에서 `orderBy()`가 실제로 적용되지 않는 부분을 찾아 개선 방향을 적어 보기
+- `찜_많은순`이 `wish.guestHousePostId` / `wish.staffRecruitmentId`별 count 서브쿼리로 정렬되는 흐름을 따라가기
+- `/api/v1/wish/guest-houses/my`, `/api/v1/wish/staff-recruitment/my`가 `wish` 테이블의 대상 ID를 기준으로 기존 목록 DTO를 재사용하는 흐름을 따라가기
 
 ---
 
@@ -311,6 +314,8 @@
 
 - `docker image inspect server:geharbang`와 `docker exec server-dev stat /server/dev.jar`로 새 코드 반영 여부를 확인해 보기
 - Swagger에 새 API가 나타나지만 실제 서버에 없는 경우 어떤 배포 단계가 실패했을지 역추적해 보기
+- 공개 목록 API가 운영 DB 데이터 때문에 500이 날 수 있으므로, 배포 후 `pageNumber=0` 목록과 `찜_많은순` 정렬을 실제로 호출해 보기
+- 공개 상세 API와 내가 찜한 목록 API도 함께 호출해서 `isWished`, `401 LOGIN_REQUIRED`, `404 미반영` 여부를 구분해 보기
 
 ---
 
