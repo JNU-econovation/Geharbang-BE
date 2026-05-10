@@ -27,7 +27,8 @@ public record GuestHousePostDetailsResponse (
         List<String> imageUrls,
         List<Party> parties,
         Contact contact,
-        String ownerMessage
+        String ownerMessage,
+        Boolean isWished
 ){
     private static final String SEPARATOR = "\\|:\\|";
 
@@ -45,6 +46,7 @@ public record GuestHousePostDetailsResponse (
                 .parties(Party.from(details.parties()))
                 .contact(details.contact())
                 .ownerMessage(details.ownerMessage())
+                .isWished(details.isWished())
                 .build();
     }
 
