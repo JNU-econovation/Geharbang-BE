@@ -1,6 +1,5 @@
 package guesthouse.guestHousePost.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import guesthouse.guestHousePost.domain.model.GuestHousePost;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,8 +16,7 @@ public class GuestHousePostDto {
     private String guestHouseName;
     private List<String> tags;
     private String region;
-    @JsonProperty("isWished")
-    private boolean isWished;
+    private Boolean isWished;
     private String imageUrl;
 
     public static GuestHousePostDto of(GuestHousePost guestHousePost, boolean isWished, String imageUrl) {
