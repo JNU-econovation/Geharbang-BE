@@ -74,9 +74,10 @@ public class GuestHousePostController {
 
     @GetMapping("/{guestHousePostId}/details")
     public ResponseEntity<GuestHousePostDetailsResponse> getGuestHousePostDetails(
-            @PathVariable Long guestHousePostId
+            @PathVariable Long guestHousePostId,
+            @UserId(required = false) Long userId
     ) {
-        GuestHousePostDetailsDTO details = guestHousePostService.getDetails(guestHousePostId);
+        GuestHousePostDetailsDTO details = guestHousePostService.getDetails(guestHousePostId, userId);
         return ResponseEntity.ok(GuestHousePostDetailsResponse.from(details));
 
     }
