@@ -23,13 +23,15 @@ public record GuestHousePostDetailsDTO (
         List<String> imageUrls,
         Contact contact,
         String ownerMessage,
+        Boolean isWished,
         List<Amenity> amenities,
         List<PartyWithImageUrlDTO> parties,
         List<RoomWithImageUrlDTO> rooms
 ){
 
     public static GuestHousePostDetailsDTO from(GuestHousePost guestHousePost, List<String> imageUrls, List<Amenity> amenities,
-                                                List<PartyWithImageUrlDTO> parties, List<RoomWithImageUrlDTO> rooms) {
+                                                List<PartyWithImageUrlDTO> parties, List<RoomWithImageUrlDTO> rooms,
+                                                Boolean isWished) {
         return GuestHousePostDetailsDTO.builder()
                 .guestHouseName(guestHousePost.getGuestHouseName())
                 .region(guestHousePost.getRegion())
@@ -41,6 +43,7 @@ public record GuestHousePostDetailsDTO (
                 .imageUrls(imageUrls)
                 .contact(guestHousePost.getContact())
                 .ownerMessage(guestHousePost.getOwnerMessage())
+                .isWished(isWished)
                 .amenities(amenities)
                 .parties(parties)
                 .rooms(rooms)
