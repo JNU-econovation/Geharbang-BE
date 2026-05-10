@@ -15,14 +15,26 @@ public class WishController {
     private final WishService wishService;
 
     @PostMapping("/staff-recruitment/{id}")
-    public ResponseEntity<WishResponse> addWish(@UserId Long userId, @PathVariable Long id) {
+    public ResponseEntity<WishResponse> addStaffRecruitmentWish(@UserId Long userId, @PathVariable Long id) {
         Long wishId = wishService.addWish(userId, id);
         return ResponseEntity.ok(new WishResponse(wishId));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteWish(@UserId Long userId, @PathVariable Long id) {
-        wishService.deleteWish(userId, id);
+    @DeleteMapping("/staff-recruitment/{id}")
+    public ResponseEntity<Void> deleteStaffRecruitmentWish(@UserId Long userId, @PathVariable Long id) {
+        wishService.deleteWishByStaffRecruitmentId(userId, id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/guest-houses/{id}")
+    public ResponseEntity<WishResponse> addGuestHouseWish(@UserId Long userId, @PathVariable Long id) {
+        Long wishId = wishService.addWishGuestHousePost(userId, id);
+        return ResponseEntity.ok(new WishResponse(wishId));
+    }
+
+    @DeleteMapping("/guest-houses/{id}")
+    public ResponseEntity<Void> deleteGuestHouseWish(@UserId Long userId, @PathVariable Long id) {
+        wishService.deleteWishByGuestHousePostId(userId, id);
         return ResponseEntity.ok().build();
     }
 }
