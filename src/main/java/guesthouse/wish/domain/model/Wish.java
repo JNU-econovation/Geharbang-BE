@@ -19,10 +19,17 @@ public class Wish {
 
     private Long staffRecruitmentId;
 
+    private Long guestHousePostId;
+
     private Long userId;
 
     public Wish(Long userId, Long staffRecruitmentId) {
         this.userId = userId;
         this.staffRecruitmentId = staffRecruitmentId;
+    }
+
+    public Wish(Long userId, Long guestHousePostId, boolean isGuestHousePost) {
+        this.userId = userId;
+        this.guestHousePostId = guestHousePostId;
     }
 }
