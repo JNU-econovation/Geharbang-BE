@@ -29,4 +29,16 @@ public record ApplicationRecordDTO(
                 .imageUrl(representativeImageUrl)
                 .build();
     }
+
+    public static ApplicationRecordDTO fromSnapshot(ApplicationRecord record) {
+        return ApplicationRecordDTO.builder()
+                .id(record.getId())
+                .staffRecruitmentId(record.getStaffRecruitmentId())
+                .title(record.getStaffRecruitmentTitle())
+                .region(record.getStaffRecruitmentRegion())
+                .appliedAt(record.getCreatedAt().toLocalDate())
+                .isAccepted(record.getStatus().isAccepted())
+                .imageUrl(record.getStaffRecruitmentImageUrl() == null ? "" : record.getStaffRecruitmentImageUrl())
+                .build();
+    }
 }
