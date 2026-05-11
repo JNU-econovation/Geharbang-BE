@@ -34,8 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -54,10 +52,19 @@ public class ApplicationRecordService {
     @Transactional
     public void apply(List<QuestionAnswerDTO> answers, Long recruitmentId, Long userId) {
         checkDuplicatedApplication(recruitmentId, userId);
+        StaffRecruitment staffRecruitment = staffRecruitmentService.getStaffRecruitmentById(recruitmentId);
+        String representativeImageUrl = staffRecruitmentService.getFirstRepresentativeImageUrls(recruitmentId);
         Application application = applicationService.getApplication(userId);
         String snapShot = convertToSnapshot(application);
 
-        ApplicationRecord record = applicationRecordRepository.save(new ApplicationRecord(recruitmentId, userId, snapShot));
+        ApplicationRecord record = applicationRecordRepository.save(new ApplicationRecord(
+                recruitmentId,
+                userId,
+                snapShot,
+                staffRecruitment.getTitle(),
+                staffRecruitment.getRegion(),
+                representativeImageUrl
+        ));
         if (hasQuestions(recruitmentId)) {
             saveQuestionAnswers(answers, recruitmentId, record.getId());
         }
@@ -158,24 +165,19 @@ public class ApplicationRecordService {
 
         List<ApplicationRecord> applicationRecords = findMyApplicationRecords(pageable, onlyAccepted, userId);
 
-        List<StaffRecruitment> staffRecruitments = applicationRecords.stream()
-                .map(record -> staffRecruitmentService.getStaffRecruitmentById(record.getStaffRecruitmentId()))
+        return applicationRecords.stream()
+                .map(this::createApplicationRecordDto)
                 .toList();
+    }
 
-        List<String> representativeImageUrls = staffRecruitments.stream()
-                .map(staffRecruitment -> staffRecruitmentService.getFirstRepresentativeImageUrls(staffRecruitment.getId()))
-                .toList();
+    private ApplicationRecordDTO createApplicationRecordDto(ApplicationRecord applicationRecord) {
+        if (applicationRecord.hasStaffRecruitmentSnapshot()) {
+            return ApplicationRecordDTO.fromSnapshot(applicationRecord);
+        }
 
-
-        return IntStream.range(0, applicationRecords.size())
-                .mapToObj(index -> {
-                    ApplicationRecord applicationRecord = applicationRecords.get(index);
-                    StaffRecruitment staffRecruitment = staffRecruitments.get(index);
-                    String representativeImageUrl = representativeImageUrls.get(index);
-
-                    return ApplicationRecordDTO.from(applicationRecord, staffRecruitment, representativeImageUrl);
-                })
-                .toList();
+        StaffRecruitment staffRecruitment = staffRecruitmentService.getStaffRecruitmentById(applicationRecord.getStaffRecruitmentId());
+        String representativeImageUrl = staffRecruitmentService.getFirstRepresentativeImageUrls(staffRecruitment.getId());
+        return ApplicationRecordDTO.from(applicationRecord, staffRecruitment, representativeImageUrl);
     }
 
     private List<ApplicationRecord> findMyApplicationRecords(Pageable pageable, Boolean onlyAccepted, Long userId) {
