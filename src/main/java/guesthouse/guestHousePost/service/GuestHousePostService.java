@@ -180,7 +180,7 @@ public class GuestHousePostService {
     @Transactional(readOnly = true)
     public GuestHousePost getGuestHousePostById(Long guestHousePostId) {
         return guestHousePostRepository.findById(guestHousePostId)
-                .orElseThrow(() -> new IllegalArgumentException("게스트하우스 게시글이 존재하지 않습니다"));
+                .orElseThrow(() -> new GuestHousePostException(GuestHousePostErrorCode.NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
@@ -243,7 +243,7 @@ public class GuestHousePostService {
         List<GuestHousePost> guestHousePosts = guestHousePostRepository.findByOwnerId(userId);
         List<String> imageUrls = guestHousePosts.stream()
                 .map(p -> guestHousePostImageRepository.getFirstImageByGuestHousePostId(p.getId()))
-                .map(i -> i.getImageUrl())
+                .map(i -> i == null ? "" : i.getImageUrl())
                 .toList();
         List<OwnerGuestHousePostDto> dtos = OwnerGuestHousePostDto.of(guestHousePosts, imageUrls);
         return new OwnerGuestHousePostsResponse(dtos);
