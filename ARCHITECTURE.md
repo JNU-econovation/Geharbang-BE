@@ -51,6 +51,10 @@ Geharbang은 **제주 게스트하우스 스텝 구인/구직 플랫폼**이다.
 #### 지원서 (Application)
 - 한 유저당 지원서 1개
 - 작성 항목: 이름, 성별, 전화번호, 생년월일, 활동 가능 시작일, 가능 요일, 자기소개, MBTI, 스타일, 인스타그램 ID, 프로필 이미지
+- `POST /api/v1/application` 하나로 등록/수정 모두 처리 (upsert)
+  - 지원서가 없으면 새로 생성, 있으면 기존 내용 덮어씀
+  - 이름·전화번호·생년월일·성별은 User 엔티티에, 나머지는 Application 엔티티에 저장
+- 수정 플로우: `GET /api/v1/application/my` 로 기존 데이터를 불러와 폼을 채운 뒤 `POST /api/v1/application` 으로 전송
 - 지원서 존재 여부 확인 API 별도 제공 (`/my/exist`)
 
 #### 공고 지원 (Application Record)
@@ -350,8 +354,8 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| POST | `/api/v1/application` | 필요 | 지원서 작성/저장 |
-| GET | `/api/v1/application/my` | 필요 | 내 지원서 조회 |
+| POST | `/api/v1/application` | 필요 | 지원서 등록/수정 (upsert — 지원서가 없으면 새로 생성, 있으면 기존 내용 덮어씀) |
+| GET | `/api/v1/application/my` | 필요 | 내 지원서 조회 (User 개인정보 + Application 데이터를 합쳐서 반환 — 수정 폼 pre-fill용) |
 | GET | `/api/v1/application/my/exist` | 필요 | 내 지원서 존재 여부 확인 |
 | POST | `/api/v1/application/images` | 필요 | 지원서 프로필 이미지 업로드 (1장, multipart) |
 | POST | `/api/v1/application/staff-recruitment/{recruitmentId}` | 필요 | 특정 공고에 지원서 제출 |
@@ -391,6 +395,7 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 
 **조회 필터 (`GET /api/v1/guest-houses`):** `sort`, `region`, `keyword`, `lowestRoomPrice`, `highestRoomPrice`, `partyType`, `roomType`, `headCountType`, `amenities`, `moods`, `pageNumber`
 
+목록 API는 `pageNumber`를 0부터 받으며 페이지당 10개씩 반환한다.
 `sort=찜_많은순`은 `wish.guestHousePostId`별 wish count를 기준으로 정렬한다.
 대표 이미지가 없는 게시글은 목록 응답에서 `imageUrl`을 빈 문자열로 내려준다.
 목록과 상세 조회는 비회원 요청도 가능하지만, 로그인 토큰이 있으면 사용자별 `isWished`를 함께 내려준다.
@@ -411,6 +416,7 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 
 **조회 필터 (`GET /api/v1/staff-recruitment`):** `sort`, `keyword`, `region`, `workType`, `workDays`, `restDays`, `period`, `workScheduleType`, `gender`, `pageNumber`
 
+목록 API는 `pageNumber`를 0부터 받으며 페이지당 10개씩 반환한다.
 `sort=찜_많은순`은 `wish.staffRecruitmentId`별 wish count를 기준으로 정렬한다.
 대표 이미지가 없는 공고는 목록 응답에서 `imageUrl`을 빈 문자열로 내려준다.
 목록과 상세 조회는 비회원 요청도 가능하지만, 로그인 토큰이 있으면 사용자별 `isWished`를 함께 내려준다.
@@ -527,14 +533,19 @@ Role role;                      // "사용자" 또는 "운영자" (한글 Enum)
 ### 지원 시 스냅샷 저장
 
 공고에 지원할 때 **지원서를 JSON으로 직렬화**해서 `application_record.applicationSnapShot` 컬럼에 저장함.
+또한 지원 당시 공고 요약 정보도 함께 저장한다.
 
 ```
 지원 시점 지원서 → JSON 문자열로 직렬화 → DB 저장
 이후 지원서를 수정해도 지원 당시 내용은 그대로 보존
 운영자가 지원자 정보를 조회할 때 스냅샷을 역직렬화해서 반환
+
+지원 시점 공고 제목/지역/대표 이미지 → application_record에 저장
+이후 공고 제목, 지역, 대표 이미지가 수정되어도 내 지원 내역은 지원 당시 공고 정보로 표시
 ```
 
-이 설계 덕분에 지원자가 지원서를 수정해도 운영자는 지원 당시 내용을 볼 수 있음.
+이 설계 덕분에 지원자가 지원서를 수정해도 운영자는 지원 당시 내용을 볼 수 있고, 공고가 수정되어도 지원자의 내 지원 내역에는 지원 당시 공고 요약 정보가 유지됨.
+기존 지원 기록처럼 공고 스냅샷 컬럼이 비어 있는 데이터는 현재 공고 데이터를 조회하는 fallback을 사용한다.
 
 ---
 
@@ -820,8 +831,8 @@ curl -i "http://localhost:8080/api/v1/guest-houses/1/details"
 curl -i "http://localhost:8080/api/v1/staff-recruitment/1/details"
 
 # 찜 많은순 정렬이 200을 반환하는지 확인
-curl -i "http://localhost:8080/api/v1/guest-houses?pageNumber=0&sort=찜_많은순"
-curl -i "http://localhost:8080/api/v1/staff-recruitment?pageNumber=0&sort=찜_많은순"
+curl -i -G "http://localhost:8080/api/v1/guest-houses" --data-urlencode "pageNumber=0" --data-urlencode "sort=찜_많은순"
+curl -i -G "http://localhost:8080/api/v1/staff-recruitment" --data-urlencode "pageNumber=0" --data-urlencode "sort=찜_많은순"
 
 # Swagger 문서 반영 여부
 curl -s http://localhost:8080/v3/api-docs

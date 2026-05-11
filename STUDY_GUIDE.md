@@ -245,10 +245,11 @@
 
 - `GlobalExceptionHandler`는 현재 `GuestHouseException` 계층만 처리한다.
 - 일부 코드에서 `IllegalArgumentException`이 사용되면 공통 응답 형식으로 처리되지 않을 수 있다.
+- `getGuestHousePostById()`는 `GuestHousePostException(GuestHousePostErrorCode.NOT_FOUND)`를 사용해 404 도메인 에러로 내려간다.
 
 ### 직접 해볼 것
 
-- `getGuestHousePostById()`가 `IllegalArgumentException`을 던지는 부분을 찾아 도메인 예외로 바꾸면 어떤 장점이 있는지 정리하기
+- 새 조회/수정 로직을 추가할 때 `IllegalArgumentException` 대신 도메인 예외를 쓰면 어떤 장점이 있는지 정리하기
 - Bean Validation 예외와 JWT 예외가 공통 응답 형식으로 내려가는지 확인하기
 
 ---
@@ -316,6 +317,7 @@
 - Swagger에 새 API가 나타나지만 실제 서버에 없는 경우 어떤 배포 단계가 실패했을지 역추적해 보기
 - 공개 목록 API가 운영 DB 데이터 때문에 500이 날 수 있으므로, 배포 후 `pageNumber=0` 목록과 `찜_많은순` 정렬을 실제로 호출해 보기
 - 공개 상세 API와 내가 찜한 목록 API도 함께 호출해서 `isWished`, `401 LOGIN_REQUIRED`, `404 미반영` 여부를 구분해 보기
+- 한글 query string은 curl에서 `--data-urlencode 'sort=찜_많은순'`처럼 인코딩해서 호출해 보기
 
 ---
 

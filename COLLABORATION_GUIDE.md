@@ -931,8 +931,8 @@ curl -i "http://localhost:8080/api/v1/guest-houses/1/details"
 curl -i "http://localhost:8080/api/v1/staff-recruitment/1/details"
 
 # 5. 찜 정렬/API가 실제로 열렸는지 확인
-curl -i "http://localhost:8080/api/v1/guest-houses?pageNumber=0&sort=찜_많은순"
-curl -i "http://localhost:8080/api/v1/staff-recruitment?pageNumber=0&sort=찜_많은순"
+curl -i -G "http://localhost:8080/api/v1/guest-houses" --data-urlencode "pageNumber=0" --data-urlencode "sort=찜_많은순"
+curl -i -G "http://localhost:8080/api/v1/staff-recruitment" --data-urlencode "pageNumber=0" --data-urlencode "sort=찜_많은순"
 curl -i -X POST http://localhost:8080/api/v1/wish/guest-houses/1
 curl -i "http://localhost:8080/api/v1/wish/guest-houses/my?pageNumber=0"
 curl -i "http://localhost:8080/api/v1/wish/staff-recruitment/my?pageNumber=0"
