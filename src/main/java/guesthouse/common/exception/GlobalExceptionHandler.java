@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 
@@ -27,7 +28,8 @@ public class GlobalExceptionHandler {
             MissingServletRequestPartException.class,
             MethodArgumentTypeMismatchException.class,
             MethodArgumentNotValidException.class,
-            HttpMessageNotReadableException.class
+            HttpMessageNotReadableException.class,
+            MultipartException.class
     })
     public ResponseEntity<ErrorResponse> handleBadRequest(Exception e) {
         log.info("잘못된 요청: {}", e.getMessage(), e);
