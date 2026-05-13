@@ -109,7 +109,7 @@ public class StaffRecruitmentService {
         User user = userService.findById(userId);
         return QuestionResponse.of(
                 staffRecruitment,
-                image.getImageUrl(),
+                image == null ? "" : image.getImageUrl(),
                 user.getPersonalInfo().getName(),
                 user.getProfileImageUrl(),
                 questions
@@ -157,7 +157,7 @@ public class StaffRecruitmentService {
 
     private RandomStaffRecruitmentPostDto createRandomDTO(StaffRecruitment staffRecruitment) {
         StaffRecruitmentImage image = staffRecruitmentImageRepository.getRepresentativeImageByStaffRecruitmentId(staffRecruitment.getId());
-        return RandomStaffRecruitmentPostDto.of(staffRecruitment, image.getImageUrl());
+        return RandomStaffRecruitmentPostDto.of(staffRecruitment, image == null ? "" : image.getImageUrl());
     }
 
     @Transactional
@@ -218,7 +218,7 @@ public class StaffRecruitmentService {
         List<StaffRecruitment> staffRecruitments = staffRecruitmentRepository.findByOwnerId(userId);
         List<String> imageUrls = staffRecruitments.stream()
                 .map(s -> staffRecruitmentImageRepository.getRepresentativeImageByStaffRecruitmentId(s.getId()))
-                .map(StaffRecruitmentImage::getImageUrl)
+                .map(image -> image == null ? "" : image.getImageUrl())
                 .toList();
         List<OwnerStaffRecruitmentPostDto> dtos = OwnerStaffRecruitmentPostDto.of(staffRecruitments, imageUrls);
         return new OwnerStaffRecruitmentPostsResponse(dtos);
