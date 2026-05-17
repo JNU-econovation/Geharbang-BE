@@ -74,7 +74,9 @@ public class UserService {
     }
 
     public void validateOwnerStatus(Long userId) {
-        if (!certificateRepository.existsByUserIdAndStatus(userId, Status.승인_완료))
+        User user = findById(userId);
+        boolean isApprovedOwner = certificateRepository.existsByUserIdAndStatus(userId, Status.승인_완료);
+        if (!user.isAdmin() && !isApprovedOwner)
             throw new UserException(UserErrorCode.NOT_APPROVED_OWNER);
     }
 }
