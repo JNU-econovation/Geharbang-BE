@@ -225,7 +225,7 @@ public class StaffRecruitmentService {
 **규칙:**
 - 조회 메서드는 `@Transactional(readOnly = true)`, 쓰기 메서드는 `@Transactional`
 - 권한 검증은 메서드 첫 줄에 처리 (`userService.validateOwnerStatus(userId)`)
-- 게스트하우스/스텝 공고 등록·수정 API는 반드시 `validateOwnerStatus(userId)`로 `승인_완료` 사장님 권한을 확인
+- 게스트하우스/스텝 공고 등록·수정 API는 반드시 `validateOwnerStatus(userId)`로 `승인_완료` 사장님 또는 시스템 운영자 권한을 확인
 - 게시글/공고의 수정·상태 변경·삭제처럼 특정 리소스를 바꾸는 API는 `existsByOwnerIdAndId(userId, id)`로 본인 소유 여부도 확인
 - 엔티티 조회 후 없으면 바로 예외 throw. `Optional`을 상위로 올리지 말 것
 - 공통으로 쓰는 엔티티 조회 로직은 `private` 헬퍼 메서드로 추출

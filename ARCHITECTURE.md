@@ -32,7 +32,7 @@ Geharbang은 **제주 게스트하우스 스텝 구인/구직 플랫폼**이다.
 | 비로그인 | - | 게스트하우스/공고 목록 조회, 추천 조회 |
 | 로그인 (사용자) | 소셜 로그인 | 지원서 작성, 공고 지원, 찜하기, 내 정보 조회 |
 | 사장님 | 인증서 `승인_완료` | 게스트하우스 등록, 공고 등록, 지원자 관리 (`isOwner: true`) |
-| 시스템 운영자 | `User.role = 운영자` (DB 직접 설정) | 인증서 심사 승인/거부 (`isAdmin: true`) |
+| 시스템 운영자 | `User.role = 운영자` (DB 직접 설정) | 인증서 심사 승인/거부, 사장님 기능 사용 (`isAdmin: true`) |
 
 ---
 
@@ -60,17 +60,17 @@ Geharbang은 **제주 게스트하우스 스텝 구인/구직 플랫폼**이다.
 #### 공고 지원 (Application Record)
 - 특정 스텝 구인 공고에 지원서를 제출하는 행위
 - 공고마다 추가 질문이 있을 수 있고, 지원 시 답변 포함
-- 운영자는 지원자 목록 조회 + 합격/불합격 처리 가능
+- 공고 작성자는 지원자 목록 조회 + 합격 처리 가능
 - 지원자는 내 지원 내역 조회 가능 (합격 필터링, 페이지네이션)
 
-#### 운영자 인증 (Certificate)
+#### 사장님 인증 (Certificate)
 - 영업신고증 또는 관광사업등록증 파일 업로드 후 제출
 - 관리자가 심사 → 승인/거부
 - 승인 시 유저 Role이 운영자로 변경되지는 않음 (Certificate Status로 관리)
 - 인증서 상태: 검토 대기 → 승인 완료 / 거부됨
 
 #### 게스트하우스 게시글 (GuestHousePost)
-- 운영자가 숙소 게시글 등록/수정/삭제
+- 인증 사장님 또는 시스템 운영자가 숙소 게시글 등록/수정/삭제
 - 다양한 필터로 목록 조회: 지역, 가격, 파티 유형, 방 유형, 인원, 편의시설, 분위기
 - 정렬: 최신순 / 조회순 / 찜 많은순
 - 찜하기 가능
@@ -78,7 +78,7 @@ Geharbang은 **제주 게스트하우스 스텝 구인/구직 플랫폼**이다.
 - 게시글 상태: ACTIVE / INACTIVE
 
 #### 스텝 구인 공고 (StaffRecruitment)
-- 운영자가 공고 등록/수정/삭제
+- 인증 사장님 또는 시스템 운영자가 공고 등록/수정/삭제
 - 다양한 필터로 목록 조회: 지역, 근무 형태, 근무 요일, 휴무일, 기간, 스케줄, 성별
 - 공고별 추가 질문 설정 가능
 - 지역 추천 (랜덤)
@@ -107,7 +107,7 @@ src/main/java/guesthouse/
 ├── user/                    # 유저 정보
 ├── application/             # 스텝 지원서
 ├── application_record/      # 지원 내역 (어떤 공고에 지원했는지)
-├── certificate/             # 운영자 인증서
+├── certificate/             # 사장님 인증서
 ├── guestHousePost/          # 게스트하우스 게시글
 ├── staffrecruitment/        # 스텝 구인 공고
 └── wish/                    # 찜 목록
@@ -125,7 +125,7 @@ src/main/java/guesthouse/
 | `user` | 유저 개인정보 조회/수정, 프로필, 운영자 권한 검증 |
 | `application` | 스텝 지원서 작성/조회 |
 | `application_record` | 특정 공고에 지원서를 제출하는 행위 기록 |
-| `certificate` | 운영자 인증서 제출 및 관리자 심사 |
+| `certificate` | 사장님 인증서 제출 및 관리자 심사 |
 | `guestHousePost` | 게스트하우스 숙소 게시글 CRUD |
 | `staffrecruitment` | 게스트하우스 스텝 구인 공고 CRUD |
 | `wish` | 스텝 구인 공고 / 게스트하우스 게시글 찜하기 기능 |
@@ -258,7 +258,7 @@ common/config/
 uuser (User)
   └── 1:1 → oauth2account (Oauth2Account)   # 소셜 계정 연동
   └── 1:1 → application (Application)       # 지원서
-  └── 1:N → certificate (Certificate)       # 운영자 인증서
+  └── 1:N → certificate (Certificate)       # 사장님 인증서
 ```
 
 `oauth2account`에 `userId`를 직접 저장 (FK가 아닌 Long 타입):
@@ -367,10 +367,10 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 | GET | `/api/v1/application-records/my` | 필요 | 내 지원 내역 조회 (`?onlyAccepted=true`, `?pageNumber=0`) |
 | GET | `/api/v1/application-records/{recordId}` | 필요 | 특정 지원 내역 상세 조회 |
 | GET | `/api/v1/application-records/questions/{recordId}` | 필요 | 지원 내역의 질문/답변 조회 |
-| GET | `/api/v1/application-records/{id}/all` | 필요 | (운영자) 특정 공고에 지원한 전체 지원자 목록 |
-| POST | `/api/v1/application-records/{recordId}` | 필요 | (운영자) 지원자 합격 처리 |
+| GET | `/api/v1/application-records/{id}/all` | 필요 | (공고 작성자) 특정 공고에 지원한 전체 지원자 목록 |
+| POST | `/api/v1/application-records/{recordId}` | 필요 | (공고 작성자) 지원자 합격 처리 |
 
-### 운영자 인증 (Certificate)
+### 사장님 인증 (Certificate)
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
@@ -387,7 +387,7 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 | GET | `/api/v1/guest-houses` | 선택 | 게시글 목록 (필터/정렬, 로그인 시 `isWished` 포함) |
 | GET | `/api/v1/guest-houses/recommendation` | 불필요 | 지역별 랜덤 추천 (`?region=제주시`) |
 | GET | `/api/v1/guest-houses/{guestHousePostId}/details` | 선택 | 게시글 상세 조회 (로그인 시 `isWished` 포함) |
-| POST | `/api/v1/guest-houses` | 필요 | 게스트하우스 게시글 등록 (승인_완료 사장님만 가능, 미충족 시 403) |
+| POST | `/api/v1/guest-houses` | 필요 | 게스트하우스 게시글 등록 (승인_완료 사장님 또는 관리자 가능, 미충족 시 403) |
 | GET | `/api/v1/guest-houses/owner` | 필요 | 내 게스트하우스 게시글 목록 |
 | PUT | `/api/v1/guest-houses/{id}` | 필요 | 게시글 수정 (승인_완료 사장님 + 본인 게시글만 가능) |
 | PATCH | `/api/v1/guest-houses/{id}` | 필요 | 게시글 상태 변경 (ACTIVE/INACTIVE) |
@@ -408,7 +408,7 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 | GET | `/api/v1/staff-recruitment/recommendation` | 불필요 | 지역별 랜덤 추천 (`?region=제주시`) |
 | GET | `/api/v1/staff-recruitment/{id}/details` | 선택 | 공고 상세 조회 (`weeklyWorkingDays`, 로그인 시 `isWished` 포함) |
 | GET | `/api/v1/staff-recruitment/{id}/questions` | 필요 | 공고 지원 질문 조회 (지원 전 확인용) |
-| POST | `/api/v1/staff-recruitment` | 필요 | 공고 등록 (승인_완료 사장님만 가능, 미충족 시 403) |
+| POST | `/api/v1/staff-recruitment` | 필요 | 공고 등록 (승인_완료 사장님 또는 관리자 가능, 미충족 시 403) |
 | GET | `/api/v1/staff-recruitment/owner` | 필요 | 내 공고 목록 |
 | PUT | `/api/v1/staff-recruitment/{id}` | 필요 | 공고 수정 (승인_완료 사장님 + 본인 공고만 가능) |
 | PATCH | `/api/v1/staff-recruitment/{id}` | 필요 | 공고 상태 변경 (ACTIVE/INACTIVE) |
@@ -538,23 +538,23 @@ Role role;                      // "사용자" 또는 "운영자" (한글 Enum)
 ```
 지원 시점 지원서 → JSON 문자열로 직렬화 → DB 저장
 이후 지원서를 수정해도 지원 당시 내용은 그대로 보존
-운영자가 지원자 정보를 조회할 때 스냅샷을 역직렬화해서 반환
+공고 작성자가 지원자 정보를 조회할 때 스냅샷을 역직렬화해서 반환
 
 지원 시점 공고 제목/지역/대표 이미지 → application_record에 저장
 이후 공고 제목, 지역, 대표 이미지가 수정되어도 내 지원 내역은 지원 당시 공고 정보로 표시
 ```
 
-이 설계 덕분에 지원자가 지원서를 수정해도 운영자는 지원 당시 내용을 볼 수 있고, 공고가 수정되어도 지원자의 내 지원 내역에는 지원 당시 공고 요약 정보가 유지됨.
+이 설계 덕분에 지원자가 지원서를 수정해도 공고 작성자는 지원 당시 내용을 볼 수 있고, 공고가 수정되어도 지원자의 내 지원 내역에는 지원 당시 공고 요약 정보가 유지됨.
 기존 지원 기록처럼 공고 스냅샷 컬럼이 비어 있는 데이터는 현재 공고 데이터를 조회하는 fallback을 사용한다.
 
 ---
 
-### 운영자 인증 ↔ Role 변경이 분리됨
+### 사장님 인증 ↔ Role 변경이 분리됨
 
 `Certificate.decide(isApproved)` 는 `Certificate.status`만 변경하고 `User.role`은 변경하지 않음.
 
 즉, 인증서가 승인돼도 Role은 자동으로 `운영자`로 바뀌지 않음.
-운영자 기능(인증서 목록, 지원자 관리 등)은 `userService.validateAdmin(userId)`로 Role을 직접 확인하는 방식으로 보호됨.
+관리자 기능(인증서 목록, 인증서 승인/거부)은 `userService.validateAdmin(userId)`로 Role을 직접 확인하는 방식으로 보호됨.
 
 프로필에서 사장님/운영진 여부는 `GET /api/v1/user/profile` 응답 필드로 FE에 전달됨.
 
@@ -562,9 +562,9 @@ Role role;                      // "사용자" 또는 "운영자" (한글 Enum)
 
 | 필드 | 기준 | 의미 |
 |------|------|------|
-| `isOwner` | 인증서 `승인_완료` 상태 (`existsByUserIdAndStatus`) | 사장님 권한 — 공고 등록, 지원자 관리 |
+| `isOwner` | 인증서 `승인_완료` 상태 (`existsByUserIdAndStatus`) | 인증 사장님 배지, 사장님 권한 UI |
 | `inReview` | 인증서 `검토_대기` 상태 | 심사 진행 중 배지 표시 |
-| `isAdmin` | `User.role == Role.운영자` | 시스템 운영진 — 인증서 심사 승인/거부 |
+| `isAdmin` | `User.role == Role.운영자` | 관리자 배지, 인증서 심사 승인/거부, 사장님 기능 사용 가능 |
 | `certificateStatus` | 최근 인증서 status 문자열 (`null` \| `검토_대기` \| `승인_완료` \| `거부됨`) | 거절 상태 등 세부 UX 분기 |
 
 `isAdmin`은 DB에서 직접 `role = 운영자`로 설정된 경우에만 `true`. 인증서 승인으로는 변경되지 않음.
@@ -574,19 +574,21 @@ Role role;                      // "사용자" 또는 "운영자" (한글 Enum)
 
 ### 사장님 전용 API 보호
 
-게스트하우스/공고 **등록 및 수정**은 `승인_완료` 인증서 보유자만 가능. `UserService.validateOwnerStatus()`로 일괄 검증.
+게스트하우스/공고 **등록 및 수정**은 `승인_완료` 인증서 보유자 또는 시스템 운영자만 가능. `UserService.validateOwnerStatus()`로 일괄 검증.
 수정/상태 변경/삭제처럼 특정 게시글을 대상으로 하는 API는 추가로 `existsByOwnerIdAndId()`로 본인 글인지 확인한다.
 
 ```java
 // UserService.validateOwnerStatus()
-if (!certificateRepository.existsByUserIdAndStatus(userId, Status.승인_완료))
+User user = findById(userId);
+boolean isApprovedOwner = certificateRepository.existsByUserIdAndStatus(userId, Status.승인_완료);
+if (!user.isAdmin() && !isApprovedOwner)
     throw new UserException(UserErrorCode.NOT_APPROVED_OWNER);  // 403
 ```
 
 | API | 권한 체크 | 미인증 시 응답 |
 |-----|----------|--------------|
-| `POST /api/v1/guest-houses` | `validateOwnerStatus()` | 403 `NOT_APPROVED_OWNER` |
-| `POST /api/v1/staff-recruitment` | `validateOwnerStatus()` | 403 `NOT_APPROVED_OWNER` |
+| `POST /api/v1/guest-houses` | `validateOwnerStatus()` (`isOwner` 또는 `isAdmin`) | 403 `NOT_APPROVED_OWNER` |
+| `POST /api/v1/staff-recruitment` | `validateOwnerStatus()` (`isOwner` 또는 `isAdmin`) | 403 `NOT_APPROVED_OWNER` |
 | `PUT /api/v1/guest-houses/{id}` | `validateOwnerStatus()` + `existsByOwnerIdAndId()` | 403 또는 404 |
 | `PUT /api/v1/staff-recruitment/{id}` | `validateOwnerStatus()` + `existsByOwnerIdAndId()` | 403 또는 404 |
 | `PATCH /api/v1/guest-houses/{id}` | `existsByOwnerIdAndId()` (본인 글 확인) | 기존 에러 |
