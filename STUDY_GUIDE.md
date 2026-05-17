@@ -348,6 +348,127 @@
 
 ---
 
+## 12. 알림 서비스 설계와 구현 가이드
+
+알림은 처음부터 푸시까지 한 번에 붙이기보다, **인앱 알림 저장 → 조회/읽음 처리 → 푸시 발송** 순서로 확장하는 것이 안정적이다.
+DB에 남는 인앱 알림이 기준 데이터가 되고, 푸시는 그 알림을 사용자 기기로 전달하는 부가 채널로 본다.
+
+### 공부할 것
+
+- 도메인 이벤트와 알림 트리거 분리
+- 알림 테이블 설계와 읽음 처리
+- 사용자별 알림 조회 페이지네이션
+- Expo Push Notification 발송 흐름
+- 외부 API 호출 실패와 DB 트랜잭션 분리
+
+### 추천 도메인 구조
+
+```
+notification/
+├── controller/NotificationController.java
+├── service/NotificationService.java
+├── service/PushNotificationService.java
+├── repository/NotificationRepository.java
+├── repository/PushTokenRepository.java
+├── domain/model/Notification.java
+├── domain/model/PushToken.java
+├── domain/vo/NotificationType.java
+├── dto/request/PushTokenSaveRequest.java
+└── dto/response/NotificationResponse.java
+```
+
+### 1단계: 인앱 알림
+
+먼저 DB에 알림이 쌓이고 앱에서 볼 수 있는 구조를 만든다.
+
+**Notification 엔티티 필드 예시:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `id` | Long | 알림 ID |
+| `receiverId` | Long | 알림 받을 유저 ID |
+| `type` | NotificationType | 알림 종류 |
+| `title` | String | 알림 제목 |
+| `content` | String | 알림 내용 |
+| `targetType` | String | 이동 대상 타입. 예: `STAFF_RECRUITMENT`, `CERTIFICATE` |
+| `targetId` | Long | 이동 대상 ID |
+| `isRead` | Boolean | 읽음 여부 |
+| `createdAt` | LocalDateTime | 생성 시각 |
+
+**NotificationType 예시:**
+
+| 타입 | 발생 시점 | 수신자 |
+|------|----------|--------|
+| `CERTIFICATE_APPROVED` | 사장님 인증 승인 | 인증 신청자 |
+| `CERTIFICATE_REJECTED` | 사장님 인증 거절 | 인증 신청자 |
+| `STAFF_APPLICATION_CREATED` | 스텝 공고에 지원 발생 | 공고 작성자 |
+| `APPLICATION_ACCEPTED` | 지원서 합격 처리 | 지원자 |
+
+### 2단계: API
+
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| `GET` | `/api/v1/notifications?pageNumber=0` | 내 알림 목록 조회 |
+| `GET` | `/api/v1/notifications/unread-count` | 읽지 않은 알림 개수 조회 |
+| `PATCH` | `/api/v1/notifications/{id}/read` | 단일 알림 읽음 처리 |
+| `PATCH` | `/api/v1/notifications/read-all` | 전체 알림 읽음 처리 |
+
+모든 API는 `@UserId Long userId`가 필요하다. 알림 조회/읽음 처리는 반드시 `receiverId == userId` 조건으로 제한한다.
+
+### 3단계: 알림 생성 지점
+
+기존 서비스 로직 안에서 상태 변경이 확정된 뒤 `NotificationService.create(...)`를 호출한다.
+
+| 기존 로직 | 추가할 알림 |
+|----------|-------------|
+| `CertificateService.decide()` | 승인/거절 결과를 인증 신청자에게 알림 |
+| `ApplicationRecordService.apply()` | 새 지원 발생을 공고 작성자에게 알림 |
+| `ApplicationRecordService.approveApplicationRecord()` | 합격 결과를 지원자에게 알림 |
+
+트랜잭션 안에서는 우선 DB 알림만 저장한다. 푸시 발송은 실패해도 핵심 비즈니스 로직이 rollback되지 않도록 별도 서비스에서 처리하는 편이 안전하다.
+
+### 4단계: 푸시 토큰 저장
+
+Expo push를 붙일 때는 사용자 기기 토큰을 저장해야 한다.
+
+**PushToken 엔티티 필드 예시:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `id` | Long | 토큰 ID |
+| `userId` | Long | 소유자 |
+| `token` | String | Expo push token |
+| `deviceId` | String | 기기 식별자. 선택 사항 |
+| `enabled` | Boolean | 발송 가능 여부 |
+| `updatedAt` | LocalDateTime | 갱신 시각 |
+
+**API 예시:**
+
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| `POST` | `/api/v1/push-tokens` | 내 Expo push token 저장/갱신 |
+| `DELETE` | `/api/v1/push-tokens/{token}` | 로그아웃/알림 해제 시 토큰 비활성화 |
+
+### 5단계: Expo Push 발송
+
+`PushNotificationService`에서 Expo Push API로 요청을 보낸다.
+
+구현 원칙:
+
+- DB 알림 저장이 1순위, 푸시는 2순위
+- Expo API 실패 시 로그만 남기고 핵심 요청은 성공 처리
+- 잘못된 토큰 응답이 오면 해당 push token을 비활성화
+- 민감한 개인정보는 푸시 본문에 넣지 않음
+
+### 직접 해볼 것
+
+- 인증서 승인 시 `CERTIFICATE_APPROVED` 알림이 생성되는 흐름 그리기
+- 지원자가 스텝 공고에 지원했을 때 공고 작성자 ID를 어디서 가져오는지 추적하기
+- 알림 목록 조회에서 다른 사용자의 알림을 읽지 못하게 막는 조건 작성하기
+- 푸시 실패가 인증서 승인/지원 처리 트랜잭션을 실패시키면 안 되는 이유 설명하기
+
+---
+
 ## 추천 학습 순서
 
 1. Controller → Service → Repository 요청 흐름 읽기
@@ -357,3 +478,4 @@
 5. Querydsl 필터 검색 이해
 6. 예외 처리와 Swagger 문서화 보강
 7. Docker/CI/CD로 운영 반영 흐름 확인
+8. 알림 도메인을 인앱 알림부터 설계하고 푸시로 확장
