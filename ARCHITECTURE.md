@@ -89,6 +89,12 @@ Geharbang은 **제주 게스트하우스 스텝 구인/구직 플랫폼**이다.
 - 게스트하우스 게시글 찜 추가 / 삭제
 - 목록 조회의 `isWished`와 `찜_많은순` 정렬은 `wish` 테이블 기준으로 계산
 
+#### 알림 (Notification)
+- 로그인한 사용자의 인앱 알림 목록 조회
+- 읽지 않은 알림 개수 조회
+- 단일/전체 알림 읽음 처리
+- 사장님 인증 승인/거절, 스텝 공고 신규 지원, 지원 합격 처리 시 알림 생성
+
 #### 이미지 업로드
 - 지원서 프로필 이미지 업로드 (1장)
 - 게스트하우스/공고 이미지 다중 업로드
@@ -110,7 +116,8 @@ src/main/java/guesthouse/
 ├── certificate/             # 사장님 인증서
 ├── guestHousePost/          # 게스트하우스 게시글
 ├── staffrecruitment/        # 스텝 구인 공고
-└── wish/                    # 찜 목록
+├── wish/                    # 찜 목록
+└── notification/            # 인앱 알림
 ```
 
 도메인별로 패키지가 분리되어 있고, 각 도메인은 동일한 내부 구조를 가짐.
@@ -129,6 +136,7 @@ src/main/java/guesthouse/
 | `guestHousePost` | 게스트하우스 숙소 게시글 CRUD |
 | `staffrecruitment` | 게스트하우스 스텝 구인 공고 CRUD |
 | `wish` | 스텝 구인 공고 / 게스트하우스 게시글 찜하기 기능 |
+| `notification` | 사용자별 인앱 알림 조회/읽음 처리 및 주요 이벤트 알림 생성 |
 
 ---
 
@@ -435,6 +443,18 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 찜 추가 API는 `WishResponse`로 `wishId`를 반환한다. 이미 찜한 대상이면 새로 생성하지 않고 기존 `wishId`를 반환한다.
 내가 찜한 목록 조회 API는 `pageNumber` query string을 받으며, 찜한 최신순으로 10개씩 반환한다.
 
+### 알림 (Notification)
+
+| Method | Endpoint | 인증 | 설명 |
+|--------|----------|------|------|
+| GET | `/api/v1/notifications` | 필요 | 내 알림 목록 조회 (`?pageNumber=0`, 최신순 10개) |
+| GET | `/api/v1/notifications/unread-count` | 필요 | 읽지 않은 알림 개수 조회 |
+| PATCH | `/api/v1/notifications/{id}/read` | 필요 | 내 특정 알림 읽음 처리 |
+| PATCH | `/api/v1/notifications/read-all` | 필요 | 내 모든 알림 읽음 처리 |
+
+알림은 `receiverId`가 로그인 사용자와 일치하는 데이터만 조회/수정할 수 있다.
+현재 알림 생성 지점은 사장님 인증 승인/거절, 스텝 공고 신규 지원, 지원 합격 처리이다.
+
 ### 이미지 (Image)
 
 | Method | Endpoint | 인증 | 설명 |
@@ -514,6 +534,7 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 | `guest_house_post` | `GuestHousePost` | |
 | `staff_recruitment` | `StaffRecruitment` | |
 | `wish` | `Wish` | `staffRecruitmentId` 또는 `guestHousePostId` 중 하나로 찜 대상을 구분 |
+| `notification` | `Notification` | `receiverId` 기준으로 사용자별 알림을 저장하고 `isRead`로 읽음 여부 관리 |
 
 ### User 엔티티 특이사항
 

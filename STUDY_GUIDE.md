@@ -367,15 +367,16 @@ DB에 남는 인앱 알림이 기준 데이터가 되고, 푸시는 그 알림�
 notification/
 ├── controller/NotificationController.java
 ├── service/NotificationService.java
-├── service/PushNotificationService.java
 ├── repository/NotificationRepository.java
-├── repository/PushTokenRepository.java
 ├── domain/model/Notification.java
-├── domain/model/PushToken.java
 ├── domain/vo/NotificationType.java
-├── dto/request/PushTokenSaveRequest.java
-└── dto/response/NotificationResponse.java
+├── domain/vo/NotificationTargetType.java
+├── dto/response/NotificationDto.java
+├── dto/response/NotificationsResponse.java
+└── dto/response/UnreadNotificationCountResponse.java
 ```
+
+푸시 알림 단계로 확장할 때 `PushNotificationService`, `PushTokenRepository`, `PushTokenSaveRequest`를 추가한다.
 
 ### 1단계: 인앱 알림
 
@@ -390,7 +391,7 @@ notification/
 | `type` | NotificationType | 알림 종류 |
 | `title` | String | 알림 제목 |
 | `content` | String | 알림 내용 |
-| `targetType` | String | 이동 대상 타입. 예: `STAFF_RECRUITMENT`, `CERTIFICATE` |
+| `targetType` | NotificationTargetType | 이동 대상 타입. 예: `STAFF_RECRUITMENT`, `CERTIFICATE`, `APPLICATION_RECORD` |
 | `targetId` | Long | 이동 대상 ID |
 | `isRead` | Boolean | 읽음 여부 |
 | `createdAt` | LocalDateTime | 생성 시각 |
@@ -417,7 +418,7 @@ notification/
 
 ### 3단계: 알림 생성 지점
 
-기존 서비스 로직 안에서 상태 변경이 확정된 뒤 `NotificationService.create(...)`를 호출한다.
+기존 서비스 로직 안에서 상태 변경이 확정된 뒤 `NotificationService`의 이벤트별 생성 메서드를 호출한다.
 
 | 기존 로직 | 추가할 알림 |
 |----------|-------------|
@@ -426,6 +427,9 @@ notification/
 | `ApplicationRecordService.approveApplicationRecord()` | 합격 결과를 지원자에게 알림 |
 
 트랜잭션 안에서는 우선 DB 알림만 저장한다. 푸시 발송은 실패해도 핵심 비즈니스 로직이 rollback되지 않도록 별도 서비스에서 처리하는 편이 안전하다.
+
+현재 구현된 인앱 알림 API는 모두 인증이 필요하며, 목록 조회는 `pageNumber`를 0부터 받고 최신순으로 10개씩 반환한다.
+읽음 처리 API는 `id`뿐 아니라 `receiverId == userId` 조건으로 조회해서 다른 사용자의 알림을 읽음 처리할 수 없게 한다.
 
 ### 4단계: 푸시 토큰 저장
 
