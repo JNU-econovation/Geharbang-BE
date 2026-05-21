@@ -95,6 +95,13 @@ Geharbang은 **제주 게스트하우스 스텝 구인/구직 플랫폼**이다.
 - 단일/전체 알림 읽음 처리
 - 사장님 인증 승인/거절, 스텝 공고 신규 지원, 지원 합격 처리 시 알림 생성
 
+#### 채팅 (Chat)
+- 스텝 공고 지원 내역(`ApplicationRecord`)을 기준으로 공고 작성자와 지원자 간 채팅방 생성
+- 기존 메시지/채팅방 목록은 REST API로 조회
+- 메시지 전송은 REST API로 먼저 저장
+- WebSocket 연동 시 저장 성공 후 채팅방 참여자에게 실시간 전달
+- WebSocket 연결이 끊기거나 메시지를 놓쳐도 REST 메시지 조회로 복구 가능하도록 설계
+
 #### 이미지 업로드
 - 지원서 프로필 이미지 업로드 (1장)
 - 게스트하우스/공고 이미지 다중 업로드
@@ -117,7 +124,8 @@ src/main/java/guesthouse/
 ├── guestHousePost/          # 게스트하우스 게시글
 ├── staffrecruitment/        # 스텝 구인 공고
 ├── wish/                    # 찜 목록
-└── notification/            # 인앱 알림
+├── notification/            # 인앱 알림
+└── chat/                    # 채팅 (예정)
 ```
 
 도메인별로 패키지가 분리되어 있고, 각 도메인은 동일한 내부 구조를 가짐.
@@ -137,6 +145,7 @@ src/main/java/guesthouse/
 | `staffrecruitment` | 게스트하우스 스텝 구인 공고 CRUD |
 | `wish` | 스텝 구인 공고 / 게스트하우스 게시글 찜하기 기능 |
 | `notification` | 사용자별 인앱 알림 조회/읽음 처리 및 주요 이벤트 알림 생성 |
+| `chat` | 스텝 공고 지원자와 공고 작성자 간 채팅방/메시지 관리 (예정) |
 
 ---
 
@@ -455,6 +464,22 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 알림은 `receiverId`가 로그인 사용자와 일치하는 데이터만 조회/수정할 수 있다.
 현재 알림 생성 지점은 사장님 인증 승인/거절, 스텝 공고 신규 지원, 지원 합격 처리이다.
 
+### 채팅 (Chat)
+
+채팅은 REST와 WebSocket을 함께 사용한다. REST는 저장/조회/권한 검증의 기준이 되고, WebSocket은 새 메시지 실시간 반영만 담당한다. 현재 1차 구현은 REST 저장/조회이며, WebSocket broadcast는 다음 단계에서 붙인다.
+
+| Method | Endpoint | 인증 | 설명 |
+|--------|----------|------|------|
+| POST | `/api/v1/chats/rooms` | 필요 | 지원 내역 기준 채팅방 생성 또는 기존 방 반환 |
+| GET | `/api/v1/chats/rooms` | 필요 | 내가 참여 중인 채팅방 목록 조회 |
+| GET | `/api/v1/chats/rooms/{roomId}/messages` | 필요 | 채팅방 메시지 조회 (`?pageNumber=0`, 최신순 30개) |
+| POST | `/api/v1/chats/rooms/{roomId}/messages` | 필요 | 메시지 저장 |
+| PATCH | `/api/v1/chats/rooms/{roomId}/read` | 필요 | 채팅방의 상대 메시지 읽음 처리 |
+
+채팅방은 `applicationRecordId`를 기준으로 공고 작성자(`StaffRecruitment.ownerId`)와 지원자(`ApplicationRecord.userId`) 사이에 1개만 생성한다.
+채팅방 조회/전송/읽음 처리는 `ownerId == userId || applicantId == userId`인 참여자만 가능하다.
+WebSocket 연결은 JWT access token을 handshake 시 전달하고, 서버는 `TokenProcessor.parseAccessToken()`으로 사용자 ID를 검증한다.
+
 ### 이미지 (Image)
 
 | Method | Endpoint | 인증 | 설명 |
@@ -535,6 +560,8 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 | `staff_recruitment` | `StaffRecruitment` | |
 | `wish` | `Wish` | `staffRecruitmentId` 또는 `guestHousePostId` 중 하나로 찜 대상을 구분 |
 | `notification` | `Notification` | `receiverId` 기준으로 사용자별 알림을 저장하고 `isRead`로 읽음 여부 관리 |
+| `chat_room` | `ChatRoom` | `applicationRecordId` 기준으로 공고 작성자와 지원자 간 1:1 방 관리 |
+| `chat_message` | `ChatMessage` | 채팅방별 메시지 저장, `senderId`와 `isRead`로 발신자/읽음 여부 관리 |
 
 ### User 엔티티 특이사항
 

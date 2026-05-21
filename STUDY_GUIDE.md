@@ -473,6 +473,126 @@ Expo push를 붙일 때는 사용자 기기 토큰을 저장해야 한다.
 
 ---
 
+## 13. 채팅 서비스 설계와 구현 가이드
+
+채팅은 **REST 저장/조회 + WebSocket 실시간 수신** 구조로 구현한다.
+REST는 DB 저장, 히스토리 조회, 권한 검증의 기준이 되고, WebSocket은 새 메시지를 즉시 화면에 반영하는 전달 채널로만 사용한다.
+
+### 공부할 것
+
+- `ApplicationRecord`를 기준으로 지원자와 공고 작성자를 연결하는 방법
+- 채팅방 참여자 권한 검증
+- 메시지 저장과 마지막 메시지 갱신 트랜잭션
+- WebSocket handshake에서 JWT access token 검증
+- WebSocket 연결이 끊겼을 때 REST 조회로 메시지를 복구하는 흐름
+
+### 추천 도메인 구조
+
+```
+chat/
+├── controller/
+│   ├── ChatRoomController.java
+│   └── ChatMessageController.java
+├── service/ChatService.java
+├── repository/
+│   ├── ChatRoomRepository.java
+│   └── ChatMessageRepository.java
+├── domain/model/
+│   ├── ChatRoom.java
+│   └── ChatMessage.java
+├── websocket/ChatWebSocketHandler.java
+├── dto/request/
+│   ├── ChatRoomCreateRequest.java
+│   └── ChatMessageSendRequest.java
+└── dto/response/
+    ├── ChatRoomDto.java
+    ├── ChatRoomsResponse.java
+    ├── ChatMessageDto.java
+    └── ChatMessagesResponse.java
+```
+
+WebSocket 설정은 공통 설정으로 `common/config/WebSocketConfig.java`에 둔다.
+
+### 1단계: 채팅방
+
+채팅방은 `applicationRecordId` 기준으로 하나만 만든다.
+`ApplicationRecord.staffRecruitmentId`로 공고를 찾고, `StaffRecruitment.ownerId`를 사장님, `ApplicationRecord.userId`를 지원자로 저장한다.
+
+**ChatRoom 엔티티 필드 예시:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `id` | Long | 채팅방 ID |
+| `applicationRecordId` | Long | 지원 내역 ID |
+| `staffRecruitmentId` | Long | 스텝 공고 ID |
+| `ownerId` | Long | 공고 작성자 ID |
+| `applicantId` | Long | 지원자 ID |
+| `lastMessage` | String | 마지막 메시지 |
+| `lastMessageAt` | LocalDateTime | 마지막 메시지 시각 |
+| `createdAt` | LocalDateTime | 생성 시각 |
+| `updatedAt` | LocalDateTime | 수정 시각 |
+
+`applicationRecordId`에는 unique 제약을 둬서 같은 지원 내역에 채팅방이 중복 생성되지 않게 한다.
+
+### 2단계: 메시지
+
+메시지는 항상 DB에 먼저 저장한다.
+저장에 성공하면 `ChatRoom.lastMessage`, `lastMessageAt`을 갱신하고 WebSocket으로 해당 방 참여자에게 전송한다.
+
+**ChatMessage 엔티티 필드 예시:**
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `id` | Long | 메시지 ID |
+| `chatRoomId` | Long | 채팅방 ID |
+| `senderId` | Long | 보낸 유저 ID |
+| `content` | String | 메시지 내용 |
+| `isRead` | Boolean | 상대방 읽음 여부 |
+| `createdAt` | LocalDateTime | 생성 시각 |
+
+수신자는 `ChatRoom`의 `ownerId`, `applicantId` 중 `senderId`가 아닌 사용자로 계산한다.
+
+### 3단계: REST API
+
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| `POST` | `/api/v1/chats/rooms` | 지원 내역 기준 채팅방 생성 또는 기존 방 반환 |
+| `GET` | `/api/v1/chats/rooms` | 내가 참여 중인 채팅방 목록 조회 |
+| `GET` | `/api/v1/chats/rooms/{roomId}/messages?pageNumber=0` | 채팅방 메시지 조회 |
+| `POST` | `/api/v1/chats/rooms/{roomId}/messages` | 메시지 저장 |
+| `PATCH` | `/api/v1/chats/rooms/{roomId}/read` | 상대방이 보낸 메시지 읽음 처리 |
+
+모든 API는 `@UserId Long userId`가 필요하다.
+채팅방 참여자만 조회/전송/읽음 처리가 가능하므로 `ownerId == userId || applicantId == userId` 조건을 공통으로 검증한다.
+
+### 4단계: WebSocket
+
+WebSocket은 다음 단계에서 새 메시지를 실시간으로 전달하는 용도다.
+메시지 전송 자체는 REST API가 담당하고, 서버가 DB 저장 후 WebSocket으로 broadcast한다.
+
+권장 흐름:
+
+1. FE가 채팅방 진입 시 REST로 기존 메시지를 조회한다.
+2. FE가 `/ws/chats?token={accessToken}`으로 WebSocket에 연결한다.
+3. BE는 handshake 시 `TokenProcessor.parseAccessToken()`으로 사용자 ID를 검증한다.
+4. 메시지 전송은 `POST /api/v1/chats/rooms/{roomId}/messages`로 처리한다.
+5. BE는 저장된 메시지를 해당 채팅방 참여자 세션에 broadcast한다.
+6. WebSocket이 끊기면 FE는 재연결하거나 REST 메시지 조회로 최신 상태를 복구한다.
+
+### 5단계: 알림 연동
+
+채팅 메시지 수신자가 현재 채팅방에 접속해 있지 않으면 알림을 생성할 수 있다.
+이때 `NotificationType.CHAT_MESSAGE_CREATED`, `NotificationTargetType.CHAT_ROOM` 추가가 필요하다.
+
+### 직접 해볼 것
+
+- `ApplicationRecord` 하나에서 채팅방 참여자 2명을 도출하는 흐름 그리기
+- `ChatRoom.applicationRecordId` 중복 생성을 막는 repository 메서드 작성하기
+- 채팅방 참여자가 아닌 사용자가 메시지 조회를 시도할 때 예외 처리하기
+- REST 메시지 전송 후 WebSocket broadcast가 실패해도 DB 저장은 성공으로 남겨야 하는 이유 설명하기
+
+---
+
 ## 추천 학습 순서
 
 1. Controller → Service → Repository 요청 흐름 읽기
@@ -483,3 +603,4 @@ Expo push를 붙일 때는 사용자 기기 토큰을 저장해야 한다.
 6. 예외 처리와 Swagger 문서화 보강
 7. Docker/CI/CD로 운영 반영 흐름 확인
 8. 알림 도메인을 인앱 알림부터 설계하고 푸시로 확장
+9. 채팅 도메인을 REST 저장/조회와 WebSocket 실시간 수신으로 확장
