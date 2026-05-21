@@ -98,8 +98,7 @@ Geharbang은 **제주 게스트하우스 스텝 구인/구직 플랫폼**이다.
 #### 채팅 (Chat)
 - 스텝 공고 지원 내역(`ApplicationRecord`)을 기준으로 공고 작성자와 지원자 간 채팅방 생성
 - 기존 메시지/채팅방 목록은 REST API로 조회
-- 메시지 전송은 REST API로 먼저 저장
-- WebSocket 연동 시 저장 성공 후 채팅방 참여자에게 실시간 전달
+- 메시지 전송은 REST API로 저장하고, 저장 성공 후 WebSocket으로 채팅방 참여자에게 실시간 전달
 - WebSocket 연결이 끊기거나 메시지를 놓쳐도 REST 메시지 조회로 복구 가능하도록 설계
 
 #### 이미지 업로드
@@ -466,19 +465,20 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 
 ### 채팅 (Chat)
 
-채팅은 REST와 WebSocket을 함께 사용한다. REST는 저장/조회/권한 검증의 기준이 되고, WebSocket은 새 메시지 실시간 반영만 담당한다. 현재 1차 구현은 REST 저장/조회이며, WebSocket broadcast는 다음 단계에서 붙인다.
+채팅은 REST와 WebSocket을 함께 사용한다. REST는 저장/조회/권한 검증의 기준이 되고, WebSocket은 새 메시지 실시간 반영만 담당한다.
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
 | POST | `/api/v1/chats/rooms` | 필요 | 지원 내역 기준 채팅방 생성 또는 기존 방 반환 |
 | GET | `/api/v1/chats/rooms` | 필요 | 내가 참여 중인 채팅방 목록 조회 |
 | GET | `/api/v1/chats/rooms/{roomId}/messages` | 필요 | 채팅방 메시지 조회 (`?pageNumber=0`, 최신순 30개) |
-| POST | `/api/v1/chats/rooms/{roomId}/messages` | 필요 | 메시지 저장 |
+| POST | `/api/v1/chats/rooms/{roomId}/messages` | 필요 | 메시지 저장 후 WebSocket으로 실시간 전달 |
 | PATCH | `/api/v1/chats/rooms/{roomId}/read` | 필요 | 채팅방의 상대 메시지 읽음 처리 |
 
 채팅방은 `applicationRecordId`를 기준으로 공고 작성자(`StaffRecruitment.ownerId`)와 지원자(`ApplicationRecord.userId`) 사이에 1개만 생성한다.
 채팅방 조회/전송/읽음 처리는 `ownerId == userId || applicantId == userId`인 참여자만 가능하다.
 WebSocket 연결은 JWT access token을 handshake 시 전달하고, 서버는 `TokenProcessor.parseAccessToken()`으로 사용자 ID를 검증한다.
+WebSocket 엔드포인트는 `/ws/chats?token={accessToken}`이며, 클라이언트가 직접 WebSocket으로 메시지를 보내지는 않는다.
 
 ### 이미지 (Image)
 

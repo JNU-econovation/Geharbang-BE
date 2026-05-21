@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Entity
@@ -65,6 +66,10 @@ public class ChatRoom extends TimeEntity {
             return applicantId;
         }
         return ownerId;
+    }
+
+    public List<Long> getParticipantIds() {
+        return List.of(ownerId, applicantId);
     }
 
     public void updateLastMessage(String lastMessage, LocalDateTime lastMessageAt) {

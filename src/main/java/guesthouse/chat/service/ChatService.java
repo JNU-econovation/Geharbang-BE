@@ -12,6 +12,7 @@ import guesthouse.chat.exception.ChatErrorCode;
 import guesthouse.chat.exception.ChatException;
 import guesthouse.chat.repository.ChatMessageRepository;
 import guesthouse.chat.repository.ChatRoomRepository;
+import guesthouse.chat.websocket.ChatWebSocketSessionRegistry;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.exception.StaffRecruitmentErrorCode;
 import guesthouse.staffrecruitment.exception.StaffRecruitmentException;
@@ -38,6 +39,7 @@ public class ChatService {
     private final ApplicationRecordRepository applicationRecordRepository;
     private final StaffRecruitmentRepository staffRecruitmentRepository;
     private final UserService userService;
+    private final ChatWebSocketSessionRegistry chatWebSocketSessionRegistry;
 
     @Transactional
     public Long createRoom(Long userId, ChatRoomCreateRequest request) {
@@ -74,7 +76,10 @@ public class ChatService {
         ChatMessage message = chatMessageRepository.save(new ChatMessage(room.getId(), userId, request.content()));
         room.updateLastMessage(request.content(), LocalDateTime.now());
 
-        return ChatMessageDto.from(message);
+        ChatMessageDto messageDto = ChatMessageDto.from(message);
+        chatWebSocketSessionRegistry.broadcast(room.getParticipantIds(), messageDto);
+
+        return messageDto;
     }
 
     @Transactional

@@ -559,7 +559,7 @@ WebSocket 설정은 공통 설정으로 `common/config/WebSocketConfig.java`에 
 | `POST` | `/api/v1/chats/rooms` | 지원 내역 기준 채팅방 생성 또는 기존 방 반환 |
 | `GET` | `/api/v1/chats/rooms` | 내가 참여 중인 채팅방 목록 조회 |
 | `GET` | `/api/v1/chats/rooms/{roomId}/messages?pageNumber=0` | 채팅방 메시지 조회 |
-| `POST` | `/api/v1/chats/rooms/{roomId}/messages` | 메시지 저장 |
+| `POST` | `/api/v1/chats/rooms/{roomId}/messages` | 메시지 저장 후 WebSocket broadcast |
 | `PATCH` | `/api/v1/chats/rooms/{roomId}/read` | 상대방이 보낸 메시지 읽음 처리 |
 
 모든 API는 `@UserId Long userId`가 필요하다.
@@ -567,7 +567,7 @@ WebSocket 설정은 공통 설정으로 `common/config/WebSocketConfig.java`에 
 
 ### 4단계: WebSocket
 
-WebSocket은 다음 단계에서 새 메시지를 실시간으로 전달하는 용도다.
+WebSocket은 새 메시지를 실시간으로 전달하는 용도다.
 메시지 전송 자체는 REST API가 담당하고, 서버가 DB 저장 후 WebSocket으로 broadcast한다.
 
 권장 흐름:
