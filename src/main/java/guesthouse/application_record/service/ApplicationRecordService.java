@@ -16,6 +16,7 @@ import guesthouse.application_record.dto.response.*;
 import guesthouse.application_record.exception.ApplicationRecordErrorCode;
 import guesthouse.application_record.exception.ApplicationRecordException;
 import guesthouse.application_record.repository.ApplicationRecordRepository;
+import guesthouse.notification.service.NotificationService;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentQuestion;
 import guesthouse.staffrecruitment.exception.StaffRecruitmentErrorCode;
@@ -47,6 +48,7 @@ public class ApplicationRecordService {
     private final StaffRecruitmentRepository staffRecruitmentRepository;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
 
     @Transactional
@@ -68,6 +70,7 @@ public class ApplicationRecordService {
         if (hasQuestions(recruitmentId)) {
             saveQuestionAnswers(answers, recruitmentId, record.getId());
         }
+        notificationService.createStaffApplicationCreatedNotification(staffRecruitment, record);
     }
 
     private void checkDuplicatedApplication(Long recruitmentId, Long userId) {
@@ -156,7 +159,11 @@ public class ApplicationRecordService {
         ApplicationRecord applicationRecord = applicationRecordRepository.findByIdOrThrow(applicationRecordId);
         validateOwner(userId, applicationRecord.getStaffRecruitmentId());
 
+        boolean alreadyAccepted = applicationRecord.getStatus().isAccepted();
         applicationRecord.approve();
+        if (!alreadyAccepted) {
+            notificationService.createApplicationAcceptedNotification(applicationRecord);
+        }
     }
 
     @Transactional(readOnly = true)

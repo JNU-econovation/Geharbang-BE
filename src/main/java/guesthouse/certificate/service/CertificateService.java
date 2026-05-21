@@ -8,6 +8,7 @@ import guesthouse.certificate.dto.response.CertificateDetailsDTO;
 import guesthouse.certificate.exception.CertificateErrorCode;
 import guesthouse.certificate.exception.CertificateException;
 import guesthouse.certificate.repository.CertificateRepository;
+import guesthouse.notification.service.NotificationService;
 import guesthouse.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,7 @@ public class CertificateService {
 
     private final CertificateRepository certificateRepository;
     private final UserService userService;
+    private final NotificationService notificationService;
 
     @Value("${certificate.directory.path}")
     private String DIR_PATH;
@@ -83,7 +85,11 @@ public class CertificateService {
         Certificate certificate = certificateRepository.findById(certificateId)
                 .orElseThrow(()-> new CertificateException(CertificateErrorCode.NOT_FOUND));
 
+        Status previousStatus = certificate.getStatus();
         certificate.decide(isApproved);
+        if (previousStatus != certificate.getStatus()) {
+            notificationService.createCertificateDecisionNotification(certificate, isApproved);
+        }
     }
   
     @Transactional(readOnly = true)
