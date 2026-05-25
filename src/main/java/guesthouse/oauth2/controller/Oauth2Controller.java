@@ -38,7 +38,7 @@ public class Oauth2Controller {
         KakaoTokenResponse kakaoResponse = kaKaoOAuth2Service.getToken(code);
         KaKaoUserInfoResponse userInfo = kaKaoOAuth2Service.getUserInfo(kakaoResponse.accessToken());
         LoginInfo loginInfo = authService.loginWithProvider(String.valueOf(userInfo.id()), Provider.KAKAO);
-        String redirectUri = redirectBaseUri + loginInfo.accessToken() + "&userId=" + userInfo.id();
+        String redirectUri = redirectBaseUri + loginInfo.accessToken() + "&userId=" + loginInfo.userId();
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, redirectUri)
                 .build();
@@ -55,7 +55,7 @@ public class Oauth2Controller {
         GoogleTokenResponse response = googleOAuth2Service.getToken(code);
         GoogleUserInfo userInfo = googleOAuth2Service.getUserInfo(response.idToken());
         LoginInfo loginInfo = authService.loginWithProvider(userInfo.id(), Provider.GOOGLE);
-        String redirectUri = redirectBaseUri + loginInfo.accessToken() + "&userId=" + userInfo.id();
+        String redirectUri = redirectBaseUri + loginInfo.accessToken() + "&userId=" + loginInfo.userId();
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, redirectUri)
                 .build();
