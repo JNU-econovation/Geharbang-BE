@@ -489,7 +489,9 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 `staffRecruitmentId`, `guestHousePostId` 기준 채팅방은 게시글 작성자와 현재 로그인 사용자 사이에 생성하며, 본인 게시글에 대해서는 채팅방을 생성하지 않는다.
 채팅방 조회/전송/읽음 처리는 `ownerId == userId || applicantId == userId`인 참여자만 가능하다.
 WebSocket 연결은 JWT access token을 handshake 시 전달하고, 서버는 `TokenProcessor.parseAccessToken()`으로 사용자 ID를 검증한다.
-WebSocket 엔드포인트는 `/ws/chats?token={accessToken}`이며, 클라이언트가 직접 WebSocket으로 메시지를 보내지는 않는다.
+WebSocket 엔드포인트는 `/ws/chats?token={accessToken}&roomId={roomId}`이며, 클라이언트가 직접 WebSocket으로 메시지를 보내지는 않는다.
+`roomId`는 상대방이 현재 같은 채팅방을 보고 있는지 판단하는 presence 용도다.
+상대방이 같은 채팅방에 접속 중이면 채팅 알림을 생성하지 않고, 접속 중이 아니어도 같은 채팅방/수신자 조합은 30초에 한 번만 알림을 생성한다.
 
 ### 이미지 (Image)
 

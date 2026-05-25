@@ -589,7 +589,7 @@ WebSocket은 새 메시지를 실시간으로 전달하는 용도다.
 권장 흐름:
 
 1. FE가 채팅방 진입 시 REST로 기존 메시지를 조회한다.
-2. FE가 `/ws/chats?token={accessToken}`으로 WebSocket에 연결한다.
+2. FE가 `/ws/chats?token={accessToken}&roomId={roomId}`으로 WebSocket에 연결한다.
 3. BE는 handshake 시 `TokenProcessor.parseAccessToken()`으로 사용자 ID를 검증한다.
 4. 메시지 전송은 `POST /api/v1/chats/rooms/{roomId}/messages`로 처리한다.
 5. BE는 저장된 메시지를 해당 채팅방 참여자 세션에 broadcast한다.
@@ -599,6 +599,8 @@ WebSocket은 새 메시지를 실시간으로 전달하는 용도다.
 
 채팅 메시지 저장 시 상대방에게 `NotificationType.CHAT_MESSAGE_CREATED`, `NotificationTargetType.CHAT_ROOM` 알림을 생성한다.
 상대방에게 활성 Expo Push Token이 있으면 같은 내용으로 OS 푸시도 발송한다.
+상대방이 같은 채팅방에 WebSocket으로 접속 중이면 채팅 알림을 만들지 않는다.
+상대방이 채팅방 밖에 있더라도 같은 채팅방/수신자 조합은 30초에 한 번만 알림을 만든다.
 알림 설정에서 `pushEnabled=false`이면 인앱 알림은 저장하고 OS 푸시만 건너뛴다.
 `chatPushEnabled=false`이면 사용자가 채팅 알림 자체를 끈 것으로 보고 채팅 인앱 알림 생성과 채팅 푸시 발송을 모두 건너뛴다.
 
