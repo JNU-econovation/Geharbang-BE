@@ -24,11 +24,12 @@ public class ChatRoom extends TimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private Long applicationRecordId;
 
-    @Column(nullable = false)
     private Long staffRecruitmentId;
+
+    private Long guestHousePostId;
 
     @Column(nullable = false)
     private String staffRecruitmentTitle;
@@ -46,12 +47,14 @@ public class ChatRoom extends TimeEntity {
     public ChatRoom(
             Long applicationRecordId,
             Long staffRecruitmentId,
+            Long guestHousePostId,
             String staffRecruitmentTitle,
             Long ownerId,
             Long applicantId
     ) {
         this.applicationRecordId = applicationRecordId;
         this.staffRecruitmentId = staffRecruitmentId;
+        this.guestHousePostId = guestHousePostId;
         this.staffRecruitmentTitle = staffRecruitmentTitle;
         this.ownerId = ownerId;
         this.applicantId = applicantId;

@@ -99,11 +99,32 @@ public class NotificationService {
         );
     }
 
+    @Transactional
+    public void createChatMessageNotification(Long receiverId, Long chatRoomId, String senderName, String content) {
+        create(
+                receiverId,
+                NotificationType.CHAT_MESSAGE_CREATED,
+                "새 채팅 메시지가 도착했습니다",
+                createChatMessageContent(senderName, content),
+                NotificationTargetType.CHAT_ROOM,
+                chatRoomId
+        );
+    }
+
     private String getStaffRecruitmentTitle(ApplicationRecord applicationRecord) {
         if (applicationRecord.getStaffRecruitmentTitle() == null || applicationRecord.getStaffRecruitmentTitle().isBlank()) {
             return "지원한 스태프";
         }
         return applicationRecord.getStaffRecruitmentTitle();
+    }
+
+    private String createChatMessageContent(String senderName, String content) {
+        String displayName = senderName == null || senderName.isBlank() ? "상대방" : senderName;
+        String preview = content == null ? "" : content.strip();
+        if (preview.length() > 40) {
+            preview = preview.substring(0, 40) + "...";
+        }
+        return displayName + "님: " + preview;
     }
 
     private void create(
