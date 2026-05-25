@@ -14,7 +14,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     Long countByChatRoomIdAndSenderIdNotAndIsReadFalse(Long chatRoomId, Long senderId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("update ChatMessage m set m.isRead = true where m.chatRoomId = :chatRoomId and m.senderId <> :userId and m.isRead = false")
     void markOpponentMessagesAsRead(Long chatRoomId, Long userId);
 }
