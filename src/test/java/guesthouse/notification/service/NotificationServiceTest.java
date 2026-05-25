@@ -4,6 +4,7 @@ import guesthouse.application_record.domain.model.ApplicationRecord;
 import guesthouse.certificate.domain.model.Certificate;
 import guesthouse.certificate.domain.vo.CertificateType;
 import guesthouse.notification.domain.model.Notification;
+import guesthouse.notification.domain.model.NotificationSetting;
 import guesthouse.notification.domain.vo.NotificationTargetType;
 import guesthouse.notification.domain.vo.NotificationType;
 import guesthouse.notification.exception.NotificationException;
@@ -31,6 +32,9 @@ class NotificationServiceTest {
 
     @Mock
     private ExpoPushService expoPushService;
+
+    @Mock
+    private NotificationSettingService notificationSettingService;
 
     @InjectMocks
     private NotificationService notificationService;
@@ -82,6 +86,40 @@ class NotificationServiceTest {
         assertThat(notification.getReceiverId()).isEqualTo(3L);
         assertThat(notification.getType()).isEqualTo(NotificationType.APPLICATION_ACCEPTED);
         assertThat(notification.getContent()).contains("제주 스텝 모집");
+    }
+
+    @Test
+    void createChatMessageNotification_savesWhenChatNotificationEnabled() {
+        when(notificationSettingService.getOrCreate(3L)).thenReturn(new NotificationSetting(3L));
+
+        notificationService.createChatMessageNotification(3L, 10L, "망치", "안녕하세요");
+
+        Notification notification = captureSavedNotification();
+        assertThat(notification.getReceiverId()).isEqualTo(3L);
+        assertThat(notification.getType()).isEqualTo(NotificationType.CHAT_MESSAGE_CREATED);
+        assertThat(notification.getTargetType()).isEqualTo(NotificationTargetType.CHAT_ROOM);
+        assertThat(notification.getTargetId()).isEqualTo(10L);
+        assertThat(notification.getContent()).contains("망치님");
+        verify(expoPushService).send(
+                eq(3L),
+                eq("새 채팅 메시지가 도착했습니다"),
+                anyString(),
+                eq(NotificationType.CHAT_MESSAGE_CREATED),
+                eq(NotificationTargetType.CHAT_ROOM),
+                eq(10L)
+        );
+    }
+
+    @Test
+    void createChatMessageNotification_skipsWhenChatNotificationDisabled() {
+        NotificationSetting setting = new NotificationSetting(3L);
+        setting.update(null, false);
+        when(notificationSettingService.getOrCreate(3L)).thenReturn(setting);
+
+        notificationService.createChatMessageNotification(3L, 10L, "망치", "안녕하세요");
+
+        verify(notificationRepository, never()).save(any());
+        verify(expoPushService, never()).send(anyLong(), anyString(), anyString(), any(), any(), any());
     }
 
     @Test
