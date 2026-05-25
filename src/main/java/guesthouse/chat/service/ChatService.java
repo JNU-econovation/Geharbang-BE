@@ -146,6 +146,7 @@ public class ChatService {
     private ChatRoom createNewStaffRecruitmentRoom(Long userId, Long staffRecruitmentId) {
         StaffRecruitment staffRecruitment = staffRecruitmentRepository.findById(staffRecruitmentId)
                 .orElseThrow(() -> new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND));
+        validateUserExists(staffRecruitment.getOwnerId());
         validateNotSelfChat(staffRecruitment.getOwnerId(), userId);
 
         return chatRoomRepository.save(new ChatRoom(
@@ -161,6 +162,7 @@ public class ChatService {
     private ChatRoom createNewGuestHousePostRoom(Long userId, Long guestHousePostId) {
         GuestHousePost guestHousePost = guestHousePostRepository.findById(guestHousePostId)
                 .orElseThrow(() -> new GuestHousePostException(GuestHousePostErrorCode.NOT_FOUND));
+        validateUserExists(guestHousePost.getOwnerId());
         validateNotSelfChat(guestHousePost.getOwnerId(), userId);
 
         return chatRoomRepository.save(new ChatRoom(
@@ -240,5 +242,9 @@ public class ChatService {
         if (!ownerId.equals(userId) && !applicantId.equals(userId)) {
             throw new ChatException(ChatErrorCode.NOT_PARTICIPANT);
         }
+    }
+
+    private void validateUserExists(Long userId) {
+        userService.findById(userId);
     }
 }

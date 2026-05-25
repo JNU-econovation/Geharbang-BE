@@ -5,7 +5,6 @@ import guesthouse.user.exception.UserErrorCode;
 import guesthouse.user.exception.UserException;
 import guesthouse.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -34,7 +33,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             session.getAttributes().put(USER_ID_ATTRIBUTE, userId);
             sessionRegistry.add(userId, session);
         } catch (RuntimeException e) {
-            session.close(new CloseStatus(HttpStatus.UNAUTHORIZED.value(), "Unauthorized"));
+            session.close(CloseStatus.POLICY_VIOLATION.withReason("Unauthorized"));
         }
     }
 
