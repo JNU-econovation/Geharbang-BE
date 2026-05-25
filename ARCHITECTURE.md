@@ -93,7 +93,9 @@ Geharbang은 **제주 게스트하우스 스텝 구인/구직 플랫폼**이다.
 - 로그인한 사용자의 인앱 알림 목록 조회
 - 읽지 않은 알림 개수 조회
 - 단일/전체 알림 읽음 처리
+- Expo Push Token 등록/해제
 - 사장님 인증 승인/거절, 스텝 공고 신규 지원, 지원 합격, 채팅 메시지 수신 시 알림 생성
+- 인앱 알림 저장 후 Expo Push API로 OS 푸시 발송
 
 #### 채팅 (Chat)
 - 스텝 공고 지원 내역(`ApplicationRecord`), 스텝 공고(`StaffRecruitment`), 게스트하우스 게시글(`GuestHousePost`) 기준으로 사장님과 사용자 간 채팅방 생성
@@ -123,8 +125,8 @@ src/main/java/guesthouse/
 ├── guestHousePost/          # 게스트하우스 게시글
 ├── staffrecruitment/        # 스텝 구인 공고
 ├── wish/                    # 찜 목록
-├── notification/            # 인앱 알림
-└── chat/                    # 채팅 (예정)
+├── notification/            # 인앱 알림 + Expo Push
+└── chat/                    # 1:1 채팅
 ```
 
 도메인별로 패키지가 분리되어 있고, 각 도메인은 동일한 내부 구조를 가짐.
@@ -143,8 +145,8 @@ src/main/java/guesthouse/
 | `guestHousePost` | 게스트하우스 숙소 게시글 CRUD |
 | `staffrecruitment` | 게스트하우스 스텝 구인 공고 CRUD |
 | `wish` | 스텝 구인 공고 / 게스트하우스 게시글 찜하기 기능 |
-| `notification` | 사용자별 인앱 알림 조회/읽음 처리 및 주요 이벤트 알림 생성 |
-| `chat` | 스텝 공고 지원자와 공고 작성자 간 채팅방/메시지 관리 (예정) |
+| `notification` | 사용자별 인앱 알림 조회/읽음 처리, Expo Push Token 관리 및 주요 이벤트 알림 생성 |
+| `chat` | 스텝 공고/게스트하우스 기준 사장님과 사용자 간 1:1 채팅방/메시지 관리 |
 
 ---
 
@@ -459,9 +461,16 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 | GET | `/api/v1/notifications/unread-count` | 필요 | 읽지 않은 알림 개수 조회 |
 | PATCH | `/api/v1/notifications/{id}/read` | 필요 | 내 특정 알림 읽음 처리 |
 | PATCH | `/api/v1/notifications/read-all` | 필요 | 내 모든 알림 읽음 처리 |
+| GET | `/api/v1/notification-settings` | 필요 | 내 알림 설정 조회 |
+| PATCH | `/api/v1/notification-settings` | 필요 | 내 알림 설정 변경 |
+| POST | `/api/v1/push-tokens` | 필요 | 내 Expo Push Token 저장/갱신 |
+| DELETE | `/api/v1/push-tokens` | 필요 | 내 Expo Push Token 비활성화 |
 
 알림은 `receiverId`가 로그인 사용자와 일치하는 데이터만 조회/수정할 수 있다.
 현재 알림 생성 지점은 사장님 인증 승인/거절, 스텝 공고 신규 지원, 지원 합격 처리, 채팅 메시지 수신이다.
+알림 생성 시 DB 인앱 알림을 먼저 저장하고, 활성화된 `push_token`이 있으면 Expo Push API로 푸시를 발송한다.
+`pushEnabled=false`이면 OS 푸시만 발송하지 않고, `chatPushEnabled=false`이면 채팅 인앱 알림 생성과 채팅 푸시 발송을 모두 건너뛴다.
+푸시 발송 실패는 핵심 비즈니스 트랜잭션을 실패시키지 않도록 로그만 남긴다.
 
 ### 채팅 (Chat)
 
@@ -562,6 +571,7 @@ WebSocket 엔드포인트는 `/ws/chats?token={accessToken}`이며, 클라이언
 | `staff_recruitment` | `StaffRecruitment` | |
 | `wish` | `Wish` | `staffRecruitmentId` 또는 `guestHousePostId` 중 하나로 찜 대상을 구분 |
 | `notification` | `Notification` | `receiverId` 기준으로 사용자별 알림을 저장하고 `isRead`로 읽음 여부 관리 |
+| `push_token` | `PushToken` | 사용자별 Expo Push Token 저장, 로그아웃 시 `isActive=false` 처리 |
 | `chat_room` | `ChatRoom` | 지원 내역/스텝 공고/게스트하우스 기준으로 사장님과 사용자 간 1:1 방 관리 |
 | `chat_message` | `ChatMessage` | 채팅방별 메시지 저장, `senderId`와 `isRead`로 발신자/읽음 여부 관리 |
 

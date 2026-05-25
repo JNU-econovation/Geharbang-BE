@@ -366,17 +366,23 @@ DB에 남는 인앱 알림이 기준 데이터가 되고, 푸시는 그 알림�
 ```
 notification/
 ├── controller/NotificationController.java
+├── controller/PushTokenController.java
 ├── service/NotificationService.java
+├── service/ExpoPushService.java
+├── service/PushTokenService.java
 ├── repository/NotificationRepository.java
+├── repository/PushTokenRepository.java
 ├── domain/model/Notification.java
+├── domain/model/PushToken.java
 ├── domain/vo/NotificationType.java
 ├── domain/vo/NotificationTargetType.java
+├── dto/request/PushTokenRegisterRequest.java
 ├── dto/response/NotificationDto.java
 ├── dto/response/NotificationsResponse.java
 └── dto/response/UnreadNotificationCountResponse.java
 ```
 
-푸시 알림 단계로 확장할 때 `PushNotificationService`, `PushTokenRepository`, `PushTokenSaveRequest`를 추가한다.
+현재 구현은 인앱 알림 저장 후 Expo Push API 발송까지 포함한다.
 
 ### 1단계: 인앱 알림
 
@@ -444,8 +450,8 @@ Expo push를 붙일 때는 사용자 기기 토큰을 저장해야 한다.
 | `id` | Long | 토큰 ID |
 | `userId` | Long | 소유자 |
 | `token` | String | Expo push token |
-| `deviceId` | String | 기기 식별자. 선택 사항 |
-| `enabled` | Boolean | 발송 가능 여부 |
+| `platform` | String | `ios`, `android` 등 플랫폼 |
+| `isActive` | Boolean | 발송 가능 여부 |
 | `updatedAt` | LocalDateTime | 갱신 시각 |
 
 **API 예시:**
@@ -453,7 +459,9 @@ Expo push를 붙일 때는 사용자 기기 토큰을 저장해야 한다.
 | Method | Endpoint | 설명 |
 |--------|----------|------|
 | `POST` | `/api/v1/push-tokens` | 내 Expo push token 저장/갱신 |
-| `DELETE` | `/api/v1/push-tokens/{token}` | 로그아웃/알림 해제 시 토큰 비활성화 |
+| `DELETE` | `/api/v1/push-tokens` | 로그아웃/알림 해제 시 토큰 비활성화 |
+
+등록/해제 요청 body는 `token`, `platform`을 받는다. 같은 토큰이 다시 등록되면 기존 row를 활성화하고 소유자/플랫폼을 갱신한다.
 
 ### 5단계: Expo Push 발송
 
@@ -463,8 +471,12 @@ Expo push를 붙일 때는 사용자 기기 토큰을 저장해야 한다.
 
 - DB 알림 저장이 1순위, 푸시는 2순위
 - Expo API 실패 시 로그만 남기고 핵심 요청은 성공 처리
+- Expo API 호출은 짧은 timeout을 둬서 사용자 요청을 오래 붙잡지 않음
 - 잘못된 토큰 응답이 오면 해당 push token을 비활성화
 - 민감한 개인정보는 푸시 본문에 넣지 않음
+
+현재 `NotificationService.create(...)`는 알림 저장 후 `ExpoPushService.send(...)`를 호출한다.
+푸시 payload의 `data`에는 `type`, `targetType`, `targetId`를 담아 FE가 알림 클릭 시 대상 화면으로 이동할 수 있게 한다.
 
 ### 직접 해볼 것
 
@@ -586,6 +598,9 @@ WebSocket은 새 메시지를 실시간으로 전달하는 용도다.
 ### 5단계: 알림 연동
 
 채팅 메시지 저장 시 상대방에게 `NotificationType.CHAT_MESSAGE_CREATED`, `NotificationTargetType.CHAT_ROOM` 알림을 생성한다.
+상대방에게 활성 Expo Push Token이 있으면 같은 내용으로 OS 푸시도 발송한다.
+알림 설정에서 `pushEnabled=false`이면 인앱 알림은 저장하고 OS 푸시만 건너뛴다.
+`chatPushEnabled=false`이면 사용자가 채팅 알림 자체를 끈 것으로 보고 채팅 인앱 알림 생성과 채팅 푸시 발송을 모두 건너뛴다.
 
 ### 직접 해볼 것
 
