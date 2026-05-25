@@ -29,6 +29,9 @@ class NotificationServiceTest {
     @Mock
     private NotificationRepository notificationRepository;
 
+    @Mock
+    private ExpoPushService expoPushService;
+
     @InjectMocks
     private NotificationService notificationService;
 

@@ -23,6 +23,8 @@ import java.util.List;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final ExpoPushService expoPushService;
+    private final NotificationSettingService notificationSettingService;
 
     @Transactional(readOnly = true)
     public List<NotificationDto> getNotifications(Long userId, int pageNumber) {
@@ -101,6 +103,9 @@ public class NotificationService {
 
     @Transactional
     public void createChatMessageNotification(Long receiverId, Long chatRoomId, String senderName, String content) {
+        if (!notificationSettingService.getOrCreate(receiverId).getChatPushEnabled()) {
+            return;
+        }
         create(
                 receiverId,
                 NotificationType.CHAT_MESSAGE_CREATED,
@@ -145,5 +150,6 @@ public class NotificationService {
                 .build();
 
         notificationRepository.save(notification);
+        expoPushService.send(receiverId, title, content, type, targetType, targetId);
     }
 }
