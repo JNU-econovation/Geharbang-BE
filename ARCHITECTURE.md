@@ -93,10 +93,10 @@ Geharbang은 **제주 게스트하우스 스텝 구인/구직 플랫폼**이다.
 - 로그인한 사용자의 인앱 알림 목록 조회
 - 읽지 않은 알림 개수 조회
 - 단일/전체 알림 읽음 처리
-- 사장님 인증 승인/거절, 스텝 공고 신규 지원, 지원 합격 처리 시 알림 생성
+- 사장님 인증 승인/거절, 스텝 공고 신규 지원, 지원 합격, 채팅 메시지 수신 시 알림 생성
 
 #### 채팅 (Chat)
-- 스텝 공고 지원 내역(`ApplicationRecord`)을 기준으로 공고 작성자와 지원자 간 채팅방 생성
+- 스텝 공고 지원 내역(`ApplicationRecord`), 스텝 공고(`StaffRecruitment`), 게스트하우스 게시글(`GuestHousePost`) 기준으로 사장님과 사용자 간 채팅방 생성
 - 기존 메시지/채팅방 목록은 REST API로 조회
 - 메시지 전송은 REST API로 저장하고, 저장 성공 후 WebSocket으로 채팅방 참여자에게 실시간 전달
 - WebSocket 연결이 끊기거나 메시지를 놓쳐도 REST 메시지 조회로 복구 가능하도록 설계
@@ -461,7 +461,7 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 | PATCH | `/api/v1/notifications/read-all` | 필요 | 내 모든 알림 읽음 처리 |
 
 알림은 `receiverId`가 로그인 사용자와 일치하는 데이터만 조회/수정할 수 있다.
-현재 알림 생성 지점은 사장님 인증 승인/거절, 스텝 공고 신규 지원, 지원 합격 처리이다.
+현재 알림 생성 지점은 사장님 인증 승인/거절, 스텝 공고 신규 지원, 지원 합격 처리, 채팅 메시지 수신이다.
 
 ### 채팅 (Chat)
 
@@ -469,13 +469,15 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 
 | Method | Endpoint | 인증 | 설명 |
 |--------|----------|------|------|
-| POST | `/api/v1/chats/rooms` | 필요 | 지원 내역 기준 채팅방 생성 또는 기존 방 반환 |
+| POST | `/api/v1/chats/rooms` | 필요 | 지원 내역/스텝 공고/게스트하우스 기준 채팅방 생성 또는 기존 방 반환 |
 | GET | `/api/v1/chats/rooms` | 필요 | 내가 참여 중인 채팅방 목록 조회 |
 | GET | `/api/v1/chats/rooms/{roomId}/messages` | 필요 | 채팅방 메시지 조회 (`?pageNumber=0`, 최신순 30개) |
 | POST | `/api/v1/chats/rooms/{roomId}/messages` | 필요 | 메시지 저장 후 WebSocket으로 실시간 전달 |
 | PATCH | `/api/v1/chats/rooms/{roomId}/read` | 필요 | 채팅방의 상대 메시지 읽음 처리 |
 
-채팅방은 `applicationRecordId`를 기준으로 공고 작성자(`StaffRecruitment.ownerId`)와 지원자(`ApplicationRecord.userId`) 사이에 1개만 생성한다.
+채팅방 생성 요청은 `applicationRecordId`, `staffRecruitmentId`, `guestHousePostId` 중 하나만 받는다.
+`applicationRecordId` 기준 채팅방은 공고 작성자(`StaffRecruitment.ownerId`)와 지원자(`ApplicationRecord.userId`) 사이에 생성한다.
+`staffRecruitmentId`, `guestHousePostId` 기준 채팅방은 게시글 작성자와 현재 로그인 사용자 사이에 생성하며, 본인 게시글에 대해서는 채팅방을 생성하지 않는다.
 채팅방 조회/전송/읽음 처리는 `ownerId == userId || applicantId == userId`인 참여자만 가능하다.
 WebSocket 연결은 JWT access token을 handshake 시 전달하고, 서버는 `TokenProcessor.parseAccessToken()`으로 사용자 ID를 검증한다.
 WebSocket 엔드포인트는 `/ws/chats?token={accessToken}`이며, 클라이언트가 직접 WebSocket으로 메시지를 보내지는 않는다.
@@ -560,7 +562,7 @@ WebSocket 엔드포인트는 `/ws/chats?token={accessToken}`이며, 클라이언
 | `staff_recruitment` | `StaffRecruitment` | |
 | `wish` | `Wish` | `staffRecruitmentId` 또는 `guestHousePostId` 중 하나로 찜 대상을 구분 |
 | `notification` | `Notification` | `receiverId` 기준으로 사용자별 알림을 저장하고 `isRead`로 읽음 여부 관리 |
-| `chat_room` | `ChatRoom` | `applicationRecordId` 기준으로 공고 작성자와 지원자 간 1:1 방 관리 |
+| `chat_room` | `ChatRoom` | 지원 내역/스텝 공고/게스트하우스 기준으로 사장님과 사용자 간 1:1 방 관리 |
 | `chat_message` | `ChatMessage` | 채팅방별 메시지 저장, `senderId`와 `isRead`로 발신자/읽음 여부 관리 |
 
 ### User 엔티티 특이사항

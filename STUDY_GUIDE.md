@@ -391,7 +391,7 @@ notification/
 | `type` | NotificationType | 알림 종류 |
 | `title` | String | 알림 제목 |
 | `content` | String | 알림 내용 |
-| `targetType` | NotificationTargetType | 이동 대상 타입. 예: `STAFF_RECRUITMENT`, `CERTIFICATE`, `APPLICATION_RECORD` |
+| `targetType` | NotificationTargetType | 이동 대상 타입. 예: `STAFF_RECRUITMENT`, `CERTIFICATE`, `APPLICATION_RECORD`, `CHAT_ROOM` |
 | `targetId` | Long | 이동 대상 ID |
 | `isRead` | Boolean | 읽음 여부 |
 | `createdAt` | LocalDateTime | 생성 시각 |
@@ -404,6 +404,7 @@ notification/
 | `CERTIFICATE_REJECTED` | 사장님 인증 거절 | 인증 신청자 |
 | `STAFF_APPLICATION_CREATED` | 스텝 공고에 지원 발생 | 공고 작성자 |
 | `APPLICATION_ACCEPTED` | 지원서 합격 처리 | 지원자 |
+| `CHAT_MESSAGE_CREATED` | 채팅 메시지 수신 | 채팅 상대방 |
 
 ### 2단계: API
 
@@ -425,6 +426,7 @@ notification/
 | `CertificateService.decide()` | 승인/거절 결과를 인증 신청자에게 알림 |
 | `ApplicationRecordService.apply()` | 새 지원 발생을 공고 작성자에게 알림 |
 | `ApplicationRecordService.approveApplicationRecord()` | 합격 결과를 지원자에게 알림 |
+| `ChatService.sendMessage()` | 새 채팅 메시지를 상대방에게 알림 |
 
 트랜잭션 안에서는 우선 DB 알림만 저장한다. 푸시 발송은 실패해도 핵심 비즈니스 로직이 rollback되지 않도록 별도 서비스에서 처리하는 편이 안전하다.
 
@@ -515,8 +517,9 @@ WebSocket 설정은 공통 설정으로 `common/config/WebSocketConfig.java`에 
 
 ### 1단계: 채팅방
 
-채팅방은 `applicationRecordId` 기준으로 하나만 만든다.
-`ApplicationRecord.staffRecruitmentId`로 공고를 찾고, `StaffRecruitment.ownerId`를 사장님, `ApplicationRecord.userId`를 지원자로 저장한다.
+채팅방은 `applicationRecordId`, `staffRecruitmentId`, `guestHousePostId` 중 하나를 기준으로 만든다.
+`applicationRecordId` 기준이면 `ApplicationRecord.staffRecruitmentId`로 공고를 찾고, `StaffRecruitment.ownerId`를 사장님, `ApplicationRecord.userId`를 지원자로 저장한다.
+`staffRecruitmentId` 또는 `guestHousePostId` 기준이면 게시글 작성자를 사장님, 현재 로그인 사용자를 사용자로 저장한다.
 
 **ChatRoom 엔티티 필드 예시:**
 
@@ -525,6 +528,7 @@ WebSocket 설정은 공통 설정으로 `common/config/WebSocketConfig.java`에 
 | `id` | Long | 채팅방 ID |
 | `applicationRecordId` | Long | 지원 내역 ID |
 | `staffRecruitmentId` | Long | 스텝 공고 ID |
+| `guestHousePostId` | Long | 게스트하우스 게시글 ID |
 | `ownerId` | Long | 공고 작성자 ID |
 | `applicantId` | Long | 지원자 ID |
 | `lastMessage` | String | 마지막 메시지 |
@@ -532,7 +536,7 @@ WebSocket 설정은 공통 설정으로 `common/config/WebSocketConfig.java`에 
 | `createdAt` | LocalDateTime | 생성 시각 |
 | `updatedAt` | LocalDateTime | 수정 시각 |
 
-`applicationRecordId`에는 unique 제약을 둬서 같은 지원 내역에 채팅방이 중복 생성되지 않게 한다.
+채팅방 생성 요청은 대상 ID 셋 중 하나만 허용한다. 같은 지원 내역/게시글/사용자 조합에 채팅방이 중복 생성되지 않게 repository에서 기존 방을 먼저 조회한다.
 
 ### 2단계: 메시지
 
@@ -556,7 +560,7 @@ WebSocket 설정은 공통 설정으로 `common/config/WebSocketConfig.java`에 
 
 | Method | Endpoint | 설명 |
 |--------|----------|------|
-| `POST` | `/api/v1/chats/rooms` | 지원 내역 기준 채팅방 생성 또는 기존 방 반환 |
+| `POST` | `/api/v1/chats/rooms` | 지원 내역/스텝 공고/게스트하우스 기준 채팅방 생성 또는 기존 방 반환 |
 | `GET` | `/api/v1/chats/rooms` | 내가 참여 중인 채팅방 목록 조회 |
 | `GET` | `/api/v1/chats/rooms/{roomId}/messages?pageNumber=0` | 채팅방 메시지 조회 |
 | `POST` | `/api/v1/chats/rooms/{roomId}/messages` | 메시지 저장 후 WebSocket broadcast |
@@ -581,8 +585,7 @@ WebSocket은 새 메시지를 실시간으로 전달하는 용도다.
 
 ### 5단계: 알림 연동
 
-채팅 메시지 수신자가 현재 채팅방에 접속해 있지 않으면 알림을 생성할 수 있다.
-이때 `NotificationType.CHAT_MESSAGE_CREATED`, `NotificationTargetType.CHAT_ROOM` 추가가 필요하다.
+채팅 메시지 저장 시 상대방에게 `NotificationType.CHAT_MESSAGE_CREATED`, `NotificationTargetType.CHAT_ROOM` 알림을 생성한다.
 
 ### 직접 해볼 것
 
