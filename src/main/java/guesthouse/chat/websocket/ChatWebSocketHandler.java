@@ -19,6 +19,7 @@ import java.net.URI;
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private static final String TOKEN_QUERY_PARAM = "token";
+    private static final String ROOM_ID_QUERY_PARAM = "roomId";
     private static final String BEARER_PREFIX = "Bearer ";
     private static final String USER_ID_ATTRIBUTE = "userId";
 
@@ -32,6 +33,11 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             Long userId = resolveUserId(session.getUri());
             session.getAttributes().put(USER_ID_ATTRIBUTE, userId);
             sessionRegistry.add(userId, session);
+
+            Long roomId = resolveRoomId(session.getUri());
+            if (roomId != null) {
+                sessionRegistry.addRoomPresence(userId, roomId);
+            }
         } catch (RuntimeException e) {
             session.close(CloseStatus.POLICY_VIOLATION.withReason("Unauthorized"));
         }
@@ -42,6 +48,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         Object userId = session.getAttributes().get(USER_ID_ATTRIBUTE);
         if (userId instanceof Long id) {
             sessionRegistry.remove(id, session);
+            sessionRegistry.removeRoomPresence(id);
         }
     }
 
@@ -66,5 +73,20 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.NOT_FOUND));
         return userId;
+    }
+
+    private Long resolveRoomId(URI uri) {
+        String roomIdStr = UriComponentsBuilder.fromUri(uri)
+                .build()
+                .getQueryParams()
+                .getFirst(ROOM_ID_QUERY_PARAM);
+        if (roomIdStr == null) {
+            return null;
+        }
+        try {
+            return Long.parseLong(roomIdStr);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }

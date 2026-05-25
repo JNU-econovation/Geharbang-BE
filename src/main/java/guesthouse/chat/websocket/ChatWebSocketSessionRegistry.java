@@ -21,6 +21,7 @@ public class ChatWebSocketSessionRegistry {
 
     private final ObjectMapper objectMapper;
     private final ConcurrentHashMap<Long, Set<WebSocketSession>> sessionsByUserId = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Long> activeRoomByUserId = new ConcurrentHashMap<>();
 
     public void add(Long userId, WebSocketSession session) {
         sessionsByUserId.computeIfAbsent(userId, key -> ConcurrentHashMap.newKeySet()).add(session);
@@ -35,6 +36,18 @@ public class ChatWebSocketSessionRegistry {
         if (sessions.isEmpty()) {
             sessionsByUserId.remove(userId);
         }
+    }
+
+    public void addRoomPresence(Long userId, Long roomId) {
+        activeRoomByUserId.put(userId, roomId);
+    }
+
+    public void removeRoomPresence(Long userId) {
+        activeRoomByUserId.remove(userId);
+    }
+
+    public boolean isInRoom(Long userId, Long roomId) {
+        return roomId.equals(activeRoomByUserId.get(userId));
     }
 
     public void broadcast(List<Long> receiverIds, ChatMessageDto message) {
