@@ -493,6 +493,11 @@ WebSocket 엔드포인트는 `/ws/chats?token={accessToken}&roomId={roomId}`이�
 `roomId`는 상대방이 현재 같은 채팅방을 보고 있는지 판단하는 presence 용도다.
 상대방이 같은 채팅방에 접속 중이면 채팅 알림을 생성하지 않고, 접속 중이 아니어도 같은 채팅방/수신자 조합은 30초에 한 번만 알림을 생성한다.
 
+### 좌표 규칙
+
+게스트하우스 게시글과 스텝 공고의 `location.coordinates`는 요청과 응답 모두 `[경도, 위도]` 순서로 통일한다.
+JTS `Point`에는 `x=경도`, `y=위도`로 저장하고, 상세 조회 응답도 `[point.getX(), point.getY()]`로 내려준다.
+
 ### 이미지 (Image)
 
 | Method | Endpoint | 인증 | 설명 |

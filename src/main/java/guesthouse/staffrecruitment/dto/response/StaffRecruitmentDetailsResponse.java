@@ -58,7 +58,7 @@ public record StaffRecruitmentDetailsResponse(
         public static Location from(String address, Point coordinates) {
             return new Location(
                     address,
-                    new double[]{coordinates.getY(),  coordinates.getX()}
+                    new double[]{coordinates.getX(), coordinates.getY()}
             );
         }
     }

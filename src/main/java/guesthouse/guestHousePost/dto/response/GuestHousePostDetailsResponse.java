@@ -60,7 +60,7 @@ public record GuestHousePostDetailsResponse (
             return new Location(
                     lotNumberAddress,
                     roadNameAddress,
-                    new double[]{coordinates.getY(), coordinates.getX()}
+                    new double[]{coordinates.getX(), coordinates.getY()}
             );
         }
     }

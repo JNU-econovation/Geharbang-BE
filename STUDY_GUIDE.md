@@ -613,6 +613,13 @@ WebSocket은 새 메시지를 실시간으로 전달하는 용도다.
 
 ---
 
+## 좌표 계약
+
+게스트하우스 게시글과 스텝 공고의 `location.coordinates`는 요청과 응답 모두 `[경도, 위도]` 순서다.
+JTS `Point`는 `x=경도`, `y=위도`로 다루므로 저장 시 `Coordinate(longitude, latitude)`를 사용하고, 상세 응답은 `[point.getX(), point.getY()]`로 변환한다.
+
+---
+
 ## 추천 학습 순서
 
 1. Controller → Service → Repository 요청 흐름 읽기
