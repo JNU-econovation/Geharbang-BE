@@ -22,6 +22,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private static final String ROOM_ID_QUERY_PARAM = "roomId";
     private static final String BEARER_PREFIX = "Bearer ";
     private static final String USER_ID_ATTRIBUTE = "userId";
+    private static final String ROOM_ID_ATTRIBUTE = "roomId";
 
     private final TokenProcessor tokenProcessor;
     private final UserRepository userRepository;
@@ -36,6 +37,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             Long roomId = resolveRoomId(session.getUri());
             if (roomId != null) {
+                session.getAttributes().put(ROOM_ID_ATTRIBUTE, roomId);
                 sessionRegistry.addRoomPresence(userId, roomId);
             }
         } catch (RuntimeException e) {
@@ -46,9 +48,12 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         Object userId = session.getAttributes().get(USER_ID_ATTRIBUTE);
+        Object roomId = session.getAttributes().get(ROOM_ID_ATTRIBUTE);
         if (userId instanceof Long id) {
             sessionRegistry.remove(id, session);
-            sessionRegistry.removeRoomPresence(id);
+            if (roomId instanceof Long room) {
+                sessionRegistry.removeRoomPresence(id, room);
+            }
         }
     }
 

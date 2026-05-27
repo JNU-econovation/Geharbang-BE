@@ -42,8 +42,8 @@ public class ChatWebSocketSessionRegistry {
         activeRoomByUserId.put(userId, roomId);
     }
 
-    public void removeRoomPresence(Long userId) {
-        activeRoomByUserId.remove(userId);
+    public void removeRoomPresence(Long userId, Long roomId) {
+        activeRoomByUserId.remove(userId, roomId);
     }
 
     public boolean isInRoom(Long userId, Long roomId) {

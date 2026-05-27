@@ -28,6 +28,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -87,7 +89,12 @@ public class ChatService {
         room.updateLastMessage(request.content(), LocalDateTime.now());
 
         ChatMessageDto messageDto = ChatMessageDto.from(message);
-        chatWebSocketSessionRegistry.broadcast(room.getParticipantIds(), messageDto);
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                chatWebSocketSessionRegistry.broadcast(room.getParticipantIds(), messageDto);
+            }
+        });
 
         Long opponentId = room.getOpponentId(userId);
         boolean opponentInRoom = chatWebSocketSessionRegistry.isInRoom(opponentId, room.getId());
