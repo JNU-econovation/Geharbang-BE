@@ -10,6 +10,9 @@ public record ExpoPushMessageRequest(
         String to,
         String title,
         String body,
+        String sound,
+        String channelId,
+        String priority,
         Map<String, Object> data
 ) {
     public static ExpoPushMessageRequest of(
@@ -31,6 +34,9 @@ public record ExpoPushMessageRequest(
                 token,
                 title,
                 body,
+                "default",
+                "default",
+                "high",
                 data
         );
     }
