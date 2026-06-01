@@ -49,7 +49,6 @@ public class ChatService {
     private final UserService userService;
     private final ChatWebSocketSessionRegistry chatWebSocketSessionRegistry;
     private final NotificationService notificationService;
-    private final ChatPushThrottler chatPushThrottler;
 
     @Transactional
     public Long createRoom(Long userId, ChatRoomCreateRequest request) {
@@ -98,7 +97,7 @@ public class ChatService {
 
         Long opponentId = room.getOpponentId(userId);
         boolean opponentInRoom = chatWebSocketSessionRegistry.isInRoom(opponentId, room.getId());
-        if (!opponentInRoom && chatPushThrottler.shouldSend(room.getId(), opponentId)) {
+        if (!opponentInRoom) {
             notificationService.createChatMessageNotification(
                     opponentId,
                     room.getId(),
