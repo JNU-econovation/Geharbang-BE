@@ -119,6 +119,16 @@ public class NotificationService {
         );
     }
 
+    @Transactional
+    public void markChatRoomNotificationsAsRead(Long receiverId, Long chatRoomId) {
+        notificationRepository.markAsReadByReceiverIdAndTypeAndTarget(
+                receiverId,
+                NotificationType.CHAT_MESSAGE_CREATED,
+                NotificationTargetType.CHAT_ROOM,
+                chatRoomId
+        );
+    }
+
     private String getStaffRecruitmentTitle(ApplicationRecord applicationRecord) {
         if (applicationRecord.getStaffRecruitmentTitle() == null || applicationRecord.getStaffRecruitmentTitle().isBlank()) {
             return "지원한 스태프";

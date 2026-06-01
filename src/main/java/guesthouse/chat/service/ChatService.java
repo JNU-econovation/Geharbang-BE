@@ -113,6 +113,7 @@ public class ChatService {
     public void markAsRead(Long userId, Long roomId) {
         ChatRoom room = getRoomAndValidateParticipant(roomId, userId);
         chatMessageRepository.markOpponentMessagesAsRead(room.getId(), userId);
+        notificationService.markChatRoomNotificationsAsRead(userId, room.getId());
     }
 
     private Long getOrCreateApplicationRecordRoom(Long userId, Long applicationRecordId) {

@@ -145,6 +145,18 @@ class NotificationServiceTest {
     }
 
     @Test
+    void markChatRoomNotificationsAsRead_marksUnreadChatNotificationForRoom() {
+        notificationService.markChatRoomNotificationsAsRead(3L, 10L);
+
+        verify(notificationRepository).markAsReadByReceiverIdAndTypeAndTarget(
+                3L,
+                NotificationType.CHAT_MESSAGE_CREATED,
+                NotificationTargetType.CHAT_ROOM,
+                10L
+        );
+    }
+
+    @Test
     void markAsRead_marksOwnedNotification() {
         Notification notification = Notification.builder()
                 .receiverId(1L)

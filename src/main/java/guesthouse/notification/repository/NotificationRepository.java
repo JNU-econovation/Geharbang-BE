@@ -32,4 +32,21 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Modifying(clearAutomatically = true)
     @Query("update Notification n set n.isRead = true where n.receiverId = :receiverId and n.isRead = false")
     void markAllAsReadByReceiverId(@Param("receiverId") Long receiverId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            update Notification n
+            set n.isRead = true
+            where n.receiverId = :receiverId
+              and n.type = :type
+              and n.targetType = :targetType
+              and n.targetId = :targetId
+              and n.isRead = false
+            """)
+    void markAsReadByReceiverIdAndTypeAndTarget(
+            @Param("receiverId") Long receiverId,
+            @Param("type") NotificationType type,
+            @Param("targetType") NotificationTargetType targetType,
+            @Param("targetId") Long targetId
+    );
 }
