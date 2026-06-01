@@ -1,6 +1,8 @@
 package guesthouse.notification.repository;
 
 import guesthouse.notification.domain.model.Notification;
+import guesthouse.notification.domain.vo.NotificationTargetType;
+import guesthouse.notification.domain.vo.NotificationType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -19,6 +21,13 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     long countByReceiverIdAndIsReadFalse(Long receiverId);
 
     Optional<Notification> findByIdAndReceiverId(Long id, Long receiverId);
+
+    boolean existsByReceiverIdAndTypeAndTargetTypeAndTargetIdAndIsReadFalse(
+            Long receiverId,
+            NotificationType type,
+            NotificationTargetType targetType,
+            Long targetId
+    );
 
     @Modifying(clearAutomatically = true)
     @Query("update Notification n set n.isRead = true where n.receiverId = :receiverId and n.isRead = false")

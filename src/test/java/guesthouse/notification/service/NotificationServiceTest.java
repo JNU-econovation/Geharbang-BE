@@ -91,6 +91,12 @@ class NotificationServiceTest {
     @Test
     void createChatMessageNotification_savesWhenChatNotificationEnabled() {
         when(notificationSettingService.getOrCreate(3L)).thenReturn(new NotificationSetting(3L));
+        when(notificationRepository.existsByReceiverIdAndTypeAndTargetTypeAndTargetIdAndIsReadFalse(
+                3L,
+                NotificationType.CHAT_MESSAGE_CREATED,
+                NotificationTargetType.CHAT_ROOM,
+                10L
+        )).thenReturn(false);
 
         notificationService.createChatMessageNotification(3L, 10L, "망치", "안녕하세요");
 
@@ -108,6 +114,22 @@ class NotificationServiceTest {
                 eq(NotificationTargetType.CHAT_ROOM),
                 eq(10L)
         );
+    }
+
+    @Test
+    void createChatMessageNotification_skipsWhenUnreadChatRoomNotificationExists() {
+        when(notificationSettingService.getOrCreate(3L)).thenReturn(new NotificationSetting(3L));
+        when(notificationRepository.existsByReceiverIdAndTypeAndTargetTypeAndTargetIdAndIsReadFalse(
+                3L,
+                NotificationType.CHAT_MESSAGE_CREATED,
+                NotificationTargetType.CHAT_ROOM,
+                10L
+        )).thenReturn(true);
+
+        notificationService.createChatMessageNotification(3L, 10L, "망치", "안녕하세요");
+
+        verify(notificationRepository, never()).save(any());
+        verify(expoPushService, never()).send(anyLong(), anyString(), anyString(), any(), any(), any());
     }
 
     @Test

@@ -106,6 +106,9 @@ public class NotificationService {
         if (!notificationSettingService.getOrCreate(receiverId).getChatPushEnabled()) {
             return;
         }
+        if (hasUnreadChatRoomNotification(receiverId, chatRoomId)) {
+            return;
+        }
         create(
                 receiverId,
                 NotificationType.CHAT_MESSAGE_CREATED,
@@ -130,6 +133,15 @@ public class NotificationService {
             preview = preview.substring(0, 40) + "...";
         }
         return displayName + "님: " + preview;
+    }
+
+    private boolean hasUnreadChatRoomNotification(Long receiverId, Long chatRoomId) {
+        return notificationRepository.existsByReceiverIdAndTypeAndTargetTypeAndTargetIdAndIsReadFalse(
+                receiverId,
+                NotificationType.CHAT_MESSAGE_CREATED,
+                NotificationTargetType.CHAT_ROOM,
+                chatRoomId
+        );
     }
 
     private void create(
