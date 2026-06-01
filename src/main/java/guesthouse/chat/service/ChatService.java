@@ -25,6 +25,7 @@ import guesthouse.staffrecruitment.repository.StaffRecruitmentRepository;
 import guesthouse.user.domain.model.User;
 import guesthouse.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -91,19 +93,35 @@ public class ChatService {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                chatWebSocketSessionRegistry.broadcast(room.getParticipantIds(), messageDto);
+                try {
+                    chatWebSocketSessionRegistry.broadcast(room.getParticipantIds(), messageDto);
+                } catch (Exception e) {
+                    log.warn("WebSocket broadcast failed. roomId={}", room.getId(), e);
+                }
             }
         });
 
         Long opponentId = room.getOpponentId(userId);
-        boolean opponentInRoom = chatWebSocketSessionRegistry.isInRoom(opponentId, room.getId());
-        if (!opponentInRoom) {
-            notificationService.createChatMessageNotification(
-                    opponentId,
-                    room.getId(),
-                    getUserName(userService.findById(userId)),
-                    request.content()
-            );
+        if (!chatWebSocketSessionRegistry.isInRoom(opponentId, room.getId())) {
+            String senderName = getUserName(userService.findById(userId));
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    try {
+                        // 트랜잭션 등록 시점과 커밋 시점 사이에 상대방이 입장했을 수 있으므로 재확인
+                        if (!chatWebSocketSessionRegistry.isInRoom(opponentId, room.getId())) {
+                            notificationService.createChatMessageNotification(
+                                    opponentId,
+                                    room.getId(),
+                                    senderName,
+                                    request.content()
+                            );
+                        }
+                    } catch (Exception e) {
+                        log.warn("Chat notification failed. roomId={}, opponentId={}", room.getId(), opponentId, e);
+                    }
+                }
+            });
         }
 
         return messageDto;

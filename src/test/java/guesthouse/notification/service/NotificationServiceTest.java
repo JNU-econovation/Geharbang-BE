@@ -17,6 +17,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.Optional;
 
@@ -113,6 +115,63 @@ class NotificationServiceTest {
                 eq(NotificationType.CHAT_MESSAGE_CREATED),
                 eq(NotificationTargetType.CHAT_ROOM),
                 eq(10L)
+        );
+    }
+
+    @Test
+    void createChatMessageNotification_savesNotificationButSkipsPushWithinThrottleWindow() {
+        when(notificationSettingService.getOrCreate(30L)).thenReturn(new NotificationSetting(30L));
+        when(notificationRepository.existsByReceiverIdAndTypeAndTargetTypeAndTargetIdAndIsReadFalse(
+                30L,
+                NotificationType.CHAT_MESSAGE_CREATED,
+                NotificationTargetType.CHAT_ROOM,
+                100L
+        )).thenReturn(false);
+
+        notificationService.createChatMessageNotification(30L, 100L, "망치", "첫 메시지");
+        notificationService.createChatMessageNotification(30L, 100L, "망치", "두 번째 메시지");
+
+        verify(notificationRepository, times(2)).save(any(Notification.class));
+        verify(expoPushService, times(1)).send(
+                eq(30L),
+                eq("새 채팅 메시지가 도착했습니다"),
+                anyString(),
+                eq(NotificationType.CHAT_MESSAGE_CREATED),
+                eq(NotificationTargetType.CHAT_ROOM),
+                eq(100L)
+        );
+    }
+
+    @Test
+    void createChatMessageNotification_sendsPushAfterCommit() {
+        when(notificationSettingService.getOrCreate(31L)).thenReturn(new NotificationSetting(31L));
+        when(notificationRepository.existsByReceiverIdAndTypeAndTargetTypeAndTargetIdAndIsReadFalse(
+                31L,
+                NotificationType.CHAT_MESSAGE_CREATED,
+                NotificationTargetType.CHAT_ROOM,
+                101L
+        )).thenReturn(false);
+
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            notificationService.createChatMessageNotification(31L, 101L, "망치", "안녕하세요");
+
+            verify(notificationRepository).save(any(Notification.class));
+            verify(expoPushService, never()).send(anyLong(), anyString(), anyString(), any(), any(), any());
+
+            TransactionSynchronizationManager.getSynchronizations()
+                    .forEach(TransactionSynchronization::afterCommit);
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+
+        verify(expoPushService).send(
+                eq(31L),
+                eq("새 채팅 메시지가 도착했습니다"),
+                anyString(),
+                eq(NotificationType.CHAT_MESSAGE_CREATED),
+                eq(NotificationTargetType.CHAT_ROOM),
+                eq(101L)
         );
     }
 

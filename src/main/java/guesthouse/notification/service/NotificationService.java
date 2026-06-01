@@ -14,17 +14,28 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
 
+    private static final Duration CHAT_PUSH_THROTTLE_DURATION = Duration.ofSeconds(30);
+
     private final NotificationRepository notificationRepository;
     private final ExpoPushService expoPushService;
     private final NotificationSettingService notificationSettingService;
+    private final Map<String, Instant> chatPushLastSentAt = new ConcurrentHashMap<>();
 
     @Transactional(readOnly = true)
     public List<NotificationDto> getNotifications(Long userId, int pageNumber) {
@@ -101,7 +112,7 @@ public class NotificationService {
         );
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createChatMessageNotification(Long receiverId, Long chatRoomId, String senderName, String content) {
         if (!notificationSettingService.getOrCreate(receiverId).getChatPushEnabled()) {
             return;
@@ -109,13 +120,15 @@ public class NotificationService {
         if (hasUnreadChatRoomNotification(receiverId, chatRoomId)) {
             return;
         }
+        boolean shouldSendPush = shouldSendChatPush(receiverId, chatRoomId);
         create(
                 receiverId,
                 NotificationType.CHAT_MESSAGE_CREATED,
                 "새 채팅 메시지가 도착했습니다",
                 createChatMessageContent(senderName, content),
                 NotificationTargetType.CHAT_ROOM,
-                chatRoomId
+                chatRoomId,
+                shouldSendPush
         );
     }
 
@@ -172,6 +185,60 @@ public class NotificationService {
                 .build();
 
         notificationRepository.save(notification);
-        expoPushService.send(receiverId, title, content, type, targetType, targetId);
+        runAfterCommitOrNow(() -> expoPushService.send(receiverId, title, content, type, targetType, targetId));
+    }
+
+    private void create(
+            Long receiverId,
+            NotificationType type,
+            String title,
+            String content,
+            NotificationTargetType targetType,
+            Long targetId,
+            boolean shouldSendPush
+    ) {
+        Notification notification = Notification.builder()
+                .receiverId(receiverId)
+                .type(type)
+                .title(title)
+                .content(content)
+                .targetType(targetType)
+                .targetId(targetId)
+                .build();
+
+        notificationRepository.save(notification);
+        if (shouldSendPush) {
+            runAfterCommitOrNow(() -> expoPushService.send(receiverId, title, content, type, targetType, targetId));
+        }
+    }
+
+    private boolean shouldSendChatPush(Long receiverId, Long chatRoomId) {
+        String key = receiverId + ":" + chatRoomId;
+        Instant now = Instant.now();
+        AtomicBoolean throttled = new AtomicBoolean(false);
+
+        chatPushLastSentAt.compute(key, (ignored, lastSentAt) -> {
+            if (lastSentAt != null && Duration.between(lastSentAt, now).compareTo(CHAT_PUSH_THROTTLE_DURATION) < 0) {
+                throttled.set(true);
+                return lastSentAt;
+            }
+            return now;
+        });
+
+        return !throttled.get();
+    }
+
+    private void runAfterCommitOrNow(Runnable task) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            task.run();
+            return;
+        }
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                task.run();
+            }
+        });
     }
 }

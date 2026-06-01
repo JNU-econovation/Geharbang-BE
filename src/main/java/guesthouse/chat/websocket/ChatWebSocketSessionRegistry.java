@@ -69,12 +69,16 @@ public class ChatWebSocketSessionRegistry {
             return;
         }
 
-        sessions.removeIf(session -> !session.isOpen());
-        sessions.forEach(session -> {
+        sessions.removeIf(session -> {
+            if (!session.isOpen()) {
+                return true;
+            }
             try {
                 session.sendMessage(new TextMessage(payload));
+                return false;
             } catch (IOException e) {
                 log.warn("Failed to send chat websocket message. receiverId={}, sessionId={}", receiverId, session.getId(), e);
+                return true;
             }
         });
     }
