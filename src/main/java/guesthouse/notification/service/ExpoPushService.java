@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Service
@@ -74,11 +75,16 @@ public class ExpoPushService {
     }
 
     private void deactivateInvalidTokens(List<PushToken> tokens, List<ExpoPushTicket> tickets) {
-        for (int i = 0; i < Math.min(tokens.size(), tickets.size()); i++) {
-            if (tickets.get(i).isDeviceNotRegistered()) {
-                tokens.get(i).deactivate();
-                log.info("Deactivated invalid push token. token={}", tokens.get(i).getToken());
-            }
+        List<Long> invalidTokenIds = IntStream.range(0, Math.min(tokens.size(), tickets.size()))
+                .filter(index -> tickets.get(index).isDeviceNotRegistered())
+                .mapToObj(index -> tokens.get(index).getId())
+                .toList();
+
+        if (invalidTokenIds.isEmpty()) {
+            return;
         }
+
+        pushTokenRepository.deactivateByIds(invalidTokenIds);
+        log.info("Deactivated invalid push tokens. count={}", invalidTokenIds.size());
     }
 }
