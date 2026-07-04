@@ -14,9 +14,10 @@
 9. [Enum / 값 목록](#9-enum--값-목록)
 10. [DB 테이블 ↔ 엔티티 매핑](#10-db-테이블--엔티티-매핑)
 11. [중요한 설계 결정 및 특이사항](#11-중요한-설계-결정-및-특이사항)
-12. [요청 처리 흐름](#12-요청-처리-흐름)
-13. [인프라 및 실행 환경](#13-인프라-및-실행-환경)
-14. [API 문서 (Swagger)](#14-api-문서-swagger)
+12. [AI 챗봇 설계안](#12-ai-챗봇-설계안)
+13. [요청 처리 흐름](#13-요청-처리-흐름)
+14. [인프라 및 실행 환경](#14-인프라-및-실행-환경)
+15. [API 문서 (Swagger)](#15-api-문서-swagger)
 
 ---
 
@@ -89,6 +90,14 @@ Geharbang은 **제주 게스트하우스 스텝 구인/구직 플랫폼**이다.
 - 게스트하우스 게시글 찜 추가 / 삭제
 - 목록 조회의 `isWished`와 `찜_많은순` 정렬은 `wish` 테이블 기준으로 계산
 
+#### 리뷰 (Review)
+- 현재 구현은 로그인 사용자가 게스트하우스 게시글에 리뷰 작성/수정/삭제
+- 스텝 공고 근무 경험 리뷰도 같은 `review` 도메인에서 작성/조회/요약 가능
+- 게스트하우스 게시글 또는 스텝 공고당 사용자 1명은 활성 리뷰 1개만 작성 가능
+- 별점, 본문, 리뷰 이미지 저장
+- 삭제는 물리 삭제가 아니라 `Review.status = DELETED`로 처리
+- 게스트하우스 상세 응답에 평균 별점, 리뷰 수, 내 리뷰 작성 여부 포함
+
 #### 알림 (Notification)
 - 로그인한 사용자의 인앱 알림 목록 조회
 - 읽지 않은 알림 개수 조회
@@ -124,6 +133,7 @@ src/main/java/guesthouse/
 ├── certificate/             # 사장님 인증서
 ├── guestHousePost/          # 게스트하우스 게시글
 ├── staffrecruitment/        # 스텝 구인 공고
+├── review/                  # 게스트하우스 리뷰
 ├── wish/                    # 찜 목록
 ├── notification/            # 인앱 알림 + Expo Push
 └── chat/                    # 1:1 채팅
@@ -144,6 +154,7 @@ src/main/java/guesthouse/
 | `certificate` | 사장님 인증서 제출 및 관리자 심사 |
 | `guestHousePost` | 게스트하우스 숙소 게시글 CRUD |
 | `staffrecruitment` | 게스트하우스 스텝 구인 공고 CRUD |
+| `review` | 게스트하우스 리뷰 작성/조회/수정/삭제 및 리뷰 요약 |
 | `wish` | 스텝 구인 공고 / 게스트하우스 게시글 찜하기 기능 |
 | `notification` | 사용자별 인앱 알림 조회/읽음 처리, Expo Push Token 관리 및 주요 이벤트 알림 생성 |
 | `chat` | 스텝 공고/게스트하우스 기준 사장님과 사용자 간 1:1 채팅방/메시지 관리 |
@@ -453,6 +464,33 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 찜 추가 API는 `WishResponse`로 `wishId`를 반환한다. 이미 찜한 대상이면 새로 생성하지 않고 기존 `wishId`를 반환한다.
 내가 찜한 목록 조회 API는 `pageNumber` query string을 받으며, 찜한 최신순으로 10개씩 반환한다.
 
+### 리뷰 (Review)
+
+| Method | Endpoint | 인증 | 설명 |
+|--------|----------|------|------|
+| POST | `/api/v1/guest-houses/{guestHousePostId}/reviews` | 필요 | 게스트하우스 리뷰 작성 |
+| GET | `/api/v1/guest-houses/{guestHousePostId}/reviews` | 선택 | 게스트하우스 리뷰 목록 조회 (`?pageNumber=0`, 최신순 10개) |
+| GET | `/api/v1/guest-houses/{guestHousePostId}/review-summary` | 선택 | 평균 별점, 리뷰 수, 내 리뷰 작성 여부 조회 |
+| PUT | `/api/v1/reviews/{reviewId}` | 필요 | 내 리뷰 수정 |
+| DELETE | `/api/v1/reviews/{reviewId}` | 필요 | 내 리뷰 삭제 (`DELETED` 상태 처리) |
+
+리뷰 작성은 로그인 사용자만 가능하다.
+같은 게스트하우스 게시글에 같은 사용자가 `ACTIVE` 리뷰를 2개 이상 작성할 수 없으며, 중복 작성 시 409 `DUPLICATED`를 반환한다.
+별점은 1점 이상 5점 이하만 허용한다.
+게스트하우스 상세 응답은 `averageRating`, `reviewCount`, `hasMyReview`를 포함한다.
+
+스텝 공고/근무 경험 리뷰도 같은 리뷰 도메인에서 제공한다.
+
+| Method | Endpoint | 인증 | 설명 |
+|--------|----------|------|------|
+| POST | `/api/v1/staff-recruitment/{staffRecruitmentId}/reviews` | 필요 | 스텝 공고/근무 경험 리뷰 작성 |
+| GET | `/api/v1/staff-recruitment/{staffRecruitmentId}/reviews` | 선택 | 스텝 공고 리뷰 목록 조회 (`?pageNumber=0`) |
+| GET | `/api/v1/staff-recruitment/{staffRecruitmentId}/review-summary` | 선택 | 스텝 공고 평균 별점, 리뷰 수, 내 리뷰 작성 여부 조회 |
+
+스텝 공고 리뷰 작성 권한은 단순 로그인만으로 열지 않고, 최소한 `application_record.staffRecruitmentId = staffRecruitmentId` 및 `application_record.userId = userId`가 존재하는 사용자로 제한하는 것을 기본안으로 한다.
+더 엄격하게는 합격 처리된 지원자(`ApplicationRecord.status = 합격`)만 리뷰를 작성하게 할 수 있다.
+스텝 공고 리뷰도 동일하게 대상 공고당 사용자 1명은 `ACTIVE` 리뷰 1개만 작성 가능해야 한다.
+
 ### 알림 (Notification)
 
 | Method | Endpoint | 인증 | 설명 |
@@ -497,6 +535,64 @@ WebSocket 엔드포인트는 `/ws/chats?token={accessToken}&roomId={roomId}`이�
 
 게스트하우스 게시글과 스텝 공고의 `location.coordinates`는 요청과 응답 모두 `[경도, 위도]` 순서로 통일한다.
 JTS `Point`에는 `x=경도`, `y=위도`로 저장하고, 상세 조회 응답도 `[point.getX(), point.getY()]`로 내려준다.
+
+### 지도 (Map)
+
+지도 탭은 게스트하우스와 스텝 공고를 제주 지도 위에서 한 번에 탐색하는 화면으로 확장한다.
+현재 게스트하우스 게시글과 스텝 공고 모두 좌표를 저장하고 있으므로, 초기 지도 MVP는 별도 지도 DB 없이 기존 `guest_house_post`, `staff_recruitment`의 좌표를 사용한다.
+
+권장 API:
+
+| Method | Endpoint | 인증 | 설명 |
+|--------|----------|------|------|
+| GET | `/api/v1/maps/guest-houses` | 선택 | 지도 영역 안의 게스트하우스 마커 조회 |
+| GET | `/api/v1/maps/staff-recruitments` | 선택 | 지도 영역 안의 스텝 공고 마커 조회 |
+| GET | `/api/v1/maps/markers` | 선택 | 게스트하우스/스텝 공고 통합 마커 조회 |
+
+요청 파라미터:
+
+| 파라미터 | 설명 |
+|----------|------|
+| `southWestLat`, `southWestLng` | 현재 지도 화면의 남서쪽 좌표 |
+| `northEastLat`, `northEastLng` | 현재 지도 화면의 북동쪽 좌표 |
+| `targetType` | `GUEST_HOUSE_POST`, `STAFF_RECRUITMENT`, `ALL` |
+| `region` | 선택 지역 필터 |
+| `keyword` | 게스트하우스명, 공고명, 소개글 검색 |
+
+응답 예시:
+
+```json
+{
+  "markers": [
+    {
+      "type": "GUEST_HOUSE_POST",
+      "targetId": 12,
+      "title": "제주 달빛 게하",
+      "latitude": 33.4996,
+      "longitude": 126.5312,
+      "imageUrl": "/images/...",
+      "summary": "조용한 분위기, 리뷰 4.8점"
+    },
+    {
+      "type": "STAFF_RECRUITMENT",
+      "targetId": 31,
+      "title": "카페 스텝 모집",
+      "latitude": 33.5101,
+      "longitude": 126.4914,
+      "imageUrl": "/images/...",
+      "summary": "단기 가능, 숙식 제공"
+    }
+  ]
+}
+```
+
+지도 검색 기준:
+
+- `status = ACTIVE`인 게스트하우스/스텝 공고만 노출한다.
+- 좌표가 없는 게시글/공고는 지도 마커에서 제외한다.
+- 지도 영역 bounds 안에 있는 데이터만 반환해 마커 수를 제한한다.
+- 통합 마커 API는 FE 지도 탭 MVP에 적합하고, 이후 성능이 필요하면 게스트하우스/스텝 공고 API를 분리 호출한다.
+- 마커 클릭 시 FE는 상세 데이터를 모두 다시 받지 않고, 마커 응답의 최소 정보로 바텀시트를 먼저 보여준 뒤 상세 화면으로 이동한다.
 
 ### 이미지 (Image)
 
@@ -558,6 +654,9 @@ JTS `Point`에는 `x=경도`, `y=위도`로 저장하고, 상세 조회 응답�
 ### 지원 내역 상태 (ApplicationRecord Status)
 `대기중` → `합격`
 
+### 리뷰 상태 (ReviewStatus)
+`ACTIVE` / `HIDDEN` / `DELETED`
+
 ### 유저 역할 (Role)
 `사용자` / `운영자`
 
@@ -575,7 +674,20 @@ JTS `Point`에는 `x=경도`, `y=위도`로 저장하고, 상세 조회 응답�
 | `application_record` | `ApplicationRecord` | |
 | `certificate` | `Certificate` | |
 | `guest_house_post` | `GuestHousePost` | |
+| `guest_house_post_image` | `GuestHousePostImage` | 게스트하우스 대표/본문 이미지 URL과 순서 저장 |
+| `amenity` | `Amenity` | 게스트하우스 편의시설, `guestHousePostId`로 게시글 참조 |
+| `room` | `Room` | 객실명, 방 유형, 인원, 체크인/아웃, 가격 |
+| `room_image` | `RoomImage` | 객실 이미지 URL과 순서 저장 |
+| `party` | `Party` | 파티 유형, 시간, 장소, 비용, 외부 게스트 허용 여부 |
+| `party_image` | `PartyImage` | 파티 이미지 URL과 순서 저장 |
+| `mood` | `GuestHousePost.moods` | `@ElementCollection`, 게스트하우스 분위기 |
+| `weekly_day` | `Party.weeklyDays` | `@ElementCollection`, 파티 진행 요일 |
 | `staff_recruitment` | `StaffRecruitment` | |
+| `staff_recruitment_job` | `StaffRecruitmentJob` | 직무명, 근무 시간, 근무/휴무 일수, 스케줄 |
+| `staff_recruitment_image` | `StaffRecruitmentImage` | 대표/내용 이미지 URL과 순서 저장 |
+| `staff_recruitment_question` | `StaffRecruitmentQuestion` | 공고별 추가 질문 |
+| `review` | `Review` | 게스트하우스/스텝 공고 리뷰, `targetType`, `guestHousePostId`, `staffRecruitmentId`, `userId`, `rating`, `status` 저장 |
+| `review_image` | `ReviewImage` | 리뷰 이미지 URL과 순서 저장 |
 | `wish` | `Wish` | `staffRecruitmentId` 또는 `guestHousePostId` 중 하나로 찜 대상을 구분 |
 | `notification` | `Notification` | `receiverId` 기준으로 사용자별 알림을 저장하고 `isRead`로 읽음 여부 관리 |
 | `push_token` | `PushToken` | 사용자별 Expo Push Token 저장, 로그아웃 시 `isActive=false` 처리 |
@@ -592,6 +704,37 @@ Role role;                      // "사용자" 또는 "운영자" (한글 Enum)
 ```
 
 `PersonalInfo`는 `@Embeddable`로 별도 테이블 없이 uuser 테이블 컬럼으로 저장됨.
+
+### 리뷰 대상 확장 방향
+
+`Review` 엔티티는 별도 `StaffRecruitmentReview` 테이블을 만들지 않고, 리뷰 정책/이미지/상태/요약 로직을 공유할 수 있도록 다형 대상 구조를 사용한다.
+
+권장 컬럼:
+
+| 컬럼 | 설명 |
+|------|------|
+| `target_type` | `GUEST_HOUSE_POST` 또는 `STAFF_RECRUITMENT` |
+| `guest_house_post_id` | 게스트하우스 리뷰일 때만 값 존재 |
+| `staff_recruitment_id` | 스텝 공고 리뷰일 때만 값 존재 |
+| `user_id` | 리뷰 작성자 |
+| `rating` | 1~5 별점 |
+| `content` | 리뷰 본문 |
+| `status` | `ACTIVE`, `HIDDEN`, `DELETED` |
+
+`guestHousePostId`, `staffRecruitmentId`는 `targetType`에 맞는 대상 ID 하나만 존재하도록 애플리케이션 레벨에서 검증한다.
+DB 제약까지 강제하려면 MySQL `CHECK` 제약 또는 마이그레이션 스크립트가 필요하지만, 현재 프로젝트는 Hibernate `ddl-auto: update`를 사용하므로 초기에는 서비스 검증으로 막는 편이 안전하다.
+
+중복 작성 방지 기준:
+
+| 대상 | 기준 |
+|------|------|
+| 게스트하우스 리뷰 | `targetType = GUEST_HOUSE_POST`, `guestHousePostId`, `userId`, `status = ACTIVE` |
+| 스텝 공고 리뷰 | `targetType = STAFF_RECRUITMENT`, `staffRecruitmentId`, `userId`, `status = ACTIVE` |
+
+스텝 공고 리뷰 작성 권한:
+1. 기본안: 해당 공고에 지원한 기록이 있는 사용자만 작성 가능
+2. 권장안: 해당 공고에 지원했고 합격 처리된 사용자만 작성 가능
+3. 추후 근무 완료 상태가 생기면 `ApplicationRecord.status = 근무완료` 같은 상태를 추가해 실제 근무 완료자만 작성 가능하게 변경
 
 ---
 
@@ -717,7 +860,986 @@ UUID(8자리) + 원본파일명 → /files/certifications/a3f2b1c4originalName.p
 
 ---
 
-## 12. 요청 처리 흐름
+## 12. AI 챗봇 설계안
+
+> 이 섹션은 아직 구현된 기능이 아니라, FE의 `app/(tabs)/ai.tsx` AI 탭을 실제 통합 AI 챗봇으로 확장하기 위한 설계안이다.
+
+AI 챗봇은 기존 `chat` 도메인과 분리한다.
+현재 `chat` 도메인은 사장님과 사용자 간 1:1 메시지 저장/전달 시스템이고, AI 챗봇은 게하르방 서비스 안내, 제주 여행 상담, 게스트하우스 추천, 스텝 공고 추천을 통합 처리하는 별도 도메인이다.
+
+### 목표
+
+AI 탭에서 사용자가 자연어로 질문하면 다음 질문 유형을 한 화면에서 처리한다.
+
+| 질문 유형 | 예시 | 주된 근거 |
+|-----------|------|-----------|
+| 게하르방 서비스 안내 | "스텝 지원은 어떻게 해?", "사장님 인증은 뭐야?" | 서비스 가이드/FAQ RAG 문서 |
+| 제주 관광/여행 상담 | "비 오는 날 갈 만한 곳 추천해줘", "성산 근처 반나절 코스 짜줘" | 제주 관광 RAG 문서 + LLM 일반 지식 |
+| 게스트하우스 추천 | "제주시에서 조용하고 후기 좋은 게하 추천해줘" | MySQL 게스트하우스/객실/파티/편의시설/리뷰 데이터 |
+| 스텝 공고 추천 | "2주 정도 일할 수 있고 숙식 제공되는 스텝 공고 찾아줘" | MySQL 스텝 공고/직무/혜택/질문 데이터, 향후 스텝 공고 리뷰 |
+| 혼합 질문 | "비 오는 날 코스랑 근처 조용한 게하 추천해줘" | 관광 RAG + 게스트하우스 DB 검색 |
+
+### 설계 원칙
+
+- LLM이 직접 SQL을 만들거나 DB 전체를 자유롭게 조회하지 않는다.
+- 백엔드가 검색 도구를 통제하고, LLM은 질문 분석과 최종 답변 생성을 담당한다.
+- 게스트하우스/스텝 공고 추천은 반드시 실제 DB 후보 안에서만 말한다.
+- DB에 없는 게스트하우스나 스텝 공고를 있는 것처럼 생성하지 않는다.
+- 영업시간, 입장료, 교통 정보처럼 바뀔 수 있는 제주 관광 정보는 "확인 필요" 문구를 함께 둔다.
+- 답변은 텍스트뿐 아니라 FE가 카드로 렌더링할 수 있는 `cards`를 함께 반환한다.
+
+### 권장 패키지 구조
+
+```
+ai/
+├── controller/
+│   └── AiChatController.java
+├── service/
+│   ├── AiConversationService.java       # 대화 저장, 전체 orchestration
+│   ├── AiIntentRouter.java              # 질문 의도 분류
+│   ├── GuestHouseAiSearchService.java   # 게스트하우스 DB 검색 도구
+│   ├── StaffRecruitmentAiSearchService.java # 스텝 공고 DB 검색 도구
+│   ├── ServiceGuideRetriever.java       # 서비스 안내 RAG
+│   ├── JejuTravelRetriever.java         # 제주 관광 RAG
+│   └── LlmAnswerService.java            # LLM API 호출 및 최종 답변 생성
+├── domain/
+│   ├── model/
+│   │   ├── AiConversation.java
+│   │   ├── AiMessage.java
+│   │   ├── AiMessageCard.java
+│   │   └── AiRetrievalLog.java
+│   └── vo/
+│       ├── AiIntent.java
+│       ├── AiMessageRole.java
+│       ├── AiCardType.java
+│       └── AiSourceType.java
+├── dto/
+│   ├── request/
+│   │   └── AiChatRequest.java
+│   └── response/
+│       ├── AiChatResponse.java
+│       └── AiChatCardResponse.java
+└── repository/
+    ├── AiConversationRepository.java
+    ├── AiMessageRepository.java
+    ├── AiMessageCardRepository.java
+    └── AiRetrievalLogRepository.java
+```
+
+### 권장 API
+
+| Method | Endpoint | 인증 | 설명 |
+|--------|----------|------|------|
+| POST | `/api/v1/ai/chat` | 선택 | AI 챗봇에 메시지를 보내고 답변/카드 응답 |
+| GET | `/api/v1/ai/conversations` | 필요 | 내 AI 대화 목록 조회 |
+| GET | `/api/v1/ai/conversations/{conversationId}/messages` | 필요 | 특정 AI 대화 메시지 조회 |
+| DELETE | `/api/v1/ai/conversations/{conversationId}` | 필요 | 내 AI 대화 삭제 |
+
+초기 MVP는 `POST /api/v1/ai/chat`만 구현해도 된다.
+비로그인 사용자는 `conversationId = null`로 1회성 답변을 받을 수 있고, 로그인 사용자는 대화 이력을 저장할 수 있다.
+
+요청 예시:
+```json
+{
+  "conversationId": null,
+  "message": "비 오는 날 제주에서 갈 만한 곳이랑 근처 조용한 게하 추천해줘"
+}
+```
+
+응답 예시:
+```json
+{
+  "conversationId": 1,
+  "messageId": 10,
+  "answer": "비 오는 날에는 실내 동선이 좋은 관광지를 먼저 잡고, 숙소는 조용한 분위기와 리뷰 평점이 높은 곳을 함께 보는 것이 좋아요.",
+  "cards": [
+    {
+      "type": "TRAVEL_SPOT",
+      "targetId": null,
+      "title": "아르떼뮤지엄 제주",
+      "description": "비 오는 날에도 이동 부담이 적은 실내 관광지예요.",
+      "imageUrl": ""
+    },
+    {
+      "type": "GUEST_HOUSE",
+      "targetId": 12,
+      "title": "제주 달빛 게하",
+      "description": "조용한 분위기, 평균 평점 4.8점, 리뷰 17개",
+      "imageUrl": "/images/example.jpg"
+    }
+  ],
+  "suggestedQuestions": [
+    "뚜벅이로 갈 수 있는 코스로 짜줘",
+    "조용한 게스트하우스만 더 보여줘"
+  ]
+}
+```
+
+### 의도 분류
+
+`AiIntentRouter`는 사용자 질문을 아래 의도 중 하나 이상으로 분류한다.
+초기에는 LLM 구조화 출력으로 분류하고, 비용/속도가 문제가 되면 지역/가격/기간 등 일부 필드는 규칙 기반 전처리를 섞는다.
+
+| Intent | 설명 |
+|--------|------|
+| `SERVICE_GUIDE` | 게하르방 서비스 사용법, 정책, 화면 안내 |
+| `JEJU_TRAVEL` | 제주 관광지, 코스, 여행 팁 |
+| `GUEST_HOUSE_RECOMMENDATION` | 게스트하우스 추천/검색 |
+| `STAFF_RECRUITMENT_RECOMMENDATION` | 스텝 공고 추천/검색 |
+| `MIXED_TRAVEL_AND_GUEST_HOUSE` | 관광 + 숙소 추천 혼합 |
+| `MIXED_GUEST_HOUSE_AND_STAFF` | 게스트하우스 정보 + 스텝 공고 혼합 |
+| `GENERAL_CHAT` | 서비스와 직접 관련 없는 일반 대화 |
+
+분류 결과 예시:
+```json
+{
+  "intent": "STAFF_RECRUITMENT_RECOMMENDATION",
+  "region": ["제주시"],
+  "workingPeriods": ["단기"],
+  "workScheduleTypes": ["주5일"],
+  "gender": "무관",
+  "keywords": ["숙식", "카페"],
+  "needsCards": true
+}
+```
+
+### 현재 DB 구조 기반 검색 도구
+
+#### 게스트하우스 검색 도구
+
+`GuestHouseAiSearchService`는 현재 DB 구조에서 아래 데이터를 사용한다.
+
+| 목적 | 테이블/엔티티 | 사용 필드 |
+|------|---------------|-----------|
+| 기본 후보 | `guest_house_post` / `GuestHousePost` | `id`, `guestHouseName`, `region`, `lotNumberAddress`, `roadNameAddress`, `coordinates`, `introduction`, `moods`, `status` |
+| 대표 이미지 | `guest_house_post_image` / `GuestHousePostImage` | `guestHousePostId`, `imageUrl`, `index` |
+| 가격/객실 조건 | `room` / `Room` | `type`, `headCount`, `pricePerNight`, `checkInTime`, `checkOutTime` |
+| 파티/조용함 판단 | `party` / `Party` | `partyType`, `startTime`, `endTime`, `moods`, `isExternalGuestAllowed`, `information` |
+| 편의시설 | `amenity` / `Amenity` | `value` |
+| 리뷰 품질 | `review` / `Review` | `rating`, `content`, `status = ACTIVE` |
+| 찜 인기도 | `wish` / `Wish` | `guestHousePostId` count |
+
+AI용 후보 DTO는 LLM에 너무 많은 원문을 넘기지 않도록 압축한다.
+
+```json
+{
+  "id": 12,
+  "name": "제주 달빛 게하",
+  "region": "제주시",
+  "address": "제주시 ...",
+  "moods": ["조용한", "휴식"],
+  "minRoomPrice": 30000,
+  "amenities": ["와이파이", "세탁기"],
+  "partyTypes": [],
+  "averageRating": 4.8,
+  "reviewCount": 17,
+  "reviewSnippets": ["혼자 쉬기 좋았어요", "밤에 조용했어요"],
+  "imageUrl": "/images/..."
+}
+```
+
+검색 우선순위:
+1. `status = ACTIVE`만 후보로 사용
+2. 지역/가격/객실/편의시설/분위기처럼 명확한 조건은 QueryDSL 조건으로 필터링
+3. 평점/리뷰 수/찜 수는 정렬 또는 tie-breaker로 사용
+4. "조용한", "혼자 쉬기 좋은" 같은 표현은 `moods`, `party` 존재 여부, 리뷰 snippet을 함께 본다
+
+#### 스텝 공고 검색 도구
+
+`StaffRecruitmentAiSearchService`는 현재 DB 구조에서 아래 데이터를 사용한다.
+
+| 목적 | 테이블/엔티티 | 사용 필드 |
+|------|---------------|-----------|
+| 기본 후보 | `staff_recruitment` / `StaffRecruitment` | `id`, `title`, `guestHouseName`, `region`, `lotNumberAddress`, `roadNameAddress`, `coordinates`, `startDate`, `workingPeriod`, `content`, `ownerMessage`, `status`, `viewCount` |
+| 성별/혜택/장점 | `Feature` embedded | `gender`, `advantages`, `employeeBenefits` |
+| 연락처 | `Contact` embedded | `instagramId`, `phoneNumber`, `webSite` |
+| 직무/근무 조건 | `staff_recruitment_job` / `StaffRecruitmentJob` | `name`, `startTime`, `endTime`, `job`, `standard`, `workDays`, `restDays`, `workScheduleType` |
+| 대표/내용 이미지 | `staff_recruitment_image` / `StaffRecruitmentImage` | `type`, `imageUrl`, `index` |
+| 추가 질문 부담 | `staff_recruitment_question` / `StaffRecruitmentQuestion` | question count, `content` |
+| 근무 경험 리뷰 | `review` / `Review` | 향후 `targetType = STAFF_RECRUITMENT`, `staffRecruitmentId`, `rating`, `content`, `status = ACTIVE` |
+| 인기도 | `wish` / `Wish` | `staffRecruitmentId` count |
+
+AI용 후보 DTO 예시:
+```json
+{
+  "id": 31,
+  "title": "제주 감성 게하 스텝 모집",
+  "guestHouseName": "제주 감성 게하",
+  "region": "제주시",
+  "workingPeriod": "단기",
+  "startDate": "2026-07-15",
+  "gender": "무관",
+  "jobs": [
+    {
+      "name": "카페 보조",
+      "workDays": 5,
+      "restDays": 2,
+      "startTime": "09:00",
+      "endTime": "15:00"
+    }
+  ],
+  "advantages": "바다 근처, 초보 가능",
+  "employeeBenefits": "숙식 제공",
+  "questionCount": 2,
+  "averageRating": 4.6,
+  "reviewCount": 8,
+  "reviewSnippets": ["숙소가 깔끔했고 업무 설명이 친절했어요"],
+  "imageUrl": "/images/..."
+}
+```
+
+검색 우선순위:
+1. `status = ACTIVE`만 후보로 사용
+2. 지역, 근무 기간, 성별, 근무/휴무 일수, 스케줄은 QueryDSL 조건으로 필터링
+3. "숙식 제공", "카페 업무", "바다 근처" 같은 자연어 조건은 `content`, `advantages`, `employeeBenefits`, `job` 문자열 검색으로 1차 대응
+4. "지원 질문 적은 공고"는 `staff_recruitment_question` 개수를 정렬 조건으로 사용할 수 있다
+5. 스텝 공고 리뷰가 추가되면 평균 별점, 리뷰 수, 리뷰 snippet을 신뢰도/근무 만족도 근거로 함께 사용한다
+
+### RAG 지식베이스 분리
+
+DB 검색과 문서 RAG는 분리한다.
+게스트하우스/스텝 공고는 최신 DB 상태가 중요하므로 SQL 기반 검색 도구를 우선 사용하고, 서비스 안내/관광 정보는 문서 RAG를 사용한다.
+
+| 지식베이스 | 내용 | 저장/검색 방식 |
+|------------|------|----------------|
+| `service_guide` | 게하르방 이용 방법, 사장님 인증, 지원서 작성, 스텝 지원, 찜, 채팅, 리뷰 정책 | Markdown/DB 문서 + vector search |
+| `jeju_travel` | 제주 관광지, 지역별 코스, 비 오는 날/뚜벅이/혼자 여행 팁 | Markdown/DB 문서 + vector search |
+| `guesthouse_dynamic` | 게스트하우스 소개글, 리뷰 요약, 객실/파티/편의시설 | MySQL 검색 도구 우선, 추후 embedding 보조 |
+| `staff_recruitment_dynamic` | 스텝 공고 본문, 근무 조건, 혜택, 추가 질문, 향후 스텝 공고 리뷰 요약 | MySQL 검색 도구 우선, 추후 embedding 보조 |
+
+초기 MVP에서는 `service_guide`, `jeju_travel`을 프로젝트 내부 Markdown 또는 DB seed 문서로 시작한다.
+OpenAI vector store/file search를 사용할 수도 있고, 자체 embedding 테이블을 둘 수도 있다.
+게스트하우스/스텝 공고처럼 자주 바뀌는 운영 데이터는 동기화 비용이 있으므로 처음부터 외부 vector store에만 의존하지 않는다.
+
+### 권장 DB 테이블
+
+AI 대화 저장:
+
+| 테이블 | 주요 컬럼 | 설명 |
+|--------|----------|------|
+| `ai_conversation` | `id`, `user_id`, `title`, `created_at`, `updated_at` | 로그인 사용자별 AI 대화방. 비로그인 1회성 대화는 저장하지 않아도 됨 |
+| `ai_message` | `id`, `conversation_id`, `role`, `content`, `created_at` | 사용자/AI 메시지 저장 |
+| `ai_message_card` | `id`, `message_id`, `type`, `target_id`, `title`, `description`, `image_url` | FE 카드 렌더링용 추천/출처 카드 |
+| `ai_retrieval_log` | `id`, `message_id`, `source_type`, `source_id`, `score`, `snippet` | 어떤 근거를 사용했는지 디버깅/품질 개선용 |
+
+문서 RAG를 DB로 관리할 경우:
+
+| 테이블 | 주요 컬럼 | 설명 |
+|--------|----------|------|
+| `ai_knowledge_document` | `id`, `source_type`, `title`, `content`, `metadata`, `updated_at` | 서비스 안내/제주 관광 원문 |
+| `ai_knowledge_chunk` | `id`, `document_id`, `chunk_index`, `content`, `embedding_ref`, `metadata` | 검색 단위 chunk. embedding은 외부 vector store ID 또는 자체 vector 컬럼 참조 |
+
+### AI/리포트 단계별 DB 도입 계획
+
+챗봇만 1회성으로 운영한다면 새 테이블 없이도 가능하지만, 대화 저장, 질문 트렌드, 사장님 리포트, 플랫폼 인사이트까지 만들 계획이므로 아래 테이블은 단계적으로 추가한다.
+게스트하우스/스텝 공고 추천 자체는 기존 MySQL 운영 테이블을 조회하고, AI 관련 테이블은 "대화 이력", "분석 로그", "리포트 스냅샷"을 저장하는 용도로만 둔다.
+
+#### 1단계: 통합 AI 챗봇 MVP
+
+목표:
+- FE AI 탭에서 질문을 보내면 실제 DB의 게스트하우스/스텝 공고 후보를 기반으로 답변한다.
+- 답변 텍스트와 카드 데이터를 함께 반환한다.
+- 로그인 사용자는 대화 기록을 다시 볼 수 있다.
+
+필수 테이블:
+
+| 테이블 | 필수 여부 | 이유 |
+|--------|-----------|------|
+| `ai_conversation` | 필수 | 로그인 사용자별 AI 대화방 목록 저장 |
+| `ai_message` | 필수 | 사용자 질문과 AI 답변 저장 |
+| `ai_message_card` | 권장 | AI 답변에 붙은 게스트하우스/스텝 공고/관광지 카드 재표시 |
+| `ai_retrieval_log` | 권장 | 답변이 어떤 DB 후보/문서를 근거로 했는지 추적 |
+
+1단계 API:
+
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| POST | `/api/v1/ai/chat` | 질문 전송, 답변/카드 반환, 로그인 시 대화 저장 |
+| GET | `/api/v1/ai/conversations` | 내 AI 대화 목록 |
+| GET | `/api/v1/ai/conversations/{conversationId}/messages` | 대화 메시지 조회 |
+| DELETE | `/api/v1/ai/conversations/{conversationId}` | 대화 삭제 |
+
+1단계 구현 순서:
+1. `ai` 패키지, DTO, enum, 엔티티, repository 생성
+2. `GuestHouseAiSearchService`, `StaffRecruitmentAiSearchService`를 기존 DB 조회 기반으로 구현
+3. `AiIntentRouter`에서 질문 의도와 검색 조건 추출
+4. `LlmAnswerService`에서 DB 후보를 받아 최종 답변 JSON 생성
+5. FE AI 탭을 실제 채팅 UI로 전환
+
+#### 2단계: 질문 로그와 트렌드 기반 리포트 준비
+
+목표:
+- 사용자가 AI 챗봇에서 무엇을 찾는지 누적한다.
+- 사장님 리포트와 플랫폼 공통 인사이트의 원천 데이터를 만든다.
+
+필수 테이블:
+
+| 테이블 | 필수 여부 | 이유 |
+|--------|-----------|------|
+| `ai_user_question_log` | 필수 | 질문 의도, 지역, 키워드, 대상 도메인을 집계하기 위한 원천 로그 |
+| `post_view_log` | 필수 | 게스트하우스/스텝 공고 상세 조회 수를 일관되게 집계 |
+
+`ai_user_question_log` 저장 예시:
+
+```json
+{
+  "userId": 7,
+  "intent": "GUEST_HOUSE_RECOMMENDATION",
+  "normalizedQuestion": "제주시 조용한 혼자 여행 게스트하우스 추천",
+  "extractedRegion": "제주시",
+  "extractedKeywords": ["조용한", "혼자 여행", "청결"],
+  "targetType": "GUEST_HOUSE_POST"
+}
+```
+
+2단계 구현 순서:
+1. `POST /api/v1/ai/chat` 처리 후 질문 의도/키워드를 `ai_user_question_log`에 저장
+2. 게스트하우스/스텝 공고 상세 조회 시 `post_view_log` 저장
+3. 사용자 개인정보가 들어갈 수 있는 원문 질문은 리포트용으로 직접 노출하지 않고 정규화/키워드화한 값만 사용
+
+#### 3단계: 리뷰 AI 요약과 사장님 운영 리포트
+
+목표:
+- 유저 상세 화면에는 리뷰 요약/대표 키워드를 가볍게 보여준다.
+- 사장님 관리 페이지에는 조회/찜/문의/리뷰/AI 질문 기반 운영 개선 리포트를 보여준다.
+
+필수 테이블:
+
+| 테이블 | 필수 여부 | 이유 |
+|--------|-----------|------|
+| `review_keyword_summary` | 필수 | 리뷰 키워드와 유저용/사장님용 요약 저장 |
+| `owner_report_snapshot` | 필수 | 사장님별 주간/월간 리포트 결과 저장 |
+
+3단계 API:
+
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| GET | `/api/v1/guest-houses/{guestHousePostId}/review-keywords` | 유저용 리뷰 요약/키워드 |
+| GET | `/api/v1/owner/reports/guest-houses/{guestHousePostId}` | 게스트하우스 운영 리포트 |
+| GET | `/api/v1/owner/reports/staff-recruitments/{staffRecruitmentId}` | 스텝 공고 운영 리포트 |
+
+3단계 구현 순서:
+1. `review_keyword_summary`를 규칙 기반 키워드 분석으로 먼저 생성
+2. 리뷰가 3개 이상인 게스트하우스 상세의 리뷰 목록 위에 유저용 요약 노출
+3. `owner_report_snapshot`에 조회/찜/채팅 문의/지원/리뷰/AI 질문 지표를 주간 단위로 저장
+4. 사장님 관리 페이지에서 리포트 카드와 개선 제안 표시
+5. 이후 LLM을 붙여 리뷰 요약과 개선 제안 품질을 고도화
+
+#### 4단계: 플랫폼 공통 인사이트 리포트
+
+목표:
+- 게하르방 전체에서 요즘 어떤 숙소/공고/여행 조건이 많이 언급되는지 사장님들에게 제공한다.
+- 개별 사장님 리포트에 플랫폼 트렌드와의 비교 제안을 연결한다.
+
+필수 테이블:
+
+| 테이블 | 필수 여부 | 이유 |
+|--------|-----------|------|
+| `platform_insight_report` | 필수 | 주간/월간 플랫폼 인사이트 본문 저장 |
+| `platform_insight_topic` | 필수 | 보고서 안의 핵심 트렌드 토픽 저장 |
+
+4단계 구현 순서:
+1. `ai_user_question_log`, `post_view_log`, `wish`, `review`, `application_record`를 주간 단위로 집계
+2. 게스트하우스/스텝 공고 도메인별 트렌드 토픽 생성
+3. `platform_insight_report`, `platform_insight_topic`에 스냅샷 저장
+4. 사장님 관리 페이지의 리포트 영역에서 "이번 주 게하르방 트렌드"로 노출
+
+#### 전체 구현 체크리스트
+
+아래 순서대로 구현하면 챗봇, 리뷰 요약, 사장님 리포트, 플랫폼 인사이트가 같은 데이터 흐름 위에서 자연스럽게 이어진다.
+
+##### A. 공통 enum/값 정의
+
+| Enum | 값 | 사용 위치 |
+|------|----|-----------|
+| `AiIntent` | `SERVICE_GUIDE`, `JEJU_TRAVEL`, `GUEST_HOUSE_RECOMMENDATION`, `STAFF_RECRUITMENT_RECOMMENDATION`, `MIXED_TRAVEL_AND_GUEST_HOUSE`, `MIXED_GUEST_HOUSE_AND_STAFF`, `GENERAL_CHAT` | 질문 의도 분류, 질문 로그 |
+| `AiMessageRole` | `USER`, `ASSISTANT`, `SYSTEM` | AI 메시지 저장 |
+| `AiCardType` | `GUEST_HOUSE`, `STAFF_RECRUITMENT`, `TRAVEL_SPOT`, `SERVICE_GUIDE` | FE 카드 렌더링 |
+| `AiSourceType` | `GUEST_HOUSE_POST`, `STAFF_RECRUITMENT`, `REVIEW`, `SERVICE_GUIDE`, `JEJU_TRAVEL` | retrieval log |
+| `AiTargetType` | `GUEST_HOUSE_POST`, `STAFF_RECRUITMENT`, `PLATFORM` | 질문 로그, 조회 로그, 리포트 |
+| `ReportPeriodType` | `DAILY`, `WEEKLY`, `MONTHLY` | 리포트 스냅샷 |
+| `ReportDomain` | `GUEST_HOUSE`, `STAFF_RECRUITMENT`, `TRAVEL`, `ALL` | 플랫폼 인사이트 |
+
+##### B. 1단계 DB 스키마 상세
+
+`ai_conversation`
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| `id` | bigint PK | 대화 ID |
+| `user_id` | bigint nullable | 로그인 사용자. 비로그인 대화 저장을 하지 않으면 nullable 불필요 |
+| `title` | varchar(100) | 첫 질문 기반 제목 |
+| `deleted` | boolean | 사용자 대화 삭제 처리 |
+| `created_at` | datetime | 생성 시각 |
+| `updated_at` | datetime | 마지막 메시지 시각 |
+
+`ai_message`
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| `id` | bigint PK | 메시지 ID |
+| `conversation_id` | bigint FK | 대화 ID |
+| `role` | varchar(30) | `USER` / `ASSISTANT` |
+| `content` | text | 메시지 본문 |
+| `intent` | varchar(80) nullable | 사용자 메시지일 때 분류된 intent |
+| `created_at` | datetime | 생성 시각 |
+
+`ai_message_card`
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| `id` | bigint PK | 카드 ID |
+| `message_id` | bigint FK | AI 답변 메시지 ID |
+| `type` | varchar(50) | 카드 타입 |
+| `target_id` | bigint nullable | DB 대상 ID. 관광지/가이드 카드처럼 내부 ID가 없으면 nullable |
+| `title` | varchar(150) | 카드 제목 |
+| `description` | varchar(500) | 카드 설명 |
+| `image_url` | varchar(1000) nullable | 대표 이미지 |
+| `sort_order` | int | 카드 표시 순서 |
+
+`ai_retrieval_log`
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| `id` | bigint PK | 로그 ID |
+| `message_id` | bigint FK | AI 답변 메시지 ID |
+| `source_type` | varchar(50) | 근거 타입 |
+| `source_id` | bigint nullable | DB 근거 ID |
+| `score` | double nullable | 검색 점수 또는 정렬 점수 |
+| `snippet` | varchar(1000) | LLM에 전달한 요약 근거 |
+
+##### C. 1단계 백엔드 구현 상세
+
+패키지:
+
+```text
+ai/
+├── controller/AiChatController.java
+├── service/AiConversationService.java
+├── service/AiIntentRouter.java
+├── service/GuestHouseAiSearchService.java
+├── service/StaffRecruitmentAiSearchService.java
+├── service/LlmAnswerService.java
+├── domain/model/*
+├── domain/vo/*
+├── dto/request/AiChatRequest.java
+├── dto/response/AiChatResponse.java
+├── dto/response/AiChatCardResponse.java
+└── repository/*
+```
+
+`AiChatRequest`:
+
+```json
+{
+  "conversationId": 1,
+  "message": "제주시에서 조용하고 혼자 쉬기 좋은 게하 추천해줘"
+}
+```
+
+`AiChatResponse`:
+
+```json
+{
+  "conversationId": 1,
+  "messageId": 12,
+  "answer": "제주시에서 조용한 분위기를 찾는다면 아래 게스트하우스를 먼저 볼 만해요.",
+  "cards": [
+    {
+      "type": "GUEST_HOUSE",
+      "targetId": 3,
+      "title": "제주 달빛 게하",
+      "description": "조용한 분위기, 리뷰 4.8점, 혼자 쉬기 좋다는 언급이 많아요.",
+      "imageUrl": "/images/..."
+    }
+  ],
+  "suggestedQuestions": [
+    "가격 낮은 순으로 더 보여줘",
+    "파티 없는 곳만 추천해줘"
+  ]
+}
+```
+
+서비스 책임:
+
+| 서비스 | 책임 |
+|--------|------|
+| `AiConversationService` | 요청 orchestration, 메시지 저장, 검색/LLM 호출, 응답 저장 |
+| `AiIntentRouter` | 질문 의도, 지역, 가격, 기간, 키워드 추출 |
+| `GuestHouseAiSearchService` | 기존 게스트하우스 DB에서 후보 3~5개 압축 DTO 생성 |
+| `StaffRecruitmentAiSearchService` | 기존 스텝 공고 DB에서 후보 3~5개 압축 DTO 생성 |
+| `LlmAnswerService` | 검색 후보와 문서 근거를 넣어 최종 답변 JSON 생성 |
+
+1단계에서는 LLM 실패 시에도 서비스가 완전히 죽지 않도록 fallback 답변을 둔다.
+예를 들어 DB 후보는 찾았지만 LLM 호출이 실패하면, 백엔드가 템플릿 문장과 카드만 반환한다.
+
+##### D. 2단계 DB/로그 구현 상세
+
+`ai_user_question_log`
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| `id` | bigint PK | 질문 로그 ID |
+| `user_id` | bigint nullable | 로그인 사용자 |
+| `conversation_id` | bigint nullable | 연결된 AI 대화 |
+| `message_id` | bigint nullable | 사용자 메시지 |
+| `intent` | varchar(80) | 질문 의도 |
+| `normalized_question` | varchar(500) | 개인정보를 줄인 정규화 질문 |
+| `extracted_region` | varchar(100) nullable | 추출 지역 |
+| `extracted_keywords_json` | json/text | 키워드 배열 |
+| `target_type` | varchar(50) nullable | 질문 대상 |
+| `created_at` | datetime | 생성 시각 |
+
+`post_view_log`
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| `id` | bigint PK | 조회 로그 ID |
+| `target_type` | varchar(50) | `GUEST_HOUSE_POST` / `STAFF_RECRUITMENT` |
+| `target_id` | bigint | 게시글/공고 ID |
+| `user_id` | bigint nullable | 로그인 사용자 |
+| `session_id` | varchar(100) nullable | 비로그인 또는 중복 조회 방지용 |
+| `created_at` | datetime | 조회 시각 |
+
+조회 수 집계는 같은 사용자가 짧은 시간 안에 새로고침하는 것을 과도하게 세지 않도록, 서비스 레벨에서 같은 `targetType + targetId + userId/sessionId`의 30분 이내 중복 로그는 선택적으로 제외한다.
+
+##### E. 3단계 리뷰 요약/운영 리포트 구현 상세
+
+`review_keyword_summary` 생성 기준:
+
+- `targetType = GUEST_HOUSE_POST`부터 구현한다.
+- `Review.status = ACTIVE`만 사용한다.
+- 리뷰가 3개 미만이면 `visible = false` 응답을 반환한다.
+- 초기 버전은 규칙 기반 키워드 추출로 시작한다.
+- 이후 LLM 요약을 붙일 때도 결과는 같은 테이블에 저장한다.
+
+규칙 기반 키워드 예시:
+
+| 내부 키워드 | 매칭 표현 | 유저용 태그 |
+|-------------|-----------|-------------|
+| `CLEAN` | 청결, 깨끗, 깔끔, 침구 | 청결해요 |
+| `QUIET` | 조용, 소음 없음, 쉬기 | 조용한 편이에요 |
+| `SOLO` | 혼자, 혼여, 1인 | 혼자 쉬기 좋아요 |
+| `LOCATION` | 위치, 버스, 공항, 정류장 | 위치가 편해요 |
+| `HOST` | 친절, 설명, 안내 | 안내가 친절해요 |
+| `PARTY` | 파티, 교류, 사람들 | 교류하기 좋아요 |
+
+유저용 API 응답:
+
+```json
+{
+  "visible": true,
+  "reviewCount": 8,
+  "summary": "청결하고 조용하다는 후기가 많고, 혼자 여행한 유저도 편하게 머물렀다는 언급이 있어요.",
+  "tags": ["청결해요", "조용한 편이에요", "혼자 쉬기 좋아요"]
+}
+```
+
+`owner_report_snapshot`
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| `id` | bigint PK | 리포트 ID |
+| `owner_id` | bigint | 사장님 ID |
+| `target_type` | varchar(50) | 게스트하우스/스텝 공고 |
+| `target_id` | bigint | 대상 ID |
+| `period_type` | varchar(20) | `WEEKLY` / `MONTHLY` |
+| `period_start` | date | 기간 시작 |
+| `period_end` | date | 기간 종료 |
+| `metrics_json` | json/text | 조회, 찜, 채팅, 지원, 리뷰 지표 |
+| `insight_json` | json/text | AI 또는 규칙 기반 인사이트 |
+| `created_at` | datetime | 생성 시각 |
+
+운영 리포트 권한:
+
+- 게스트하우스 리포트는 해당 `GuestHousePost.userId`와 요청 `userId`가 같아야 조회 가능하다.
+- 스텝 공고 리포트는 해당 `StaffRecruitment.userId`와 요청 `userId`가 같아야 조회 가능하다.
+- 관리자는 추후 별도 관리자 리포트 API를 만들기 전까지 사장님용 API로 우회하지 않는다.
+
+##### F. 4단계 플랫폼 인사이트 구현 상세
+
+`platform_insight_report`
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| `id` | bigint PK | 보고서 ID |
+| `period_type` | varchar(20) | `WEEKLY` / `MONTHLY` |
+| `period_start` | date | 기간 시작 |
+| `period_end` | date | 기간 종료 |
+| `target_domain` | varchar(50) | `GUEST_HOUSE`, `STAFF_RECRUITMENT`, `ALL` |
+| `title` | varchar(150) | 보고서 제목 |
+| `summary` | varchar(1000) | 전체 요약 |
+| `content_json` | json/text | 상세 본문 |
+| `created_at` | datetime | 생성 시각 |
+
+`platform_insight_topic`
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| `id` | bigint PK | 토픽 ID |
+| `report_id` | bigint FK | 보고서 ID |
+| `rank` | int | 순위 |
+| `topic` | varchar(150) | 토픽명 |
+| `score` | double | 집계 점수 |
+| `example_questions_json` | json/text | 익명화된 대표 질문 |
+| `recommendation` | varchar(1000) | 사장님이 참고할 제안 |
+
+플랫폼 인사이트는 최소 집계 기준을 둔다.
+예를 들어 특정 기간의 질문 수나 리뷰 수가 너무 적으면 개별 사용자의 취향이 노출될 수 있으므로 보고서를 생성하지 않거나, 더 넓은 기간으로 합친다.
+
+##### G. 배치/스케줄 기준
+
+| 배치 | 주기 | 역할 |
+|------|------|------|
+| `ReviewKeywordSummaryJob` | 매일 새벽 또는 리뷰 변경 후 지연 실행 | 리뷰 키워드/요약 갱신 |
+| `OwnerReportSnapshotJob` | 매주 월요일 새벽 | 사장님별 주간 리포트 생성 |
+| `PlatformInsightReportJob` | 매주 월요일 새벽 | 플랫폼 공통 인사이트 생성 |
+
+초기에는 Spring Scheduler로 시작하고, 서버가 여러 대로 늘어나면 배치 중복 실행 방지를 위해 별도 lock 테이블 또는 외부 스케줄러를 도입한다.
+
+##### H. 테스트 기준
+
+백엔드 테스트:
+
+- `AiIntentRouterTest`: 질문별 intent/지역/키워드 추출
+- `GuestHouseAiSearchServiceTest`: 지역/분위기/가격 조건에 맞는 후보 반환
+- `StaffRecruitmentAiSearchServiceTest`: 근무 기간/혜택/직무 조건 후보 반환
+- `AiConversationServiceTest`: 대화/메시지/카드 저장과 권한 검증
+- `ReviewKeywordSummaryServiceTest`: 리뷰 3개 미만 숨김, 키워드 추출, 유저용 태그 변환
+- `OwnerReportServiceTest`: 소유자만 리포트 조회 가능
+- `PlatformInsightReportServiceTest`: 최소 집계 기준 미달 시 보고서 미생성
+
+프론트 연동 테스트:
+
+- AI 탭에서 질문 전송 후 답변/카드 렌더링
+- 게스트하우스 상세 리뷰 섹션 위에 `visible = true`일 때만 요약 렌더링
+- 사장님 리포트 화면에서 조회/찜/문의/리뷰 지표 카드 렌더링
+- 플랫폼 인사이트 화면에서 토픽 리스트 렌더링
+
+##### I. 구현 우선순위
+
+가장 먼저 만들 실제 PR 단위:
+
+1. BE: `ai_conversation`, `ai_message`, `ai_message_card`, `ai_retrieval_log` 엔티티/레포지토리 추가
+2. BE: `/api/v1/ai/chat` skeleton과 템플릿 fallback 응답 구현
+3. BE: 게스트하우스/스텝 공고 DB 검색 서비스 구현
+4. BE: LLM API 연동과 JSON 응답 파싱
+5. FE: AI 탭 채팅 UI와 카드 렌더링
+6. BE: `ai_user_question_log`, `post_view_log` 추가
+7. BE/FE: 리뷰 AI 요약 유저용 API와 리뷰 섹션 위 노출
+8. BE/FE: 사장님 운영 리포트 화면
+9. BE/FE: 플랫폼 공통 인사이트 화면
+
+### 리뷰 AI 키워드 분석 설계
+
+리뷰 본문은 별점보다 더 많은 신호를 담고 있으므로, AI로 키워드와 요약을 뽑아 사용자 화면과 사장님 화면에 다르게 제공한다.
+같은 분석 결과를 재사용하되, 유저에게는 선택을 돕는 가벼운 태그를 보여주고 사장님에게는 운영 개선용 상세 리포트를 보여준다.
+
+분석 대상:
+
+| 대상 | 현재/향후 | 설명 |
+|------|-----------|------|
+| 게스트하우스 리뷰 | 현재 | 숙소 경험, 청결, 위치, 소음, 분위기, 체크인 등 |
+| 스텝 공고 리뷰 | 향후 | 근무 강도, 숙소 제공, 교육, 휴무, 소통, 업무 범위 등 |
+
+권장 DB 테이블:
+
+| 테이블 | 주요 컬럼 | 설명 |
+|--------|----------|------|
+| `review_keyword_summary` | `id`, `target_type`, `target_id`, `review_count`, `positive_keywords_json`, `negative_keywords_json`, `neutral_keywords_json`, `user_summary`, `owner_summary`, `owner_recommendation`, `period_start`, `period_end`, `created_at`, `updated_at` | 리뷰 AI 분석 결과를 대상별로 저장 |
+
+표시 정책:
+
+| 제공 대상 | 표시 내용 | 목적 |
+|-----------|-----------|------|
+| 일반 유저 | 대표 키워드 태그, 한 줄 요약, 긍정/중립 중심 표현 | 숙소/공고 선택을 빠르게 돕기 |
+| 사장님 | 긍정 키워드, 개선 키워드, 반복 이슈, AI 개선 제안 | 상세 페이지/운영 방식 개선 |
+| 플랫폼 리포트 | 전체 트렌드 키워드와 수요 변화 | 시장 흐름 파악 |
+
+유저용 MVP 노출 규칙:
+
+- 게스트하우스 상세 화면의 리뷰 목록 바로 위에만 노출한다.
+- 목록 카드나 상세 상단에는 처음부터 노출하지 않고, 리뷰 섹션의 보조 정보로 시작한다.
+- `reviewCount >= 3`인 경우에만 리뷰 요약과 대표 키워드를 보여준다.
+- `reviewCount < 3`이면 요약 영역을 숨기거나 "아직 리뷰 요약을 만들기에는 후기가 부족해요"로 처리한다.
+- 부정 키워드는 유저 화면에 직접 태그로 노출하지 않고, 필요할 때만 "체크해볼 포인트"처럼 중립적으로 표현한다.
+
+유저 화면 예시:
+
+```json
+{
+  "targetType": "GUEST_HOUSE_POST",
+  "targetId": 12,
+  "tags": ["청결해요", "혼자 쉬기 좋아요", "위치가 편해요", "조용한 편이에요"],
+  "summary": "리뷰에서는 청결, 조용한 분위기, 혼자 여행 편의성이 자주 언급돼요."
+}
+```
+
+사장님 화면 예시:
+
+```json
+{
+  "targetType": "GUEST_HOUSE_POST",
+  "targetId": 12,
+  "positiveKeywords": [
+    { "keyword": "청결", "count": 14, "examples": ["침구가 깨끗했어요"] },
+    { "keyword": "위치", "count": 9, "examples": ["버스 정류장이 가까워요"] }
+  ],
+  "negativeKeywords": [
+    { "keyword": "소음", "count": 4, "examples": ["밤에 문 닫는 소리가 들렸어요"] },
+    { "keyword": "체크인 안내", "count": 3, "examples": ["입실 안내가 조금 헷갈렸어요"] }
+  ],
+  "summary": "청결과 위치 평가는 좋지만, 소음과 체크인 안내 관련 언급이 반복됩니다.",
+  "recommendation": "상세 페이지에 소등 시간, 조용한 시간대, 체크인 절차를 더 구체적으로 추가하세요."
+}
+```
+
+권장 API:
+
+| Method | Endpoint | 인증 | 설명 |
+|--------|----------|------|------|
+| GET | `/api/v1/guest-houses/{guestHousePostId}/review-keywords` | 선택 | 유저용 게스트하우스 리뷰 키워드 조회 |
+| GET | `/api/v1/owner/reports/guest-houses/{guestHousePostId}/review-keywords` | 사장님 | 사장님용 게스트하우스 리뷰 키워드 분석 조회 |
+| GET | `/api/v1/staff-recruitment/{staffRecruitmentId}/review-keywords` | 선택 | 향후 유저용 스텝 공고 리뷰 키워드 조회 |
+| GET | `/api/v1/owner/reports/staff-recruitments/{staffRecruitmentId}/review-keywords` | 사장님 | 향후 사장님용 스텝 공고 리뷰 키워드 분석 조회 |
+
+분석은 리뷰 작성 요청마다 실시간으로 LLM을 호출하지 않는다.
+초기에는 리뷰가 일정 개수 이상 쌓였을 때 수동/배치로 생성하고, 이후에는 하루 1회 또는 주간 단위로 갱신한다.
+리뷰 수가 적을 때는 개별 사용자가 식별되지 않도록 키워드 요약을 숨기거나 "아직 리뷰가 충분하지 않아요"로 처리한다.
+
+### 사장님 운영 리포트 설계
+
+AI 챗봇과 리뷰 데이터가 쌓이면, 각 사장님에게 "내 게시글이 얼마나 보고 있고, 사람들이 무엇을 궁금해하고, 어떤 개선 포인트가 있는지"를 보여주는 운영 리포트로 확장한다.
+이 기능은 일반 사용자용 AI 챗봇과 별도 API로 두되, 분석 재료는 AI 질문 로그/리뷰/조회/찜/채팅/지원 데이터를 함께 사용한다.
+
+운영 리포트 대상:
+
+| 대상 | 설명 |
+|------|------|
+| 게스트하우스 게시글 | 숙소 조회, 찜, 리뷰, 사용자 질문, 채팅 문의 기반 인사이트 |
+| 스텝 공고 | 공고 조회, 찜, 지원 전환, 채팅 문의, 향후 근무 경험 리뷰 기반 인사이트 |
+
+현재 DB에서 바로 활용 가능한 데이터:
+
+| 지표 | 테이블/엔티티 | 비고 |
+|------|---------------|------|
+| 찜 수 | `wish` / `Wish` | 게스트하우스/스텝 공고 관심도 |
+| 채팅 문의 | `chat_room`, `chat_message` | 해당 게시글/공고와 연결된 사용자 질문 흐름 |
+| 지원 수 | `application_record` | 스텝 공고 지원 전환 지표 |
+| 리뷰 평점/본문 | `review`, `review_image` | 현재 게스트하우스 리뷰, 향후 스텝 공고 리뷰 |
+| 스텝 공고 조회 수 | `staff_recruitment.view_count` | 현재 스텝 공고에만 존재 |
+
+추가가 필요한 데이터:
+
+| 테이블 | 주요 컬럼 | 설명 |
+|--------|----------|------|
+| `post_view_log` | `id`, `target_type`, `target_id`, `user_id`, `session_id`, `created_at` | 게스트하우스/스텝 공고 상세 조회 로그. 비로그인 사용자는 `session_id`만 저장 |
+| `owner_report_snapshot` | `id`, `owner_id`, `target_type`, `target_id`, `period_start`, `period_end`, `metrics_json`, `insight_json`, `created_at` | 주간/월간 리포트 스냅샷. LLM 비용 절감을 위해 배치 생성 결과 저장 |
+
+권장 API:
+
+| Method | Endpoint | 인증 | 설명 |
+|--------|----------|------|------|
+| GET | `/api/v1/owner/reports/guest-houses/{guestHousePostId}` | 사장님 | 내 게스트하우스 운영 리포트 조회 |
+| GET | `/api/v1/owner/reports/staff-recruitments/{staffRecruitmentId}` | 사장님 | 내 스텝 공고 운영 리포트 조회 |
+| POST | `/api/v1/owner/reports/guest-houses/{guestHousePostId}/refresh` | 사장님 | 필요 시 최신 리포트 재생성 |
+| POST | `/api/v1/owner/reports/staff-recruitments/{staffRecruitmentId}/refresh` | 사장님 | 필요 시 최신 리포트 재생성 |
+
+리포트 응답은 숫자 지표와 AI 인사이트를 분리한다.
+
+```json
+{
+  "targetType": "GUEST_HOUSE_POST",
+  "targetId": 12,
+  "periodStart": "2026-07-01",
+  "periodEnd": "2026-07-07",
+  "metrics": {
+    "viewCount": 320,
+    "wishCount": 41,
+    "chatInquiryCount": 18,
+    "reviewCount": 7,
+    "averageRating": 4.7
+  },
+  "insights": [
+    {
+      "type": "QUESTION_TREND",
+      "title": "혼자 여행 관련 질문이 많아요",
+      "summary": "최근 문의에서 1인실, 조용한 분위기, 밤 소음 질문이 반복됩니다.",
+      "recommendation": "상세 소개에 1인 여행자 안내와 소음 관리 방식을 추가하는 것이 좋아요."
+    },
+    {
+      "type": "REVIEW_SIGNAL",
+      "title": "청결 평가는 좋고, 체크인 안내는 보강이 필요해요",
+      "summary": "리뷰에서는 청결 키워드가 긍정적으로 많이 등장하지만, 체크인 동선 문의가 반복됩니다.",
+      "recommendation": "체크인 시간, 셀프 체크인 여부, 늦은 입실 안내를 상단에 노출하세요."
+    }
+  ]
+}
+```
+
+LLM 분석에 넣는 원문은 최소화한다.
+채팅 메시지와 AI 질문 로그는 개인정보를 마스킹하고, 해당 사장님의 게시글/공고에 연결된 내용만 사용한다.
+리포트 생성 시 LLM에는 개별 사용자 식별자 대신 질문 유형, 키워드, 익명화된 대표 문장, 집계 지표를 전달한다.
+
+운영 리포트에서 만들 인사이트:
+
+| 인사이트 | 설명 |
+|----------|------|
+| 조회/찜 흐름 | 전주 대비 조회, 찜, 문의 증감 |
+| 문의 질문 TOP N | 사용자들이 반복해서 묻는 주제 |
+| 리뷰 긍정/부정 키워드 | 청결, 소음, 위치, 사장님 응대, 근무 강도 등 |
+| 상세 페이지 보강 포인트 | 사용자가 자주 묻지만 게시글에 없는 정보 |
+| 전환 개선 제안 | 조회 대비 찜/채팅/지원이 낮을 때 문구, 이미지, 조건 개선 제안 |
+
+### 플랫폼 공통 인사이트 리포트 설계
+
+개별 사장님 리포트와 별도로, 게하르방 전체에서 사람들이 요즘 어떤 게스트하우스/스텝 공고를 찾는지 묶어주는 공통 인사이트 리포트를 만든다.
+예를 들어 "요즘 혼자 여행, 조용한 숙소, 여성 도미토리, 숙식 제공 단기 스텝 질문이 늘고 있다"처럼 사장님들이 시장 흐름을 이해하도록 돕는다.
+
+이 리포트는 특정 사장님의 채팅 원문을 그대로 보여주지 않고, 플랫폼 단위로 익명화/집계한 트렌드만 제공한다.
+
+주요 데이터 소스:
+
+| 데이터 | 활용 방식 |
+|--------|-----------|
+| AI 챗봇 질문 | 사용자가 자연어로 찾는 지역, 분위기, 가격, 여행 스타일, 스텝 조건 추출 |
+| 검색/필터 로그 | 지역, 날짜, 가격, 성별, 근무 기간, 혜택 조건 선호도 |
+| 찜 데이터 | 실제 관심 전환이 일어난 게시글/공고 특성 |
+| 리뷰 | 만족/불만 키워드, 재방문 의향, 근무 경험 평가 |
+| 채팅 문의 | 상세 페이지에 부족한 정보와 실제 예약/지원 전 질문 |
+| 지원 데이터 | 스텝 공고 조회 대비 지원 전환 |
+
+권장 DB 테이블:
+
+| 테이블 | 주요 컬럼 | 설명 |
+|--------|----------|------|
+| `ai_user_question_log` | `id`, `user_id`, `intent`, `normalized_question`, `extracted_region`, `extracted_keywords`, `target_type`, `created_at` | AI 챗봇 질문을 분석 가능한 형태로 저장. `user_id`는 nullable |
+| `platform_insight_report` | `id`, `period_type`, `period_start`, `period_end`, `target_domain`, `title`, `summary`, `content_json`, `created_at` | 주간/월간 플랫폼 인사이트 보고서 |
+| `platform_insight_topic` | `id`, `report_id`, `rank`, `topic`, `score`, `example_questions_json`, `recommendation` | 보고서 안의 핵심 트렌드 주제 |
+
+권장 API:
+
+| Method | Endpoint | 인증 | 설명 |
+|--------|----------|------|------|
+| GET | `/api/v1/owner/reports/platform-insights` | 사장님 | 플랫폼 공통 인사이트 리포트 조회 (`?domain=GUEST_HOUSE&periodType=WEEKLY`) |
+| GET | `/api/v1/owner/reports/platform-insights/{reportId}` | 사장님 | 특정 인사이트 리포트 상세 조회 |
+
+리포트 예시:
+
+```json
+{
+  "periodType": "WEEKLY",
+  "periodStart": "2026-07-01",
+  "periodEnd": "2026-07-07",
+  "targetDomain": "GUEST_HOUSE",
+  "title": "이번 주 게스트하우스 관심 트렌드",
+  "summary": "혼자 여행, 조용한 숙소, 여성 전용 객실, 늦은 체크인 관련 질문이 많았습니다.",
+  "topics": [
+    {
+      "rank": 1,
+      "topic": "혼자 쉬기 좋은 조용한 숙소",
+      "score": 92,
+      "exampleQuestions": [
+        "혼자 가도 어색하지 않은 게하 추천해줘",
+        "파티 없는 조용한 곳 있어?"
+      ],
+      "recommendation": "혼자 온 손님 비율, 소등 시간, 공용 공간 분위기를 상세 페이지에 적어두면 좋아요."
+    },
+    {
+      "rank": 2,
+      "topic": "뚜벅이 이동 편의",
+      "score": 84,
+      "exampleQuestions": [
+        "버스로 갈 수 있는 숙소 알려줘",
+        "공항에서 가까운 게하 있어?"
+      ],
+      "recommendation": "공항/버스정류장 이동 시간과 주변 편의시설을 이미지나 문장으로 보강하세요."
+    }
+  ]
+}
+```
+
+개별 운영 리포트와 플랫폼 인사이트는 함께 연결한다.
+예를 들어 플랫폼 리포트에서 "혼자 여행" 수요가 높게 나오고, 특정 게스트하우스 상세 페이지에 1인 여행자 안내가 부족하면 해당 사장님 리포트에서 "현재 트렌드 대비 보강할 항목"으로 제안한다.
+
+구현 순서:
+
+1. AI 챗봇 질문을 `ai_user_question_log`에 의도/지역/키워드 단위로 저장
+2. 게스트하우스 상세 조회용 `post_view_log` 추가
+3. 사장님용 단일 게시글 운영 리포트 API를 먼저 구현
+4. 주간 배치로 `owner_report_snapshot` 생성
+5. 플랫폼 공통 인사이트 리포트를 주간 배치로 생성
+6. 개별 리포트에 플랫폼 트렌드와의 비교/추천 문구 연결
+
+### LLM 프롬프트 원칙
+
+시스템 프롬프트 핵심:
+
+```text
+너는 게하르방 AI 여행 도우미다.
+게하르방 서비스 사용법, 제주 여행, 게스트하우스 추천, 스텝 공고 추천을 돕는다.
+제공된 DB 후보가 있으면 그 후보 안에서만 게스트하우스/스텝 공고를 추천한다.
+DB에 없는 게시글이나 공고를 만들어내지 않는다.
+최신성이 중요한 관광지 영업시간, 입장료, 교통 정보는 확인이 필요하다고 말한다.
+추천할 때는 이유를 짧고 구체적으로 설명하고, 카드에 연결할 수 있는 대상 ID를 유지한다.
+```
+
+### 처리 흐름
+
+```
+POST /api/v1/ai/chat
+  → AiChatController
+  → AiConversationService
+    1. userId가 있으면 대화 생성/조회
+    2. 사용자 메시지 저장
+    3. AiIntentRouter로 의도 분류
+    4. 의도에 따라 검색 도구 실행
+       - 게스트하우스: GuestHouseAiSearchService
+       - 스텝 공고: StaffRecruitmentAiSearchService
+       - 서비스 안내: ServiceGuideRetriever
+       - 제주 관광: JejuTravelRetriever
+    5. 검색 후보/문서 조각을 LlmAnswerService에 전달
+    6. 최종 답변, 카드, 추천 후속 질문 생성
+    7. AI 메시지와 카드/검색 로그 저장
+  → AiChatResponse 반환
+```
+
+혼합 질문 예시:
+
+```
+"비 오는 날 제주에서 갈 만한 곳이랑 근처 조용한 게하 추천해줘"
+  → Intent: MIXED_TRAVEL_AND_GUEST_HOUSE
+  → JejuTravelRetriever: 비 오는 날 관광지 후보
+  → GuestHouseAiSearchService: 조용한 분위기 + 리뷰 좋은 게스트하우스 후보
+  → LLM: 여행 코스 설명 + 게스트하우스 추천 이유 생성
+```
+
+스텝 공고 질문 예시:
+
+```
+"2주 정도 일할 수 있고 숙식 제공되는 스텝 공고 있어?"
+  → Intent: STAFF_RECRUITMENT_RECOMMENDATION
+  → StaffRecruitmentAiSearchService:
+     - workingPeriod = 단기
+     - employeeBenefits/content/job에 "숙식" 키워드 검색
+     - ACTIVE 공고만 후보
+  → LLM: 후보 중 조건이 잘 맞는 순서로 설명
+```
+
+### MVP 구현 순서
+
+1. FE `app/(tabs)/ai.tsx`를 실제 채팅 UI로 전환
+2. BE `ai` 패키지와 `POST /api/v1/ai/chat` 추가
+3. AI 대화 저장 테이블 없이 1회성 응답 MVP 구현
+4. `GuestHouseAiSearchService`, `StaffRecruitmentAiSearchService`를 MySQL QueryDSL 기반으로 구현
+5. 서비스 안내/제주 관광은 짧은 Markdown 문서 RAG 또는 임시 static knowledge로 시작
+6. LLM API 연동 및 답변 JSON schema 고정
+7. 로그인 사용자 대화 저장, 카드 저장, retrieval log 추가
+8. 필요 시 streaming 응답, vector store 동기화, 관광지 데이터 확장
+
+---
+
+## 13. 요청 처리 흐름
 
 ### 인증이 필요한 API
 
@@ -768,7 +1890,7 @@ GET /images/application/{fileName}
 
 ---
 
-## 13. 인프라 및 실행 환경
+## 14. 인프라 및 실행 환경
 
 운영 환경은 **Mac mini self-hosted runner + Docker 컨테이너** 기반으로 구성되어 있다.
 Spring Boot 애플리케이션, MySQL, nginx가 각각 별도 컨테이너로 실행되고, `guesthouse` Docker network를 통해 통신한다.
@@ -926,7 +2048,7 @@ API 코드 변경은 새 JAR를 포함한 `server:geharbang` image를 다시 만
 
 ---
 
-## 14. API 문서 (Swagger)
+## 15. API 문서 (Swagger)
 
 `springdoc-openapi`를 사용하며, nginx를 통해 외부에서 접근 가능.
 
