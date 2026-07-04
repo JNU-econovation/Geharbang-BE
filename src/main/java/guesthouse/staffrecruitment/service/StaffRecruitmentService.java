@@ -19,6 +19,7 @@ import guesthouse.staffrecruitment.repository.StaffRecruitmentImageRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentJobRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentQuestionsRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentRepository;
+import guesthouse.review.service.ReviewService;
 import guesthouse.user.domain.model.User;
 import guesthouse.user.service.UserService;
 import guesthouse.wish.service.WishService;
@@ -41,6 +42,7 @@ public class StaffRecruitmentService {
     private final StaffRecruitmentImageRepository staffRecruitmentImageRepository;
     private final StaffRecruitmentQuestionsRepository staffRecruitmentQuestionsRepository;
     private final UserService userService;
+    private final ReviewService reviewService;
 
 
     @Transactional
@@ -244,6 +246,7 @@ public class StaffRecruitmentService {
         if (!existsByOwnerIdAndId(userId, staffRecruitmentId))
             throw new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND);
 
+        reviewService.deleteAllByStaffRecruitmentId(staffRecruitmentId);
         staffRecruitmentRepository.deleteById(staffRecruitmentId);
         staffRecruitmentQuestionsRepository.deleteByStaffRecruitmentId(staffRecruitmentId);
         staffRecruitmentImageRepository.deleteByStaffRecruitmentId(staffRecruitmentId);

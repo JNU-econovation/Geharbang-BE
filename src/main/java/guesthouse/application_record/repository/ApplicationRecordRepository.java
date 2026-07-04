@@ -16,6 +16,8 @@ import java.util.List;
 public interface ApplicationRecordRepository extends JpaRepository<ApplicationRecord, Long> {
     Boolean existsByStaffRecruitmentIdAndUserId(Long recruitmentId, Long userId);
 
+    boolean existsByStaffRecruitmentIdAndUserIdAndStatus(Long recruitmentId, Long userId, Status status);
+
     List<ApplicationRecord> findAllByStaffRecruitmentId(Long recruitmentId);
 
     default ApplicationRecord findByIdOrThrow(Long applicationRecordId) {

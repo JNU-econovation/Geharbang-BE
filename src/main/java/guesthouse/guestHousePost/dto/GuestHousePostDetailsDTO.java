@@ -4,6 +4,7 @@ import guesthouse.guestHousePost.domain.model.Amenity;
 import guesthouse.guestHousePost.domain.model.GuestHousePost;
 import guesthouse.guestHousePost.domain.vo.Contact;
 import guesthouse.guestHousePost.domain.vo.Mood;
+import guesthouse.review.dto.response.ReviewSummaryResponse;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import lombok.Builder;
 import org.locationtech.jts.geom.Point;
@@ -26,12 +27,13 @@ public record GuestHousePostDetailsDTO (
         Boolean isWished,
         List<Amenity> amenities,
         List<PartyWithImageUrlDTO> parties,
-        List<RoomWithImageUrlDTO> rooms
+        List<RoomWithImageUrlDTO> rooms,
+        ReviewSummaryResponse reviewSummary
 ){
 
     public static GuestHousePostDetailsDTO from(GuestHousePost guestHousePost, List<String> imageUrls, List<Amenity> amenities,
                                                 List<PartyWithImageUrlDTO> parties, List<RoomWithImageUrlDTO> rooms,
-                                                Boolean isWished) {
+                                                Boolean isWished, ReviewSummaryResponse reviewSummary) {
         return GuestHousePostDetailsDTO.builder()
                 .guestHouseName(guestHousePost.getGuestHouseName())
                 .region(guestHousePost.getRegion())
@@ -47,6 +49,7 @@ public record GuestHousePostDetailsDTO (
                 .amenities(amenities)
                 .parties(parties)
                 .rooms(rooms)
+                .reviewSummary(reviewSummary)
                 .build();
     }
 }

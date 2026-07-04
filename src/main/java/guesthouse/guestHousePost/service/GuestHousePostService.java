@@ -11,6 +11,8 @@ import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostsResponse;
 import guesthouse.guestHousePost.exception.GuestHousePostErrorCode;
 import guesthouse.guestHousePost.exception.GuestHousePostException;
 import guesthouse.guestHousePost.repository.*;
+import guesthouse.review.dto.response.ReviewSummaryResponse;
+import guesthouse.review.service.ReviewService;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import guesthouse.staffrecruitment.exception.StaffRecruitmentErrorCode;
@@ -40,6 +42,7 @@ public class GuestHousePostService {
     private final RoomImageRepository roomImageRepository;
     private final WishService wishService;
     private final UserService userService;
+    private final ReviewService reviewService;
 
     @Transactional(readOnly = true)
     public GuestHousePostsResponse getGuestHousePosts(Long userId, int pageNumber, GuestHouseFilter filter) {
@@ -166,6 +169,7 @@ public class GuestHousePostService {
         List<Amenity> amenities = getAmenitiesByPostId(guestHousePostId);
         List<PartyWithImageUrlDTO> parties = getPartiesWithImageUrlByPostId(guestHousePostId);
         List<RoomWithImageUrlDTO> rooms = getRoomsWithImageUrlByPostId(guestHousePostId);
+        ReviewSummaryResponse reviewSummary = reviewService.createSummary(guestHousePostId, userId);
 
         return GuestHousePostDetailsDTO.from(
                 guestHousePost,
@@ -173,7 +177,8 @@ public class GuestHousePostService {
                 amenities,
                 parties,
                 rooms,
-                isWished(guestHousePostId, userId)
+                isWished(guestHousePostId, userId),
+                reviewSummary
         );
     }
 
@@ -272,6 +277,7 @@ public class GuestHousePostService {
         deleteRooms(guestHousePostId);
         amenityRepository.deleteByGuestHousePostId(guestHousePostId);
         guestHousePostImageRepository.deleteByGuestHousePostId(guestHousePostId);
+        reviewService.deleteAllByGuestHousePostId(guestHousePostId);
         guestHousePostRepository.deleteById(guestHousePostId);
     }
 

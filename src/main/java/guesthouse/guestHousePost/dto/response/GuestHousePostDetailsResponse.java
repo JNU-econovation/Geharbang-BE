@@ -28,7 +28,10 @@ public record GuestHousePostDetailsResponse (
         List<Party> parties,
         Contact contact,
         String ownerMessage,
-        Boolean isWished
+        Boolean isWished,
+        double averageRating,
+        long reviewCount,
+        boolean hasMyReview
 ){
     private static final String SEPARATOR = "\\|:\\|";
 
@@ -47,6 +50,9 @@ public record GuestHousePostDetailsResponse (
                 .contact(details.contact())
                 .ownerMessage(details.ownerMessage())
                 .isWished(details.isWished())
+                .averageRating(details.reviewSummary().averageRating())
+                .reviewCount(details.reviewSummary().reviewCount())
+                .hasMyReview(details.reviewSummary().hasMyReview())
                 .build();
     }
 

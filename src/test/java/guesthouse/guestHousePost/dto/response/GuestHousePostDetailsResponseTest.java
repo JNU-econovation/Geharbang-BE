@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import guesthouse.guestHousePost.domain.vo.Contact;
 import guesthouse.guestHousePost.dto.GuestHousePostDetailsDTO;
+import guesthouse.review.dto.response.ReviewSummaryResponse;
 import guesthouse.staffrecruitment.domain.vo.Region;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -36,6 +37,7 @@ class GuestHousePostDetailsResponseTest {
                 .amenities(List.of())
                 .parties(List.of())
                 .rooms(List.of())
+                .reviewSummary(new ReviewSummaryResponse(0.0, 0, false))
                 .build();
 
         GuestHousePostDetailsResponse response = GuestHousePostDetailsResponse.from(details);
