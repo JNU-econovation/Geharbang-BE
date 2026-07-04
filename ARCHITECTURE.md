@@ -91,12 +91,12 @@ Geharbang은 **제주 게스트하우스 스텝 구인/구직 플랫폼**이다.
 - 목록 조회의 `isWished`와 `찜_많은순` 정렬은 `wish` 테이블 기준으로 계산
 
 #### 리뷰 (Review)
-- 현재 구현은 로그인 사용자가 게스트하우스 게시글에 리뷰 작성/수정/삭제
-- 스텝 공고 근무 경험 리뷰도 같은 `review` 도메인에서 작성/조회/요약 가능
+- 로그인 사용자가 게스트하우스 게시글에 리뷰 작성/조회/수정/삭제 가능
+- 스텝 공고 근무 경험 리뷰도 같은 `review` 도메인에서 작성/조회/요약/수정/삭제 가능
 - 게스트하우스 게시글 또는 스텝 공고당 사용자 1명은 활성 리뷰 1개만 작성 가능
-- 별점, 본문, 리뷰 이미지 저장
+- 별점은 `0.5` 단위로 `0.5~5.0`만 허용하며, 본문과 리뷰 이미지 URL을 함께 저장
 - 삭제는 물리 삭제가 아니라 `Review.status = DELETED`로 처리
-- 게스트하우스 상세 응답에 평균 별점, 리뷰 수, 내 리뷰 작성 여부 포함
+- 게스트하우스 상세/리뷰 요약 응답에 평균 별점, 리뷰 수, 내 리뷰 작성 여부, 리뷰 작성 가능 여부 포함
 
 #### 알림 (Notification)
 - 로그인한 사용자의 인앱 알림 목록 조회
@@ -470,14 +470,14 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 |--------|----------|------|------|
 | POST | `/api/v1/guest-houses/{guestHousePostId}/reviews` | 필요 | 게스트하우스 리뷰 작성 |
 | GET | `/api/v1/guest-houses/{guestHousePostId}/reviews` | 선택 | 게스트하우스 리뷰 목록 조회 (`?pageNumber=0`, 최신순 10개) |
-| GET | `/api/v1/guest-houses/{guestHousePostId}/review-summary` | 선택 | 평균 별점, 리뷰 수, 내 리뷰 작성 여부 조회 |
+| GET | `/api/v1/guest-houses/{guestHousePostId}/review-summary` | 선택 | 평균 별점, 리뷰 수, 내 리뷰 작성 여부, 리뷰 작성 가능 여부 조회 |
 | PUT | `/api/v1/reviews/{reviewId}` | 필요 | 내 리뷰 수정 |
 | DELETE | `/api/v1/reviews/{reviewId}` | 필요 | 내 리뷰 삭제 (`DELETED` 상태 처리) |
 
 리뷰 작성은 로그인 사용자만 가능하다.
 같은 게스트하우스 게시글에 같은 사용자가 `ACTIVE` 리뷰를 2개 이상 작성할 수 없으며, 중복 작성 시 409 `DUPLICATED`를 반환한다.
-별점은 1점 이상 5점 이하만 허용한다.
-게스트하우스 상세 응답은 `averageRating`, `reviewCount`, `hasMyReview`를 포함한다.
+별점은 `0.5`점 이상 `5.0`점 이하이며, `0.5` 단위만 허용한다.
+게스트하우스 상세 응답은 `averageRating`, `reviewCount`, `hasMyReview`를 포함하고, 리뷰 요약 API는 `canWriteReview`도 포함한다.
 
 스텝 공고/근무 경험 리뷰도 같은 리뷰 도메인에서 제공한다.
 
@@ -485,11 +485,12 @@ Service에서 throw new ApplicationException(ApplicationErrorCode.NOT_FOUND)
 |--------|----------|------|------|
 | POST | `/api/v1/staff-recruitment/{staffRecruitmentId}/reviews` | 필요 | 스텝 공고/근무 경험 리뷰 작성 |
 | GET | `/api/v1/staff-recruitment/{staffRecruitmentId}/reviews` | 선택 | 스텝 공고 리뷰 목록 조회 (`?pageNumber=0`) |
-| GET | `/api/v1/staff-recruitment/{staffRecruitmentId}/review-summary` | 선택 | 스텝 공고 평균 별점, 리뷰 수, 내 리뷰 작성 여부 조회 |
+| GET | `/api/v1/staff-recruitment/{staffRecruitmentId}/review-summary` | 선택 | 스텝 공고 평균 별점, 리뷰 수, 내 리뷰 작성 여부, 리뷰 작성 가능 여부 조회 |
 
-스텝 공고 리뷰 작성 권한은 단순 로그인만으로 열지 않고, 최소한 `application_record.staffRecruitmentId = staffRecruitmentId` 및 `application_record.userId = userId`가 존재하는 사용자로 제한하는 것을 기본안으로 한다.
-더 엄격하게는 합격 처리된 지원자(`ApplicationRecord.status = 합격`)만 리뷰를 작성하게 할 수 있다.
-스텝 공고 리뷰도 동일하게 대상 공고당 사용자 1명은 `ACTIVE` 리뷰 1개만 작성 가능해야 한다.
+스텝 공고 리뷰 작성 권한은 단순 로그인만으로 열지 않는다.
+현재 정책은 `application_record.staffRecruitmentId = staffRecruitmentId`, `application_record.userId = userId`, `ApplicationRecord.status = 합격`을 모두 만족하는 합격자만 작성 가능하다.
+요약 응답의 `canWriteReview`는 이 합격자 조건과 내 활성 리뷰 존재 여부를 함께 반영한다.
+스텝 공고 리뷰도 동일하게 대상 공고당 사용자 1명은 `ACTIVE` 리뷰 1개만 작성 가능하다.
 
 ### 알림 (Notification)
 
@@ -717,7 +718,7 @@ Role role;                      // "사용자" 또는 "운영자" (한글 Enum)
 | `guest_house_post_id` | 게스트하우스 리뷰일 때만 값 존재 |
 | `staff_recruitment_id` | 스텝 공고 리뷰일 때만 값 존재 |
 | `user_id` | 리뷰 작성자 |
-| `rating` | 1~5 별점 |
+| `rating` | `decimal(2,1)` 형태의 `0.5~5.0` 별점 |
 | `content` | 리뷰 본문 |
 | `status` | `ACTIVE`, `HIDDEN`, `DELETED` |
 
@@ -732,8 +733,8 @@ DB 제약까지 강제하려면 MySQL `CHECK` 제약 또는 마이그레이션 �
 | 스텝 공고 리뷰 | `targetType = STAFF_RECRUITMENT`, `staffRecruitmentId`, `userId`, `status = ACTIVE` |
 
 스텝 공고 리뷰 작성 권한:
-1. 기본안: 해당 공고에 지원한 기록이 있는 사용자만 작성 가능
-2. 권장안: 해당 공고에 지원했고 합격 처리된 사용자만 작성 가능
+1. 현재 구현: 해당 공고에 지원했고 `ApplicationRecord.status = 합격`인 사용자만 작성 가능
+2. 요약 API: `canWriteReview`로 FE가 작성 버튼 노출 여부를 사전에 판단
 3. 추후 근무 완료 상태가 생기면 `ApplicationRecord.status = 근무완료` 같은 상태를 추가해 실제 근무 완료자만 작성 가능하게 변경
 
 ---
@@ -1056,7 +1057,7 @@ AI용 후보 DTO는 LLM에 너무 많은 원문을 넘기지 않도록 압축한
 | 직무/근무 조건 | `staff_recruitment_job` / `StaffRecruitmentJob` | `name`, `startTime`, `endTime`, `job`, `standard`, `workDays`, `restDays`, `workScheduleType` |
 | 대표/내용 이미지 | `staff_recruitment_image` / `StaffRecruitmentImage` | `type`, `imageUrl`, `index` |
 | 추가 질문 부담 | `staff_recruitment_question` / `StaffRecruitmentQuestion` | question count, `content` |
-| 근무 경험 리뷰 | `review` / `Review` | 향후 `targetType = STAFF_RECRUITMENT`, `staffRecruitmentId`, `rating`, `content`, `status = ACTIVE` |
+| 근무 경험 리뷰 | `review` / `Review` | `targetType = STAFF_RECRUITMENT`, `staffRecruitmentId`, `rating`, `content`, `status = ACTIVE` |
 | 인기도 | `wish` / `Wish` | `staffRecruitmentId` count |
 
 AI용 후보 DTO 예시:
@@ -1093,7 +1094,7 @@ AI용 후보 DTO 예시:
 2. 지역, 근무 기간, 성별, 근무/휴무 일수, 스케줄은 QueryDSL 조건으로 필터링
 3. "숙식 제공", "카페 업무", "바다 근처" 같은 자연어 조건은 `content`, `advantages`, `employeeBenefits`, `job` 문자열 검색으로 1차 대응
 4. "지원 질문 적은 공고"는 `staff_recruitment_question` 개수를 정렬 조건으로 사용할 수 있다
-5. 스텝 공고 리뷰가 추가되면 평균 별점, 리뷰 수, 리뷰 snippet을 신뢰도/근무 만족도 근거로 함께 사용한다
+5. 스텝 공고 리뷰의 평균 별점, 리뷰 수, 리뷰 snippet을 신뢰도/근무 만족도 근거로 함께 사용한다
 
 ### RAG 지식베이스 분리
 
@@ -1540,7 +1541,7 @@ ai/
 | 대상 | 현재/향후 | 설명 |
 |------|-----------|------|
 | 게스트하우스 리뷰 | 현재 | 숙소 경험, 청결, 위치, 소음, 분위기, 체크인 등 |
-| 스텝 공고 리뷰 | 향후 | 근무 강도, 숙소 제공, 교육, 휴무, 소통, 업무 범위 등 |
+| 스텝 공고 리뷰 | 현재 | 근무 강도, 숙소 제공, 교육, 휴무, 소통, 업무 범위 등 |
 
 권장 DB 테이블:
 

@@ -620,6 +620,34 @@ JTS `Point`는 `x=경도`, `y=위도`로 다루므로 저장 시 `Coordinate(lon
 
 ---
 
+## 리뷰 도메인 학습 포인트
+
+게스트하우스 리뷰와 스텝 공고 리뷰는 별도 테이블로 나누지 않고 `review.targetType`과 대상 ID 컬럼으로 구분한다.
+같은 사용자와 같은 대상 조합에는 `ACTIVE` 리뷰 1개만 허용하고, 삭제는 물리 삭제가 아니라 `Review.status = DELETED`로 처리한다.
+
+### 코드에서 확인할 포인트
+
+| 주제 | 코드 |
+|------|------|
+| 리뷰 작성/조회/요약 API | `src/main/java/guesthouse/review/controller/ReviewController.java` |
+| 리뷰 권한/중복/별점 검증 | `src/main/java/guesthouse/review/service/ReviewService.java` |
+| 리뷰 대상/별점 저장 | `src/main/java/guesthouse/review/domain/model/Review.java` |
+| 리뷰 이미지 저장 | `src/main/java/guesthouse/review/domain/model/ReviewImage.java` |
+
+- 별점은 `0.5~5.0` 범위의 `0.5` 단위만 허용한다.
+- DB에는 `decimal(2,1)`로 저장하므로 엔티티는 `double`이 아니라 `BigDecimal`로 둔다.
+- Hibernate `ddl-auto: update` 환경에서 엔티티 타입이 `double`이면 DB 컬럼을 다시 `double`로 바꿀 수 있다. 정밀도가 중요한 값은 엔티티 타입과 컬럼 정의를 함께 맞춘다.
+- 스텝 공고 리뷰는 `ApplicationRecord.status = 합격`인 사용자만 작성 가능하다.
+- 리뷰 요약 응답의 `canWriteReview`는 FE가 버튼을 눌러본 뒤 실패하게 하지 않고, 상세 화면에서 먼저 작성 가능 여부를 보여주기 위한 필드다.
+
+### 직접 해볼 것
+
+- `ReviewService.createStaffRecruitmentReview()`에서 합격자 검증, 중복 검증, 저장 순서를 따라가기
+- `ReviewSummaryResponse.canWriteReview`가 게스트하우스와 스텝 공고에서 다르게 계산되는 이유 설명하기
+- `rating = 4.25` 요청이 왜 거절되어야 하는지 검증 조건으로 설명하기
+
+---
+
 ## 추천 학습 순서
 
 1. Controller → Service → Repository 요청 흐름 읽기
@@ -631,3 +659,4 @@ JTS `Point`는 `x=경도`, `y=위도`로 다루므로 저장 시 `Coordinate(lon
 7. Docker/CI/CD로 운영 반영 흐름 확인
 8. 알림 도메인을 인앱 알림부터 설계하고 푸시로 확장
 9. 채팅 도메인을 REST 저장/조회와 WebSocket 실시간 수신으로 확장
+10. 리뷰 도메인의 대상 확장, 0.5점 검증, 작성권한 요약 응답 이해
