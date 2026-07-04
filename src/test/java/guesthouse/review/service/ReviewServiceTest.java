@@ -55,7 +55,7 @@ class ReviewServiceTest {
     void createStaffRecruitmentReview_savesReviewWhenApplicantIsAccepted() {
         Long staffRecruitmentId = 1L;
         Long userId = 2L;
-        ReviewSaveRequest request = new ReviewSaveRequest(5, "숙소 제공이 좋았어요.", List.of());
+        ReviewSaveRequest request = new ReviewSaveRequest(4.5, "숙소 제공이 좋았어요.", List.of());
 
         when(staffRecruitmentRepository.existsById(staffRecruitmentId)).thenReturn(true);
         when(applicationRecordRepository.existsByStaffRecruitmentIdAndUserIdAndStatus(
@@ -79,7 +79,7 @@ class ReviewServiceTest {
         assertThat(savedReview.getGuestHousePostId()).isNull();
         assertThat(savedReview.getStaffRecruitmentId()).isEqualTo(staffRecruitmentId);
         assertThat(savedReview.getUserId()).isEqualTo(userId);
-        assertThat(savedReview.getRating()).isEqualTo(5);
+        assertThat(savedReview.getRating()).isEqualByComparingTo("4.5");
     }
 
     @Test

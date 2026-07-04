@@ -8,6 +8,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Getter
 @Entity
 @Table(indexes = {
@@ -34,8 +36,8 @@ public class Review extends TimeEntity {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(nullable = false)
-    private int rating;
+    @Column(nullable = false, precision = 2, scale = 1)
+    private BigDecimal rating;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
@@ -44,28 +46,28 @@ public class Review extends TimeEntity {
     @Column(nullable = false)
     private ReviewStatus status;
 
-    public Review(Long guestHousePostId, Long userId, int rating, String content) {
+    public Review(Long guestHousePostId, Long userId, double rating, String content) {
         this.targetType = ReviewTargetType.GUEST_HOUSE_POST;
         this.guestHousePostId = guestHousePostId;
         this.userId = userId;
-        this.rating = rating;
+        this.rating = BigDecimal.valueOf(rating);
         this.content = content;
         this.status = ReviewStatus.ACTIVE;
     }
 
-    public static Review staffRecruitment(Long staffRecruitmentId, Long userId, int rating, String content) {
+    public static Review staffRecruitment(Long staffRecruitmentId, Long userId, double rating, String content) {
         Review review = new Review();
         review.targetType = ReviewTargetType.STAFF_RECRUITMENT;
         review.staffRecruitmentId = staffRecruitmentId;
         review.userId = userId;
-        review.rating = rating;
+        review.rating = BigDecimal.valueOf(rating);
         review.content = content;
         review.status = ReviewStatus.ACTIVE;
         return review;
     }
 
-    public void update(int rating, String content) {
-        this.rating = rating;
+    public void update(double rating, String content) {
+        this.rating = BigDecimal.valueOf(rating);
         this.content = content;
     }
 

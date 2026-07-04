@@ -37,7 +37,7 @@ class GuestHousePostDetailsResponseTest {
                 .amenities(List.of())
                 .parties(List.of())
                 .rooms(List.of())
-                .reviewSummary(new ReviewSummaryResponse(0.0, 0, false))
+                .reviewSummary(new ReviewSummaryResponse(0.0, 0, false, false))
                 .build();
 
         GuestHousePostDetailsResponse response = GuestHousePostDetailsResponse.from(details);

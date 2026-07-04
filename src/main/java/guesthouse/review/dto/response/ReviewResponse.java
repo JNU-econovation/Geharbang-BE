@@ -16,7 +16,7 @@ public record ReviewResponse(
         Long userId,
         String authorName,
         String authorProfileImageUrl,
-        int rating,
+        double rating,
         String content,
         List<String> imageUrls,
         boolean isMine,
@@ -36,7 +36,7 @@ public record ReviewResponse(
                 .userId(review.getUserId())
                 .authorName(authorName)
                 .authorProfileImageUrl(authorProfileImageUrl)
-                .rating(review.getRating())
+                .rating(review.getRating().doubleValue())
                 .content(review.getContent())
                 .imageUrls(imageUrls)
                 .isMine(review.getUserId().equals(requestUserId))

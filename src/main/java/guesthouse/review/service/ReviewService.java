@@ -150,7 +150,9 @@ public class ReviewService {
                 ReviewStatus.ACTIVE
         );
 
-        return new ReviewSummaryResponse(averageRating, reviewCount, hasMyReview);
+        boolean canWriteReview = userId != null && !hasMyReview;
+
+        return new ReviewSummaryResponse(averageRating, reviewCount, hasMyReview, canWriteReview);
     }
 
     @Transactional(readOnly = true)
@@ -162,8 +164,12 @@ public class ReviewService {
                 userId,
                 ReviewStatus.ACTIVE
         );
+        boolean canWriteReview =
+                userId != null &&
+                !hasMyReview &&
+                isAcceptedApplicant(staffRecruitmentId, userId);
 
-        return new ReviewSummaryResponse(averageRating, reviewCount, hasMyReview);
+        return new ReviewSummaryResponse(averageRating, reviewCount, hasMyReview, canWriteReview);
     }
 
     @Transactional
@@ -247,14 +253,17 @@ public class ReviewService {
     }
 
     private void validateAcceptedApplicant(Long staffRecruitmentId, Long userId) {
-        boolean accepted = applicationRecordRepository.existsByStaffRecruitmentIdAndUserIdAndStatus(
+        if (!isAcceptedApplicant(staffRecruitmentId, userId)) {
+            throw new ReviewException(ReviewErrorCode.STAFF_RECRUITMENT_REVIEW_FORBIDDEN);
+        }
+    }
+
+    private boolean isAcceptedApplicant(Long staffRecruitmentId, Long userId) {
+        return applicationRecordRepository.existsByStaffRecruitmentIdAndUserIdAndStatus(
                 staffRecruitmentId,
                 userId,
                 Status.합격
         );
-        if (!accepted) {
-            throw new ReviewException(ReviewErrorCode.STAFF_RECRUITMENT_REVIEW_FORBIDDEN);
-        }
     }
 
     private void validateOwner(Review review, Long userId) {
@@ -267,12 +276,16 @@ public class ReviewService {
         if (request == null) {
             throw new ReviewException(ReviewErrorCode.CONTENT_REQUIRED);
         }
-        if (request.rating() < 1 || request.rating() > 5) {
+        if (request.rating() < 0.5 || request.rating() > 5 || !isHalfPointRating(request.rating())) {
             throw new ReviewException(ReviewErrorCode.INVALID_RATING);
         }
         if (request.content() == null || request.content().isBlank()) {
             throw new ReviewException(ReviewErrorCode.CONTENT_REQUIRED);
         }
+    }
+
+    private boolean isHalfPointRating(double rating) {
+        return Math.abs(rating * 2 - Math.rint(rating * 2)) < 0.000001;
     }
 
     private double round(double value) {
