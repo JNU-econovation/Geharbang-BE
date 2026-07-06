@@ -69,6 +69,17 @@ public class StaffRecruitmentService {
     }
 
     @Transactional(readOnly = true)
+    public List<StaffRecruitmentMapPostDto> getStaffRecruitmentMapPosts() {
+        return staffRecruitmentRepository.findByStatusOrderByIdDesc(Status.ACTIVE)
+                .stream()
+                .map(recruitment -> StaffRecruitmentMapPostDto.of(
+                        recruitment,
+                        getRepresentativeImageUrls(recruitment.getId())
+                ))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public StaffRecruitment getStaffRecruitmentById(Long id) {
         return staffRecruitmentRepository.findById(id)
                 .orElseThrow(() -> new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND));
