@@ -8,6 +8,7 @@ import guesthouse.guestHousePost.dto.RandomGuestHousePostsResponse;
 import guesthouse.guestHousePost.dto.request.ChangeStatusRequest;
 import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
 import guesthouse.guestHousePost.dto.response.GuestHouseCreateResponse;
+import guesthouse.guestHousePost.dto.response.GuestHouseMapPostDto;
 import guesthouse.guestHousePost.dto.response.GuestHousePostDetailsResponse;
 import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostsResponse;
 import guesthouse.guestHousePost.service.GuestHousePostService;
@@ -60,6 +61,13 @@ public class GuestHousePostController {
     @GetMapping("/recommendation")
     public ResponseEntity<RandomGuestHousePostsResponse> random(@RequestParam Region region) {
         RandomGuestHousePostsResponse response = guestHousePostService.getRandomGuestHousePosts(region);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/map")
+    @Operation(summary = "게스트하우스 지도 목록 조회", description = "지도 화면에 표시할 활성 게스트하우스 목록을 조회한다.")
+    public ResponseEntity<List<GuestHouseMapPostDto>> getGuestHouseMapPosts() {
+        List<GuestHouseMapPostDto> response = guestHousePostService.getGuestHouseMapPosts();
         return ResponseEntity.ok(response);
     }
 

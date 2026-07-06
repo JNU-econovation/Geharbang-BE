@@ -6,6 +6,7 @@ import guesthouse.guestHousePost.domain.vo.GuestHouseFilter;
 import guesthouse.guestHousePost.domain.vo.Status;
 import guesthouse.guestHousePost.dto.*;
 import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
+import guesthouse.guestHousePost.dto.response.GuestHouseMapPostDto;
 import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostDto;
 import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostsResponse;
 import guesthouse.guestHousePost.exception.GuestHousePostErrorCode;
@@ -75,6 +76,14 @@ public class GuestHousePostService {
 
     private boolean isGuest(Long userId) {
         return userId == null;
+    }
+
+    @Transactional(readOnly = true)
+    public List<GuestHouseMapPostDto> getGuestHouseMapPosts() {
+        return guestHousePostRepository.findByStatusOrderByIdDesc(Status.ACTIVE)
+                .stream()
+                .map(post -> GuestHouseMapPostDto.of(post, getGuestHousePostImageUrlsByPostId(post.getId())))
+                .toList();
     }
 
     public RandomGuestHousePostsResponse getRandomGuestHousePosts(Region region) {
