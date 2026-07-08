@@ -15,10 +15,11 @@ public record GuestHouseMapPostDto(
         String webSite,
         String instagramId,
         String phoneNumber,
-        String reservationUrl
+        String reservationUrl,
+        Boolean isWished
 ) {
 
-    public static GuestHouseMapPostDto of(GuestHousePost post, List<String> imageUrls) {
+    public static GuestHouseMapPostDto of(GuestHousePost post, List<String> imageUrls, Boolean isWished) {
         Contact contact = post.getContact();
 
         return new GuestHouseMapPostDto(
@@ -31,7 +32,8 @@ public record GuestHouseMapPostDto(
                 contact == null ? "" : contact.getWebSite(),
                 contact == null ? "" : contact.getInstagramId(),
                 contact == null ? "" : contact.getPhoneNumber(),
-                contact == null ? "" : contact.getReservationUrl()
+                contact == null ? "" : contact.getReservationUrl(),
+                isWished
         );
     }
 

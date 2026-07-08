@@ -69,12 +69,13 @@ public class StaffRecruitmentService {
     }
 
     @Transactional(readOnly = true)
-    public List<StaffRecruitmentMapPostDto> getStaffRecruitmentMapPosts() {
+    public List<StaffRecruitmentMapPostDto> getStaffRecruitmentMapPosts(Long userId) {
         return staffRecruitmentRepository.findByStatusOrderByIdDesc(Status.ACTIVE)
                 .stream()
                 .map(recruitment -> StaffRecruitmentMapPostDto.of(
                         recruitment,
-                        getRepresentativeImageUrls(recruitment.getId())
+                        getRepresentativeImageUrls(recruitment.getId()),
+                        isWished(recruitment.getId(), userId)
                 ))
                 .toList();
     }

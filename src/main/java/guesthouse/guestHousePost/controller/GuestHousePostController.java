@@ -66,8 +66,10 @@ public class GuestHousePostController {
 
     @GetMapping("/map")
     @Operation(summary = "게스트하우스 지도 목록 조회", description = "지도 화면에 표시할 활성 게스트하우스 목록을 조회한다.")
-    public ResponseEntity<List<GuestHouseMapPostDto>> getGuestHouseMapPosts() {
-        List<GuestHouseMapPostDto> response = guestHousePostService.getGuestHouseMapPosts();
+    public ResponseEntity<List<GuestHouseMapPostDto>> getGuestHouseMapPosts(
+            @UserId(required = false) Long userId
+    ) {
+        List<GuestHouseMapPostDto> response = guestHousePostService.getGuestHouseMapPosts(userId);
         return ResponseEntity.ok(response);
     }
 

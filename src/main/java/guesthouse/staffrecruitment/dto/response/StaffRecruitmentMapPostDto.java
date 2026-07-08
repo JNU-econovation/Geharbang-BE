@@ -16,12 +16,14 @@ public record StaffRecruitmentMapPostDto(
         String webSite,
         String instagramId,
         String phoneNumber,
-        String reservationUrl
+        String reservationUrl,
+        Boolean isWished
 ) {
 
     public static StaffRecruitmentMapPostDto of(
             StaffRecruitment recruitment,
-            List<String> representativeImageUrls
+            List<String> representativeImageUrls,
+            Boolean isWished
     ) {
         Contact contact = recruitment.getContact();
 
@@ -36,7 +38,8 @@ public record StaffRecruitmentMapPostDto(
                 contact == null ? "" : contact.getWebSite(),
                 contact == null ? "" : contact.getInstagramId(),
                 contact == null ? "" : contact.getPhoneNumber(),
-                contact == null ? "" : contact.getReservationUrl()
+                contact == null ? "" : contact.getReservationUrl(),
+                isWished
         );
     }
 

@@ -79,10 +79,14 @@ public class GuestHousePostService {
     }
 
     @Transactional(readOnly = true)
-    public List<GuestHouseMapPostDto> getGuestHouseMapPosts() {
+    public List<GuestHouseMapPostDto> getGuestHouseMapPosts(Long userId) {
         return guestHousePostRepository.findByStatusOrderByIdDesc(Status.ACTIVE)
                 .stream()
-                .map(post -> GuestHouseMapPostDto.of(post, getGuestHousePostImageUrlsByPostId(post.getId())))
+                .map(post -> GuestHouseMapPostDto.of(
+                        post,
+                        getGuestHousePostImageUrlsByPostId(post.getId()),
+                        isWished(post.getId(), userId)
+                ))
                 .toList();
     }
 

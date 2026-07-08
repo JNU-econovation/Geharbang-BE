@@ -73,8 +73,10 @@ public class StaffRecruitmentController {
 
     @GetMapping("/map")
     @Operation(summary = "스텝 공고 지도 목록 조회", description = "지도 화면에 표시할 활성 스텝 구인 공고 목록을 조회한다.")
-    public ResponseEntity<List<StaffRecruitmentMapPostDto>> getStaffRecruitmentMapPosts() {
-        List<StaffRecruitmentMapPostDto> response = staffRecruitmentService.getStaffRecruitmentMapPosts();
+    public ResponseEntity<List<StaffRecruitmentMapPostDto>> getStaffRecruitmentMapPosts(
+            @UserId(required = false) Long userId
+    ) {
+        List<StaffRecruitmentMapPostDto> response = staffRecruitmentService.getStaffRecruitmentMapPosts(userId);
         return ResponseEntity.ok(response);
     }
 
