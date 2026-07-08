@@ -36,7 +36,6 @@ public record StaffRecruitmentDetailsDTO(
         String instagramId,
         String phoneNumber,
         String webSite,
-        String reservationUrl,
         Boolean isWished,
         String ownerMessage
 ) {
@@ -69,7 +68,6 @@ public record StaffRecruitmentDetailsDTO(
                 .instagramId(recruitment.getContact().getInstagramId())
                 .phoneNumber(recruitment.getContact().getPhoneNumber())
                 .webSite(recruitment.getContact().getWebSite())
-                .reservationUrl(recruitment.getContact().getReservationUrl())
                 .isWished(isWished)
                 .ownerMessage(recruitment.getOwnerMessage())
                 .build();

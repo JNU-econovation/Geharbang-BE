@@ -48,8 +48,7 @@ public record StaffRecruitmentDetailsResponse(
                 .contact(new Contact(
                         details.instagramId(),
                         details.phoneNumber(),
-                        details.webSite(),
-                        details.reservationUrl()
+                        details.webSite()
                 ))
                 .isWished(details.isWished())
                 .ownerMessage(details.ownerMessage())
@@ -148,8 +147,7 @@ public record StaffRecruitmentDetailsResponse(
     public static record Contact(
             String instagramId,
             String phoneNumber,
-            String webSite,
-            String reservationUrl
+            String webSite
     ) {
     }
 }

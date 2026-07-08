@@ -15,20 +15,10 @@ public class Contact {
     private String instagramId;
     private String phoneNumber;
     private String webSite;
-    private String reservationUrl;
 
     public Contact(String instagramId, String phoneNumber, String webSite) {
-        this(instagramId, phoneNumber, webSite, "");
-    }
-
-    public Contact(String instagramId, String phoneNumber, String webSite, String reservationUrl) {
         this.instagramId = instagramId;
         this.phoneNumber = phoneNumber;
         this.webSite = webSite;
-        this.reservationUrl = reservationUrl;
-    }
-
-    public String getReservationUrl() {
-        return reservationUrl == null ? "" : reservationUrl;
     }
 }

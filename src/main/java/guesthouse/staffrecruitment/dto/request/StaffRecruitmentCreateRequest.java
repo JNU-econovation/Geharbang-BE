@@ -134,9 +134,7 @@ public record StaffRecruitmentCreateRequest(
 
             String instagramId,
 
-            String webSite,
-
-            String reservationUrl
+            String webSite
     ) {
     }
 
