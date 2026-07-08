@@ -38,3 +38,7 @@ out/
 
 ###추가###
 .env
+
+### Local docs ###
+ARCHITECTURE.md
+STUDY_GUIDE.md
