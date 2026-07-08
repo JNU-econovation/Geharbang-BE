@@ -14,7 +14,8 @@ public record GuestHouseMapPostDto(
         List<String> imageUrls,
         String webSite,
         String instagramId,
-        String phoneNumber
+        String phoneNumber,
+        String reservationUrl
 ) {
 
     public static GuestHouseMapPostDto of(GuestHousePost post, List<String> imageUrls) {
@@ -29,7 +30,8 @@ public record GuestHouseMapPostDto(
                 imageUrls,
                 contact == null ? "" : contact.getWebSite(),
                 contact == null ? "" : contact.getInstagramId(),
-                contact == null ? "" : contact.getPhoneNumber()
+                contact == null ? "" : contact.getPhoneNumber(),
+                contact == null ? "" : contact.getReservationUrl()
         );
     }
 

@@ -159,7 +159,10 @@ public record GuestHouseCreateRequest (
             String instagramId,
 
             @Length(max = 100)
-            String webSite
+            String webSite,
+
+            @Length(max = 100)
+            String reservationUrl
     ) {
     }
 }

@@ -45,7 +45,12 @@ public record StaffRecruitmentDetailsResponse(
                 .workingInformation(WorkingInformation.from(details.startDate(), details.isStartDateNegotiable(), details.workingPeriod(), details.jobs()))
                 .introduction(new Introduction(details.content(), details.contentImages()))
                 .feature(Feature.from(details.gender(), details.advantages(), details.employeeBenefits()))
-                .contact(new Contact(details.instagramId(), details.phoneNumber(), details.webSite()))
+                .contact(new Contact(
+                        details.instagramId(),
+                        details.phoneNumber(),
+                        details.webSite(),
+                        details.reservationUrl()
+                ))
                 .isWished(details.isWished())
                 .ownerMessage(details.ownerMessage())
                 .build();
@@ -143,7 +148,8 @@ public record StaffRecruitmentDetailsResponse(
     public static record Contact(
             String instagramId,
             String phoneNumber,
-            String webSite
+            String webSite,
+            String reservationUrl
     ) {
     }
 }

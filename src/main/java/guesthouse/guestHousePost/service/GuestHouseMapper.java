@@ -42,13 +42,14 @@ public class GuestHouseMapper {
 
     public static Contact createContact(GuestHouseCreateRequest.Contact contact) {
         if (contact == null) {
-            return new Contact("", "", "");
+            return new Contact("", "", "", "");
         }
 
         return new Contact(
                 Objects.requireNonNullElse(contact.instagramId(), ""),
                 Objects.requireNonNullElse(contact.phoneNumber(), ""),
-                Objects.requireNonNullElse(contact.webSite(), "")
+                Objects.requireNonNullElse(contact.webSite(), ""),
+                Objects.requireNonNullElse(contact.reservationUrl(), "")
         );
     }
 }
