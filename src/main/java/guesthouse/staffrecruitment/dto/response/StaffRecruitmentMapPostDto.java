@@ -16,7 +16,6 @@ public record StaffRecruitmentMapPostDto(
         String webSite,
         String instagramId,
         String phoneNumber,
-        String reservationUrl,
         Boolean isWished
 ) {
 
@@ -38,7 +37,6 @@ public record StaffRecruitmentMapPostDto(
                 contact == null ? "" : contact.getWebSite(),
                 contact == null ? "" : contact.getInstagramId(),
                 contact == null ? "" : contact.getPhoneNumber(),
-                contact == null ? "" : contact.getReservationUrl(),
                 isWished
         );
     }
