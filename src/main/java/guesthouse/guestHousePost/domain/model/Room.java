@@ -1,6 +1,5 @@
 package guesthouse.guestHousePost.domain.model;
 
-import guesthouse.guestHousePost.domain.vo.RoomHeadCount;
 import guesthouse.guestHousePost.domain.vo.RoomType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,9 +27,8 @@ public class Room {
     @Column(nullable = false)
     private RoomType type;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private RoomHeadCount headCount;
+    private Integer headCount;
 
     @Column(nullable = false)
     private LocalTime checkInTime;

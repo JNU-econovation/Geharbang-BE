@@ -1,7 +1,6 @@
 package guesthouse.guestHousePost.dto;
 
 import guesthouse.guestHousePost.domain.model.Room;
-import guesthouse.guestHousePost.domain.vo.RoomHeadCount;
 import guesthouse.guestHousePost.domain.vo.RoomType;
 import lombok.Builder;
 
@@ -13,7 +12,7 @@ public record RoomWithImageUrlDTO(
         Long guestHousePostId,
         String name,
         RoomType type,
-        RoomHeadCount headCount,
+        Integer headCount,
         LocalTime checkInTime,
         LocalTime checkOutTime,
         Integer pricePerNight,

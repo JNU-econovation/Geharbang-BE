@@ -72,7 +72,17 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
         if (headCountTypes == null || headCountTypes.isEmpty()) {
             return null;
         }
-        return room.headCount.in(headCountTypes);
+        return Expressions.anyOf(headCountTypes.stream()
+                .map(this::headCountTypeEq)
+                .toArray(BooleanExpression[]::new));
+    }
+
+    private BooleanExpression headCountTypeEq(RoomHeadCount headCountType) {
+        return switch (headCountType) {
+            case _1인실 -> room.headCount.eq(1);
+            case _2인실 -> room.headCount.eq(2);
+            case _3인이상 -> room.headCount.goe(3);
+        };
     }
 
     private BooleanExpression priceBetween(Integer lowestRoomPrice, Integer highestRoomPrice) {
@@ -153,4 +163,3 @@ public class GuestHousePostRepositoryImpl implements GuestHousePostCustomReposit
     }
 
 }
-

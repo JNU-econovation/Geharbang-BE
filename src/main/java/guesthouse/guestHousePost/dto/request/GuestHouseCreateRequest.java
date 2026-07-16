@@ -131,7 +131,9 @@ public record GuestHouseCreateRequest (
             RoomType type,
 
             @NotNull
-            RoomHeadCount headCountType,
+            @Min(1)
+            @Max(99)
+            Integer headCount,
 
             @NotNull
             LocalTime checkInTime,

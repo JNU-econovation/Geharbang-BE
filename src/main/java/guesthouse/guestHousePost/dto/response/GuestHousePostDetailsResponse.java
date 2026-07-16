@@ -74,7 +74,7 @@ public record GuestHousePostDetailsResponse (
     private record Room (
             String name,
             RoomType type,
-            RoomHeadCount headCountType,
+            Integer headCount,
             LocalTime checkInTime,
             LocalTime checkOutTime,
             int pricePerNight,

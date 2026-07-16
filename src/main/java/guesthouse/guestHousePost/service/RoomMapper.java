@@ -12,7 +12,7 @@ public class RoomMapper {
                 .guestHousePostId(guestHousePostId)
                 .name(room.name())
                 .type(room.type())
-                .headCount(room.headCountType())
+                .headCount(room.headCount())
                 .checkInTime(room.checkInTime())
                 .checkOutTime(room.checkOutTime())
                 .pricePerNight(room.pricePerNight())
