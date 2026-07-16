@@ -169,13 +169,13 @@ FROM seed_seq;
 INSERT INTO room (
     guest_house_post_id, name, type, head_count, check_in_time, check_out_time, price_per_night
 )
-SELECT n, '여성 도미토리', '여성전용', '_3인이상', '16:00:00', '11:00:00',
+SELECT n, '여성 도미토리', '여성전용', 4, '16:00:00', '11:00:00',
     26000 + MOD(n, 8) * 1000
 FROM seed_seq;
 INSERT INTO room (
     guest_house_post_id, name, type, head_count, check_in_time, check_out_time, price_per_night
 )
-SELECT n, '남성 도미토리', '남성전용', '_3인이상', '16:00:00', '11:00:00',
+SELECT n, '남성 도미토리', '남성전용', 4, '16:00:00', '11:00:00',
     25000 + MOD(n, 7) * 1000
 FROM seed_seq;
 
