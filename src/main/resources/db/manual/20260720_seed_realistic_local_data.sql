@@ -151,10 +151,10 @@ SELECT n,
 FROM seed_seq;
 
 INSERT INTO mood (guest_house_post_id, value)
-SELECT n, ELT(1 + MOD(n - 1, 8), '조용한', '사교적', '힐링', '사색', '활발한', '잔잔한', '감성', '휴식')
+SELECT n, ELT(1 + MOD(n - 1, 11), '바닷가', '동물', '자연_숲', '대규모파티', '소규모파티', '조용한', '활발한', '감성_느좋', '파티_X', '솔로', '한달살이')
 FROM seed_seq;
 INSERT INTO mood (guest_house_post_id, value)
-SELECT n, ELT(1 + MOD(n + 2, 8), '조용한', '사교적', '힐링', '사색', '활발한', '잔잔한', '감성', '휴식')
+SELECT n, ELT(1 + MOD(n + 4, 11), '바닷가', '동물', '자연_숲', '대규모파티', '소규모파티', '조용한', '활발한', '감성_느좋', '파티_X', '솔로', '한달살이')
 FROM seed_seq;
 
 INSERT INTO amenity (guest_house_post_id, value)
