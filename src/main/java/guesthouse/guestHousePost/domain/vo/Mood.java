@@ -1,12 +1,15 @@
 package guesthouse.guestHousePost.domain.vo;
 
 public enum Mood {
+    바닷가,
+    동물,
+    자연_숲,
+    대규모파티,
+    소규모파티,
     조용한,
-    사교적,
-    힐링,
-    사색,
     활발한,
-    잔잔한,
-    감성,
-    휴식
+    감성_느좋,
+    파티_X,
+    솔로,
+    한달살이
 }
