@@ -49,3 +49,11 @@ image:
 certificate:
   directory:
     path: /home/test/test/test
+
+naver:
+  map:
+    client-id: ""
+    client-secret: ""
+  local:
+    client-id: ""
+    client-secret: ""

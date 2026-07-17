@@ -36,16 +36,16 @@ public class NaverMapService {
 
     private final WebClient.Builder webClientBuilder;
 
-    @Value("${naver.map.client-id}")
+    @Value("${naver.map.client-id:}")
     private String mapClientId;
 
-    @Value("${naver.map.client-secret}")
+    @Value("${naver.map.client-secret:}")
     private String mapClientSecret;
 
-    @Value("${naver.local.client-id}")
+    @Value("${naver.local.client-id:}")
     private String localClientId;
 
-    @Value("${naver.local.client-secret}")
+    @Value("${naver.local.client-secret:}")
     private String localClientSecret;
 
     public List<NaverAddressResponse> localSearch(String query) {
