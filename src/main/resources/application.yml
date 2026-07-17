@@ -36,3 +36,11 @@ image:
 certificate:
   directory:
     path: ${CERTIFICATE_DIRECTORY_PATH}
+
+naver:
+  map:
+    client-id: ${NAVER_MAP_CLIENT_ID:}
+    client-secret: ${NAVER_MAP_CLIENT_SECRET:}
+  local:
+    client-id: ${NAVER_LOCAL_CLIENT_ID:}
+    client-secret: ${NAVER_LOCAL_CLIENT_SECRET:}
