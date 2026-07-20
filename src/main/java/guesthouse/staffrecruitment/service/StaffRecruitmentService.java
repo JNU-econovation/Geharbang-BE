@@ -1,5 +1,8 @@
 package guesthouse.staffrecruitment.service;
 
+import guesthouse.ai.AiIndexDomain;
+import guesthouse.ai.AiIndexSyncAction;
+import guesthouse.ai.AiIndexSyncEvent;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitment;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentImage;
 import guesthouse.staffrecruitment.domain.model.StaffRecruitmentJob;
@@ -26,6 +29,7 @@ import guesthouse.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +47,7 @@ public class StaffRecruitmentService {
     private final StaffRecruitmentQuestionsRepository staffRecruitmentQuestionsRepository;
     private final UserService userService;
     private final ReviewService reviewService;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     @Transactional
@@ -55,6 +60,43 @@ public class StaffRecruitmentService {
 
         recruitment.plusViewCount();
         return StaffRecruitmentDetailsDTO.from(recruitment, jobs, representativeImages, contentImages, isWished);
+    }
+
+    @Transactional(readOnly = true)
+    public StaffRecruitmentAiDataResponse getActiveRecruitmentsForAi() {
+        List<StaffRecruitmentAiDataResponse.Item> items = staffRecruitmentRepository
+                .findByStatusOrderByIdDesc(Status.ACTIVE)
+                .stream()
+                .map(recruitment -> new StaffRecruitmentAiDataResponse.Item(
+                        recruitment.getId(),
+                        StaffRecruitmentDetailsResponse.from(buildDetails(recruitment, false))
+                ))
+                .toList();
+
+        return new StaffRecruitmentAiDataResponse(items);
+    }
+
+    @Transactional(readOnly = true)
+    public StaffRecruitmentAiDataResponse.Item getActiveRecruitmentForAi(Long id) {
+        StaffRecruitment recruitment = getStaffRecruitmentById(id);
+        if (recruitment.getStatus() != Status.ACTIVE) {
+            throw new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND);
+        }
+        return new StaffRecruitmentAiDataResponse.Item(
+                recruitment.getId(),
+                StaffRecruitmentDetailsResponse.from(buildDetails(recruitment, false))
+        );
+    }
+
+    private StaffRecruitmentDetailsDTO buildDetails(StaffRecruitment recruitment, boolean isWished) {
+        Long id = recruitment.getId();
+        return StaffRecruitmentDetailsDTO.from(
+                recruitment,
+                getJobsByRecruitmentId(id),
+                getRepresentativeImageUrls(id),
+                getContentImageUrls(id),
+                isWished
+        );
     }
 
     private Boolean isWished(Long staffRecruitmentId, Long userId) {
@@ -188,6 +230,7 @@ public class StaffRecruitmentService {
 
         List<StaffRecruitmentImage> images = StaffRecruitmentImageMapper.from(request, staffRecruitment.getId());
         staffRecruitmentImageRepository.saveAll(images);
+        publishIndexEvent(staffRecruitment.getId(), AiIndexSyncAction.UPSERT);
 
         return staffRecruitment.getId();
     }
@@ -226,6 +269,7 @@ public class StaffRecruitmentService {
         staffRecruitmentJobRepository.saveAll(StaffRecruitmentJobMapper.from(request, staffRecruitmentId));
         staffRecruitmentImageRepository.saveAll(StaffRecruitmentImageMapper.from(request, staffRecruitmentId));
         staffRecruitmentQuestionsRepository.saveAll(StaffRecruitmentQuestionMapper.from(request, staffRecruitmentId));
+        publishIndexEvent(staffRecruitmentId, AiIndexSyncAction.UPSERT);
     }
 
     public OwnerStaffRecruitmentPostsResponse getOwnStaffRecruitmentPosts(Long userId) {
@@ -247,6 +291,10 @@ public class StaffRecruitmentService {
             throw new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND);
 
         staffRecruitment.changeStatus(status);
+        publishIndexEvent(
+                staffRecruitmentId,
+                status == Status.ACTIVE ? AiIndexSyncAction.UPSERT : AiIndexSyncAction.DELETE
+        );
     }
 
     public boolean existsByOwnerIdAndId(Long userId, Long staffRecruitmentId) {
@@ -263,5 +311,10 @@ public class StaffRecruitmentService {
         staffRecruitmentQuestionsRepository.deleteByStaffRecruitmentId(staffRecruitmentId);
         staffRecruitmentImageRepository.deleteByStaffRecruitmentId(staffRecruitmentId);
         staffRecruitmentJobRepository.deleteByStaffRecruitmentId(staffRecruitmentId);
+        publishIndexEvent(staffRecruitmentId, AiIndexSyncAction.DELETE);
+    }
+
+    private void publishIndexEvent(Long id, AiIndexSyncAction action) {
+        eventPublisher.publishEvent(new AiIndexSyncEvent(AiIndexDomain.STAFF_RECRUITMENT, id, action));
     }
 }

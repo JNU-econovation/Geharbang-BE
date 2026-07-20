@@ -47,3 +47,9 @@ naver:
 
 review-ai:
   base-url: ${REVIEW_AI_BASE_URL:http://localhost:8000}
+
+ai:
+  data-key: ${AI_DATA_KEY:}
+
+geharbang-ai:
+  base-url: ${GEHARBANG_AI_BASE_URL:http://localhost:8001}

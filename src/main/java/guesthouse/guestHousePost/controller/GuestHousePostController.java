@@ -8,6 +8,7 @@ import guesthouse.guestHousePost.dto.RandomGuestHousePostsResponse;
 import guesthouse.guestHousePost.dto.request.ChangeStatusRequest;
 import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
 import guesthouse.guestHousePost.dto.response.GuestHouseCreateResponse;
+import guesthouse.guestHousePost.dto.response.GuestHouseAiDataResponse;
 import guesthouse.guestHousePost.dto.response.GuestHouseMapPostDto;
 import guesthouse.guestHousePost.dto.response.GuestHousePostDetailsResponse;
 import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostsResponse;
@@ -19,7 +20,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 import java.util.List;
 
@@ -30,6 +37,36 @@ import java.util.List;
 public class GuestHousePostController {
 
     private final GuestHousePostService guestHousePostService;
+
+    @Value("${ai.data-key:}")
+    private String aiDataKey;
+
+    @GetMapping("/internal/ai-data")
+    @Operation(summary = "AI용 활성 게스트하우스 조회", description = "RAG 인덱싱을 위한 활성 숙소 상세 정보를 반환한다.")
+    public ResponseEntity<GuestHouseAiDataResponse> getAiData(
+            @RequestHeader("X-AI-Data-Key") String requestKey
+    ) {
+        validateAiDataKey(requestKey);
+        return ResponseEntity.ok(guestHousePostService.getActiveGuestHousesForAi());
+    }
+
+    @GetMapping("/internal/ai-data/{id}")
+    public ResponseEntity<GuestHouseAiDataResponse.Item> getAiDataItem(
+            @PathVariable Long id,
+            @RequestHeader("X-AI-Data-Key") String requestKey
+    ) {
+        validateAiDataKey(requestKey);
+        return ResponseEntity.ok(guestHousePostService.getActiveGuestHouseForAi(id));
+    }
+
+    private void validateAiDataKey(String requestKey) {
+        if (aiDataKey.isBlank() || !MessageDigest.isEqual(
+                aiDataKey.getBytes(StandardCharsets.UTF_8),
+                requestKey.getBytes(StandardCharsets.UTF_8)
+        )) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid AI data key");
+        }
+    }
 
     @GetMapping
     public ResponseEntity<GuestHousePostsResponse> getPosts(

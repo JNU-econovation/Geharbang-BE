@@ -1,5 +1,8 @@
 package guesthouse.guestHousePost.service;
 
+import guesthouse.ai.AiIndexDomain;
+import guesthouse.ai.AiIndexSyncAction;
+import guesthouse.ai.AiIndexSyncEvent;
 import guesthouse.common.exception.GuestHouseException;
 import guesthouse.guestHousePost.domain.model.*;
 import guesthouse.guestHousePost.domain.vo.GuestHouseFilter;
@@ -7,6 +10,8 @@ import guesthouse.guestHousePost.domain.vo.Status;
 import guesthouse.guestHousePost.dto.*;
 import guesthouse.guestHousePost.dto.request.GuestHouseCreateRequest;
 import guesthouse.guestHousePost.dto.response.GuestHouseMapPostDto;
+import guesthouse.guestHousePost.dto.response.GuestHouseAiDataResponse;
+import guesthouse.guestHousePost.dto.response.GuestHousePostDetailsResponse;
 import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostDto;
 import guesthouse.guestHousePost.dto.response.OwnerGuestHousePostsResponse;
 import guesthouse.guestHousePost.exception.GuestHousePostErrorCode;
@@ -23,6 +28,7 @@ import guesthouse.wish.service.WishService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +50,7 @@ public class GuestHousePostService {
     private final WishService wishService;
     private final UserService userService;
     private final ReviewService reviewService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public GuestHousePostsResponse getGuestHousePosts(Long userId, int pageNumber, GuestHouseFilter filter) {
@@ -90,6 +97,44 @@ public class GuestHousePostService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public GuestHouseAiDataResponse getActiveGuestHousesForAi() {
+        List<GuestHouseAiDataResponse.Item> items = guestHousePostRepository
+                .findByStatusOrderByIdDesc(Status.ACTIVE)
+                .stream()
+                .map(post -> new GuestHouseAiDataResponse.Item(
+                        post.getId(),
+                        GuestHousePostDetailsResponse.from(buildDetailsForAi(post))
+                ))
+                .toList();
+        return new GuestHouseAiDataResponse(items);
+    }
+
+    @Transactional(readOnly = true)
+    public GuestHouseAiDataResponse.Item getActiveGuestHouseForAi(Long id) {
+        GuestHousePost post = getGuestHousePostById(id);
+        if (post.getStatus() != Status.ACTIVE) {
+            throw new GuestHousePostException(GuestHousePostErrorCode.NOT_FOUND);
+        }
+        return new GuestHouseAiDataResponse.Item(
+                post.getId(),
+                GuestHousePostDetailsResponse.from(buildDetailsForAi(post))
+        );
+    }
+
+    private GuestHousePostDetailsDTO buildDetailsForAi(GuestHousePost post) {
+        Long id = post.getId();
+        return GuestHousePostDetailsDTO.from(
+                post,
+                getGuestHousePostImageUrlsByPostId(id),
+                getAmenitiesByPostId(id),
+                getPartiesWithImageUrlByPostId(id),
+                getRoomsWithImageUrlByPostId(id),
+                false,
+                new ReviewSummaryResponse(0.0, 0L, false, false)
+        );
+    }
+
     public RandomGuestHousePostsResponse getRandomGuestHousePosts(Region region) {
         List<GuestHousePost> guestHousePosts = guestHousePostRepository.findRandom(10, region);
         List<RandomGuestHousePostDto> dtos = guestHousePosts.stream()
@@ -118,6 +163,7 @@ public class GuestHousePostService {
 
         saveParties(request.parties(), postId);
         saveRooms(request.rooms(), postId);
+        publishIndexEvent(postId, AiIndexSyncAction.UPSERT);
 
         return postId;
     }
@@ -173,6 +219,7 @@ public class GuestHousePostService {
         amenityRepository.saveAll(AmenityMapper.toAmenities(request.amenities(), guestHousePostId));
         saveParties(request.parties(), guestHousePostId);
         saveRooms(request.rooms(), guestHousePostId);
+        publishIndexEvent(guestHousePostId, AiIndexSyncAction.UPSERT);
     }
 
     @Transactional(readOnly = true)
@@ -275,6 +322,10 @@ public class GuestHousePostService {
             throw new GuestHousePostException(GuestHousePostErrorCode.NOT_FOUND);
 
         guestHousePost.changeStatus(status);
+        publishIndexEvent(
+                guestHousePostId,
+                status == Status.ACTIVE ? AiIndexSyncAction.UPSERT : AiIndexSyncAction.DELETE
+        );
     }
 
     public boolean existsByOwnerIdAndId(Long userId, Long guestHousePostId) {
@@ -292,6 +343,11 @@ public class GuestHousePostService {
         guestHousePostImageRepository.deleteByGuestHousePostId(guestHousePostId);
         reviewService.deleteAllByGuestHousePostId(guestHousePostId);
         guestHousePostRepository.deleteById(guestHousePostId);
+        publishIndexEvent(guestHousePostId, AiIndexSyncAction.DELETE);
+    }
+
+    private void publishIndexEvent(Long id, AiIndexSyncAction action) {
+        eventPublisher.publishEvent(new AiIndexSyncEvent(AiIndexDomain.GUESTHOUSE, id, action));
     }
 
     private void deleteParties(Long guestHousePostId) {

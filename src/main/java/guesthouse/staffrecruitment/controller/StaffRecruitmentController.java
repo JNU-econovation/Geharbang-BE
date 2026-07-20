@@ -13,7 +13,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 import java.util.List;
 
@@ -24,6 +30,36 @@ import java.util.List;
 public class StaffRecruitmentController {
 
     private final StaffRecruitmentService staffRecruitmentService;
+
+    @Value("${ai.data-key:}")
+    private String aiDataKey;
+
+    @GetMapping("/internal/ai-data")
+    @Operation(summary = "AI용 활성 스텝 공고 조회", description = "RAG 인덱싱을 위해 활성 공고 상세를 조회수 증가 없이 반환한다.")
+    public ResponseEntity<StaffRecruitmentAiDataResponse> getAiData(
+            @RequestHeader("X-AI-Data-Key") String requestKey
+    ) {
+        validateAiDataKey(requestKey);
+        return ResponseEntity.ok(staffRecruitmentService.getActiveRecruitmentsForAi());
+    }
+
+    @GetMapping("/internal/ai-data/{id}")
+    public ResponseEntity<StaffRecruitmentAiDataResponse.Item> getAiDataItem(
+            @PathVariable Long id,
+            @RequestHeader("X-AI-Data-Key") String requestKey
+    ) {
+        validateAiDataKey(requestKey);
+        return ResponseEntity.ok(staffRecruitmentService.getActiveRecruitmentForAi(id));
+    }
+
+    private void validateAiDataKey(String requestKey) {
+        if (aiDataKey.isBlank() || !MessageDigest.isEqual(
+                aiDataKey.getBytes(StandardCharsets.UTF_8),
+                requestKey.getBytes(StandardCharsets.UTF_8)
+        )) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid AI data key");
+        }
+    }
 
     @GetMapping("/{id}/details")
     public ResponseEntity<StaffRecruitmentDetailsResponse> getDetails(
