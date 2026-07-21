@@ -15,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -56,11 +57,7 @@ public class NaverMapService {
 
         JsonNode body = webClientBuilder.build()
                 .get()
-                .uri(UriComponentsBuilder.fromUriString(NAVER_LOCAL_SEARCH_URL)
-                        .queryParam("query", query)
-                        .queryParam("display", 5)
-                        .build()
-                        .toUri())
+                .uri(buildLocalSearchUri(query))
                 .header("X-Naver-Client-Id", localClientId)
                 .header("X-Naver-Client-Secret", localClientSecret)
                 .retrieve()
@@ -101,11 +98,7 @@ public class NaverMapService {
 
         return webClientBuilder.build()
                 .get()
-                .uri(UriComponentsBuilder.fromUriString(NAVER_GEOCODE_URL)
-                        .queryParam("query", query)
-                        .queryParam("count", 5)
-                        .build()
-                        .toUri())
+                .uri(buildGeocodeUri(query))
                 .headers(this::setMapHeaders)
                 .retrieve()
                 .bodyToMono(JsonNode.class)
@@ -122,12 +115,7 @@ public class NaverMapService {
 
         JsonNode body = webClientBuilder.build()
                 .get()
-                .uri(UriComponentsBuilder.fromUriString(NAVER_REVERSE_GEOCODE_URL)
-                        .queryParam("coords", lng + "," + lat)
-                        .queryParam("output", "json")
-                        .queryParam("orders", "roadaddr,addr")
-                        .build()
-                        .toUri())
+                .uri(buildReverseGeocodeUri(lat, lng))
                 .headers(this::setMapHeaders)
                 .retrieve()
                 .bodyToMono(JsonNode.class)
@@ -160,6 +148,34 @@ public class NaverMapService {
     private void setMapHeaders(HttpHeaders headers) {
         headers.set("X-NCP-APIGW-API-KEY-ID", mapClientId);
         headers.set("X-NCP-APIGW-API-KEY", mapClientSecret);
+    }
+
+    static URI buildLocalSearchUri(String query) {
+        return UriComponentsBuilder.fromUriString(NAVER_LOCAL_SEARCH_URL)
+                .queryParam("query", query)
+                .queryParam("display", 5)
+                .encode()
+                .build()
+                .toUri();
+    }
+
+    static URI buildGeocodeUri(String query) {
+        return UriComponentsBuilder.fromUriString(NAVER_GEOCODE_URL)
+                .queryParam("query", query)
+                .queryParam("count", 5)
+                .encode()
+                .build()
+                .toUri();
+    }
+
+    static URI buildReverseGeocodeUri(Double lat, Double lng) {
+        return UriComponentsBuilder.fromUriString(NAVER_REVERSE_GEOCODE_URL)
+                .queryParam("coords", lng + "," + lat)
+                .queryParam("output", "json")
+                .queryParam("orders", "roadaddr,addr")
+                .encode()
+                .build()
+                .toUri();
     }
 
     private Mono<NaverAddressResponse> toLocalSearchResult(JsonNode item) {
