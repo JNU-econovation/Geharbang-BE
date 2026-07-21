@@ -9,6 +9,7 @@ import java.util.List;
 public record RandomStaffRecruitmentPostDto(
         Long id,
         String name,
+        String address,
         List<String> tags,
         String imageUrl
 ) {
@@ -17,9 +18,17 @@ public record RandomStaffRecruitmentPostDto(
         return new RandomStaffRecruitmentPostDto(
                 staffRecruitment.getId(),
                 staffRecruitment.getGuestHouseName(),
+                getAddress(staffRecruitment.getRoadNameAddress(), staffRecruitment.getLotNumberAddress()),
                 List.of(staffRecruitment.getWorkingPeriod().name()),
                 imageUrl
         );
+    }
+
+    private static String getAddress(String roadNameAddress, String lotNumberAddress) {
+        if (roadNameAddress != null && !roadNameAddress.isBlank()) {
+            return roadNameAddress;
+        }
+        return lotNumberAddress;
     }
 
 }
