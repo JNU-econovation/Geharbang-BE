@@ -31,6 +31,12 @@ public class ReviewAnalysisClient {
     private String reviewAiBaseUrl;
 
     public Mono<Map<String, List<Long>>> categorize(ReviewAiCategorizeRequest request) {
+        return categorizeStrict(request)
+                .onErrorResume(this::handleCategorizeError)
+                .defaultIfEmpty(Map.of());
+    }
+
+    public Mono<Map<String, List<Long>>> categorizeStrict(ReviewAiCategorizeRequest request) {
         return webClientBuilder.baseUrl(reviewAiBaseUrl)
                 .build()
                 .post()
@@ -39,15 +45,16 @@ public class ReviewAnalysisClient {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Map<String, List<Long>>>() {
                 })
-                .timeout(REVIEW_AI_TIMEOUT)
-                .onErrorResume(WebClientResponseException.class, this::handleCategorizeError)
-                .onErrorResume(WebClientRequestException.class, this::handleCategorizeError)
-                .onErrorResume(IllegalStateException.class, this::handleCategorizeError)
-                .onErrorResume(this::handleCategorizeError)
-                .defaultIfEmpty(Map.of());
+                .timeout(REVIEW_AI_TIMEOUT);
     }
 
     public Mono<List<ReviewAiKeywordResponse>> keywords(ReviewAiCategorizeRequest request) {
+        return keywordsStrict(request)
+                .onErrorResume(this::handleKeywordsError)
+                .defaultIfEmpty(List.of());
+    }
+
+    public Mono<List<ReviewAiKeywordResponse>> keywordsStrict(ReviewAiCategorizeRequest request) {
         return webClientBuilder.baseUrl(reviewAiBaseUrl)
                 .build()
                 .post()
@@ -56,30 +63,29 @@ public class ReviewAnalysisClient {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<ReviewAiKeywordResponse>>() {
                 })
-                .timeout(REVIEW_AI_TIMEOUT)
-                .onErrorResume(WebClientResponseException.class, this::handleKeywordsError)
-                .onErrorResume(WebClientRequestException.class, this::handleKeywordsError)
-                .onErrorResume(IllegalStateException.class, this::handleKeywordsError)
-                .onErrorResume(this::handleKeywordsError)
-                .defaultIfEmpty(List.of());
+                .timeout(REVIEW_AI_TIMEOUT);
     }
 
     public String report(ReviewAiReportRequest request) {
         try {
-            ReviewAiReportResponse response = webClientBuilder.baseUrl(reviewAiBaseUrl)
-                    .build()
-                    .post()
-                    .uri("/report")
-                    .bodyValue(request)
-                    .retrieve()
-                    .bodyToMono(ReviewAiReportResponse.class)
-                    .block(REVIEW_AI_TIMEOUT);
+            ReviewAiReportResponse response = reportStrict(request).block(REVIEW_AI_TIMEOUT);
 
             return response == null ? "" : response.report();
         } catch (WebClientResponseException | WebClientRequestException | IllegalStateException e) {
             log.warn("Failed to build review report with review AI server", e);
             return "";
         }
+    }
+
+    public Mono<ReviewAiReportResponse> reportStrict(ReviewAiReportRequest request) {
+        return webClientBuilder.baseUrl(reviewAiBaseUrl)
+                .build()
+                .post()
+                .uri("/report")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(ReviewAiReportResponse.class)
+                .timeout(REVIEW_AI_TIMEOUT);
     }
 
     private Mono<Map<String, List<Long>>> handleCategorizeError(Throwable e) {

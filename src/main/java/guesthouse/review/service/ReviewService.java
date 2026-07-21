@@ -8,6 +8,8 @@ import guesthouse.guestHousePost.repository.GuestHousePostRepository;
 import guesthouse.review.domain.model.Review;
 import guesthouse.review.domain.model.ReviewImage;
 import guesthouse.review.domain.vo.ReviewStatus;
+import guesthouse.review.domain.vo.ReviewTargetType;
+import guesthouse.review.analysis.event.GuestHouseReviewChangedEvent;
 import guesthouse.review.dto.request.ReviewSaveRequest;
 import guesthouse.review.dto.response.ReviewResponse;
 import guesthouse.review.dto.response.ReviewSummaryResponse;
@@ -24,6 +26,7 @@ import guesthouse.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +48,7 @@ public class ReviewService {
     private final StaffRecruitmentRepository staffRecruitmentRepository;
     private final ApplicationRecordRepository applicationRecordRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Long create(Long guestHousePostId, Long userId, ReviewSaveRequest request) {
@@ -57,6 +61,7 @@ public class ReviewService {
 
         Review review = reviewRepository.save(new Review(guestHousePostId, userId, request.rating(), request.content()));
         saveImages(review.getId(), request.imageUrls());
+        publishGuestHouseReviewChanged(guestHousePostId);
         return review.getId();
     }
 
@@ -182,6 +187,7 @@ public class ReviewService {
 
         reviewImageRepository.deleteByReviewId(reviewId);
         saveImages(reviewId, request.imageUrls());
+        publishGuestHouseReviewChanged(review);
     }
 
     @Transactional
@@ -189,12 +195,16 @@ public class ReviewService {
         Review review = getActiveReview(reviewId);
         validateOwner(review, userId);
         review.delete();
+        publishGuestHouseReviewChanged(review);
     }
 
     @Transactional
     public void deleteAllByGuestHousePostId(Long guestHousePostId) {
         List<Review> reviews = reviewRepository.findByGuestHousePostIdAndStatus(guestHousePostId, ReviewStatus.ACTIVE);
         reviews.forEach(Review::delete);
+        if (!reviews.isEmpty()) {
+            publishGuestHouseReviewChanged(guestHousePostId);
+        }
     }
 
     @Transactional
@@ -214,6 +224,16 @@ public class ReviewService {
                 .toList();
 
         reviewImageRepository.saveAll(images);
+    }
+
+    private void publishGuestHouseReviewChanged(Review review) {
+        if (review.getTargetType() == ReviewTargetType.GUEST_HOUSE_POST) {
+            publishGuestHouseReviewChanged(review.getGuestHousePostId());
+        }
+    }
+
+    private void publishGuestHouseReviewChanged(Long guestHousePostId) {
+        eventPublisher.publishEvent(new GuestHouseReviewChangedEvent(guestHousePostId));
     }
 
     private List<String> getImageUrls(Long reviewId) {

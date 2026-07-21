@@ -9,6 +9,7 @@ import guesthouse.review.domain.vo.ReviewTargetType;
 import guesthouse.review.dto.request.ReviewSaveRequest;
 import guesthouse.review.exception.ReviewErrorCode;
 import guesthouse.review.exception.ReviewException;
+import guesthouse.review.analysis.event.GuestHouseReviewChangedEvent;
 import guesthouse.review.repository.ReviewImageRepository;
 import guesthouse.review.repository.ReviewRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentRepository;
@@ -19,6 +20,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
 
@@ -48,8 +50,30 @@ class ReviewServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private ReviewService reviewService;
+
+    @Test
+    void createGuestHouseReview_publishesAnalysisRefreshEvent() {
+        Long guestHousePostId = 1L;
+        Long userId = 2L;
+        ReviewSaveRequest request = new ReviewSaveRequest(5, "깨끗하고 친절했어요.", List.of());
+
+        when(guestHousePostRepository.existsById(guestHousePostId)).thenReturn(true);
+        when(reviewRepository.existsByGuestHousePostIdAndUserIdAndStatus(
+                guestHousePostId,
+                userId,
+                ReviewStatus.ACTIVE
+        )).thenReturn(false);
+        when(reviewRepository.save(any(Review.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        reviewService.create(guestHousePostId, userId, request);
+
+        verify(eventPublisher).publishEvent(new GuestHouseReviewChangedEvent(guestHousePostId));
+    }
 
     @Test
     void createStaffRecruitmentReview_savesReviewWhenApplicantIsAccepted() {
@@ -80,6 +104,7 @@ class ReviewServiceTest {
         assertThat(savedReview.getStaffRecruitmentId()).isEqualTo(staffRecruitmentId);
         assertThat(savedReview.getUserId()).isEqualTo(userId);
         assertThat(savedReview.getRating()).isEqualByComparingTo("4.5");
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
     @Test
