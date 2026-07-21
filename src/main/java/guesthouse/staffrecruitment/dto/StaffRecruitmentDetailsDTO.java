@@ -56,7 +56,7 @@ public record StaffRecruitmentDetailsDTO(
                 .title(recruitment.getTitle())
                 .guestHouseName(recruitment.getGuestHouseName())
                 .region(recruitment.getRegion())
-                .address(recruitment.getLotNumberAddress())
+                .address(getAddress(recruitment.getRoadNameAddress(), recruitment.getLotNumberAddress()))
                 .coordinates(recruitment.getCoordinates())
                 .startDate(recruitment.getStartDate())
                 .isStartDateNegotiable(false)
@@ -71,5 +71,12 @@ public record StaffRecruitmentDetailsDTO(
                 .isWished(isWished)
                 .ownerMessage(recruitment.getOwnerMessage())
                 .build();
+    }
+
+    private static String getAddress(String roadNameAddress, String lotNumberAddress) {
+        if (roadNameAddress != null && !roadNameAddress.isBlank()) {
+            return roadNameAddress;
+        }
+        return lotNumberAddress;
     }
 }
