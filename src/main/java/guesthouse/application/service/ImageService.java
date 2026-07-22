@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -39,7 +40,14 @@ public class ImageService {
     }
 
     private String makeImageName(MultipartFile image, Long userId) {
-        return System.currentTimeMillis() + UNDER_BAR + userId + UNDER_BAR + image.getOriginalFilename();
+        String originalName = image.getOriginalFilename();
+        String safeName = originalName == null || originalName.isBlank()
+                ? "image"
+                : Paths.get(originalName).getFileName().toString();
+        return System.currentTimeMillis()
+                + UNDER_BAR + userId
+                + UNDER_BAR + UUID.randomUUID()
+                + UNDER_BAR + safeName;
     }
 
 
