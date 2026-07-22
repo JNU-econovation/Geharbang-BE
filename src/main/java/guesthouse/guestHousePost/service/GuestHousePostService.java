@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -99,12 +100,21 @@ public class GuestHousePostService {
 
     @Transactional(readOnly = true)
     public GuestHouseAiDataResponse getActiveGuestHousesForAi() {
-        List<GuestHouseAiDataResponse.Item> items = guestHousePostRepository
-                .findByStatusOrderByIdDesc(Status.ACTIVE)
+        List<GuestHousePost> activePosts = guestHousePostRepository.findByStatusOrderByIdDesc(Status.ACTIVE);
+        Map<Long, ReviewSummaryResponse> reviewSummaries = reviewService.createSummaries(
+                activePosts.stream().map(GuestHousePost::getId).toList()
+        );
+        List<GuestHouseAiDataResponse.Item> items = activePosts
                 .stream()
                 .map(post -> new GuestHouseAiDataResponse.Item(
                         post.getId(),
-                        GuestHousePostDetailsResponse.from(buildDetailsForAi(post))
+                        GuestHousePostDetailsResponse.from(buildDetailsForAi(
+                                post,
+                                reviewSummaries.getOrDefault(
+                                        post.getId(),
+                                        new ReviewSummaryResponse(0.0, 0L, false, false)
+                                )
+                        ))
                 ))
                 .toList();
         return new GuestHouseAiDataResponse(items);
@@ -118,11 +128,17 @@ public class GuestHousePostService {
         }
         return new GuestHouseAiDataResponse.Item(
                 post.getId(),
-                GuestHousePostDetailsResponse.from(buildDetailsForAi(post))
+                GuestHousePostDetailsResponse.from(buildDetailsForAi(
+                        post,
+                        reviewService.createSummary(id, null)
+                ))
         );
     }
 
-    private GuestHousePostDetailsDTO buildDetailsForAi(GuestHousePost post) {
+    private GuestHousePostDetailsDTO buildDetailsForAi(
+            GuestHousePost post,
+            ReviewSummaryResponse reviewSummary
+    ) {
         Long id = post.getId();
         return GuestHousePostDetailsDTO.from(
                 post,
@@ -131,7 +147,7 @@ public class GuestHousePostService {
                 getPartiesWithImageUrlByPostId(id),
                 getRoomsWithImageUrlByPostId(id),
                 false,
-                new ReviewSummaryResponse(0.0, 0L, false, false)
+                reviewSummary
         );
     }
 

@@ -1,5 +1,8 @@
 package guesthouse.review.service;
 
+import guesthouse.ai.AiIndexDomain;
+import guesthouse.ai.AiIndexSyncAction;
+import guesthouse.ai.AiIndexSyncEvent;
 import guesthouse.application_record.domain.vo.Status;
 import guesthouse.application_record.repository.ApplicationRecordRepository;
 import guesthouse.guestHousePost.exception.GuestHousePostErrorCode;
@@ -161,6 +164,24 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
+    public Map<Long, ReviewSummaryResponse> createSummaries(List<Long> guestHousePostIds) {
+        if (guestHousePostIds == null || guestHousePostIds.isEmpty()) {
+            return Map.of();
+        }
+        return reviewRepository.aggregateGuestHouseReviews(guestHousePostIds, ReviewStatus.ACTIVE)
+                .stream()
+                .collect(Collectors.toMap(
+                        ReviewRepository.GuestHouseReviewAggregate::getGuestHousePostId,
+                        aggregate -> new ReviewSummaryResponse(
+                                round(aggregate.getAverageRating()),
+                                aggregate.getReviewCount(),
+                                false,
+                                false
+                        )
+                ));
+    }
+
+    @Transactional(readOnly = true)
     public ReviewSummaryResponse createStaffRecruitmentSummary(Long staffRecruitmentId, Long userId) {
         long reviewCount = reviewRepository.countByStaffRecruitmentIdAndStatus(staffRecruitmentId, ReviewStatus.ACTIVE);
         double averageRating = round(reviewRepository.averageStaffRecruitmentRating(staffRecruitmentId, ReviewStatus.ACTIVE));
@@ -203,7 +224,10 @@ public class ReviewService {
         List<Review> reviews = reviewRepository.findByGuestHousePostIdAndStatus(guestHousePostId, ReviewStatus.ACTIVE);
         reviews.forEach(Review::delete);
         if (!reviews.isEmpty()) {
-            publishGuestHouseReviewChanged(guestHousePostId);
+            // The guesthouse deletion flow publishes a DELETE index event itself.
+            // Only the review-analysis cache needs invalidation here; emitting an
+            // UPSERT as well would race with the deletion event after commit.
+            eventPublisher.publishEvent(new GuestHouseReviewChangedEvent(guestHousePostId));
         }
     }
 
@@ -234,6 +258,11 @@ public class ReviewService {
 
     private void publishGuestHouseReviewChanged(Long guestHousePostId) {
         eventPublisher.publishEvent(new GuestHouseReviewChangedEvent(guestHousePostId));
+        eventPublisher.publishEvent(new AiIndexSyncEvent(
+                AiIndexDomain.GUESTHOUSE,
+                guestHousePostId,
+                AiIndexSyncAction.UPSERT
+        ));
     }
 
     private List<String> getImageUrls(Long reviewId) {
