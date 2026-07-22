@@ -1,5 +1,8 @@
 package guesthouse.review.service;
 
+import guesthouse.ai.AiIndexDomain;
+import guesthouse.ai.AiIndexSyncAction;
+import guesthouse.ai.AiIndexSyncEvent;
 import guesthouse.application_record.domain.vo.Status;
 import guesthouse.application_record.repository.ApplicationRecordRepository;
 import guesthouse.guestHousePost.repository.GuestHousePostRepository;
@@ -7,6 +10,7 @@ import guesthouse.review.domain.model.Review;
 import guesthouse.review.domain.vo.ReviewStatus;
 import guesthouse.review.domain.vo.ReviewTargetType;
 import guesthouse.review.dto.request.ReviewSaveRequest;
+import guesthouse.review.dto.response.ReviewSummaryResponse;
 import guesthouse.review.exception.ReviewErrorCode;
 import guesthouse.review.exception.ReviewException;
 import guesthouse.review.analysis.event.GuestHouseReviewChangedEvent;
@@ -23,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -57,7 +62,7 @@ class ReviewServiceTest {
     private ReviewService reviewService;
 
     @Test
-    void createGuestHouseReview_publishesAnalysisRefreshEvent() {
+    void createGuestHouseReview_publishesAnalysisAndAiIndexRefreshEvents() {
         Long guestHousePostId = 1L;
         Long userId = 2L;
         ReviewSaveRequest request = new ReviewSaveRequest(5, "깨끗하고 친절했어요.", List.of());
@@ -73,6 +78,11 @@ class ReviewServiceTest {
         reviewService.create(guestHousePostId, userId, request);
 
         verify(eventPublisher).publishEvent(new GuestHouseReviewChangedEvent(guestHousePostId));
+        verify(eventPublisher).publishEvent(new AiIndexSyncEvent(
+                AiIndexDomain.GUESTHOUSE,
+                guestHousePostId,
+                AiIndexSyncAction.UPSERT
+        ));
     }
 
     @Test
@@ -105,6 +115,27 @@ class ReviewServiceTest {
         assertThat(savedReview.getUserId()).isEqualTo(userId);
         assertThat(savedReview.getRating()).isEqualByComparingTo("4.5");
         verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    void createSummaries_usesSingleAggregateResultSet() {
+        ReviewRepository.GuestHouseReviewAggregate aggregate = mock(
+                ReviewRepository.GuestHouseReviewAggregate.class
+        );
+        when(aggregate.getGuestHousePostId()).thenReturn(10L);
+        when(aggregate.getAverageRating()).thenReturn(4.666);
+        when(aggregate.getReviewCount()).thenReturn(3L);
+        when(reviewRepository.aggregateGuestHouseReviews(List.of(10L, 20L), ReviewStatus.ACTIVE))
+                .thenReturn(List.of(aggregate));
+
+        Map<Long, ReviewSummaryResponse> summaries = reviewService.createSummaries(List.of(10L, 20L));
+
+        assertThat(summaries).containsOnlyKeys(10L);
+        assertThat(summaries.get(10L).averageRating()).isEqualTo(4.7);
+        assertThat(summaries.get(10L).reviewCount()).isEqualTo(3L);
+        assertThat(reviewService.createSummaries(List.of()).isEmpty()).isTrue();
+        verify(reviewRepository, times(1))
+                .aggregateGuestHouseReviews(anyList(), eq(ReviewStatus.ACTIVE));
     }
 
     @Test
