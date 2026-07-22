@@ -23,6 +23,7 @@ import guesthouse.staffrecruitment.repository.StaffRecruitmentJobRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentQuestionsRepository;
 import guesthouse.staffrecruitment.repository.StaffRecruitmentRepository;
 import guesthouse.review.service.ReviewService;
+import guesthouse.review.dto.response.ReviewSummaryResponse;
 import guesthouse.user.domain.model.User;
 import guesthouse.user.service.UserService;
 import guesthouse.wish.service.WishService;
@@ -35,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -59,18 +61,33 @@ public class StaffRecruitmentService {
         Boolean isWished = isWished(id, userId);
 
         recruitment.plusViewCount();
-        return StaffRecruitmentDetailsDTO.from(recruitment, jobs, representativeImages, contentImages, isWished);
+        boolean isMine = userId != null && recruitment.getOwnerId().equals(userId);
+        return StaffRecruitmentDetailsDTO.from(
+                recruitment, jobs, representativeImages, contentImages, isWished, isMine
+        );
     }
 
     @Transactional(readOnly = true)
     public StaffRecruitmentAiDataResponse getActiveRecruitmentsForAi() {
-        List<StaffRecruitmentAiDataResponse.Item> items = staffRecruitmentRepository
-                .findByStatusOrderByIdDesc(Status.ACTIVE)
+        List<StaffRecruitment> activeRecruitments = staffRecruitmentRepository
+                .findByStatusOrderByIdDesc(Status.ACTIVE);
+        Map<Long, ReviewSummaryResponse> reviewSummaries = reviewService.createStaffRecruitmentSummaries(
+                activeRecruitments.stream().map(StaffRecruitment::getId).toList()
+        );
+        List<StaffRecruitmentAiDataResponse.Item> items = activeRecruitments
                 .stream()
-                .map(recruitment -> new StaffRecruitmentAiDataResponse.Item(
-                        recruitment.getId(),
-                        StaffRecruitmentDetailsResponse.from(buildDetails(recruitment, false))
-                ))
+                .map(recruitment -> {
+                    ReviewSummaryResponse summary = reviewSummaries.getOrDefault(
+                            recruitment.getId(),
+                            new ReviewSummaryResponse(0.0, 0L, false, false)
+                    );
+                    return new StaffRecruitmentAiDataResponse.Item(
+                            recruitment.getId(),
+                            StaffRecruitmentDetailsResponse.from(buildDetails(recruitment, false)),
+                            summary.averageRating(),
+                            summary.reviewCount()
+                    );
+                })
                 .toList();
 
         return new StaffRecruitmentAiDataResponse(items);
@@ -82,9 +99,12 @@ public class StaffRecruitmentService {
         if (recruitment.getStatus() != Status.ACTIVE) {
             throw new StaffRecruitmentException(StaffRecruitmentErrorCode.NOT_FOUND);
         }
+        ReviewSummaryResponse summary = reviewService.createStaffRecruitmentSummary(id, null);
         return new StaffRecruitmentAiDataResponse.Item(
                 recruitment.getId(),
-                StaffRecruitmentDetailsResponse.from(buildDetails(recruitment, false))
+                StaffRecruitmentDetailsResponse.from(buildDetails(recruitment, false)),
+                summary.averageRating(),
+                summary.reviewCount()
         );
     }
 
@@ -95,7 +115,8 @@ public class StaffRecruitmentService {
                 getJobsByRecruitmentId(id),
                 getRepresentativeImageUrls(id),
                 getContentImageUrls(id),
-                isWished
+                isWished,
+                false
         );
     }
 

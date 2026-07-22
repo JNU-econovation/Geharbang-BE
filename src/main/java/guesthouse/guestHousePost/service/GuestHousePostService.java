@@ -147,6 +147,7 @@ public class GuestHousePostService {
                 getPartiesWithImageUrlByPostId(id),
                 getRoomsWithImageUrlByPostId(id),
                 false,
+                false,
                 reviewSummary
         );
     }
@@ -254,6 +255,7 @@ public class GuestHousePostService {
                 parties,
                 rooms,
                 isWished(guestHousePostId, userId),
+                userId != null && guestHousePost.getOwnerId().equals(userId),
                 reviewSummary
         );
     }

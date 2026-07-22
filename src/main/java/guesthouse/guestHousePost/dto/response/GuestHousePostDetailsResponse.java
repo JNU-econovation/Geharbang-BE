@@ -29,6 +29,7 @@ public record GuestHousePostDetailsResponse (
         Contact contact,
         String ownerMessage,
         Boolean isWished,
+        Boolean isMine,
         double averageRating,
         long reviewCount,
         boolean hasMyReview
@@ -50,6 +51,7 @@ public record GuestHousePostDetailsResponse (
                 .contact(details.contact())
                 .ownerMessage(details.ownerMessage())
                 .isWished(details.isWished())
+                .isMine(details.isMine())
                 .averageRating(details.reviewSummary().averageRating())
                 .reviewCount(details.reviewSummary().reviewCount())
                 .hasMyReview(details.reviewSummary().hasMyReview())

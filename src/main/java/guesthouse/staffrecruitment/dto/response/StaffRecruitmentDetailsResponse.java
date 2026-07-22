@@ -30,6 +30,7 @@ public record StaffRecruitmentDetailsResponse(
         Feature feature,
         Contact contact,
         Boolean isWished,
+        Boolean isMine,
         String ownerMessage
 
 ) {
@@ -51,6 +52,7 @@ public record StaffRecruitmentDetailsResponse(
                         details.webSite()
                 ))
                 .isWished(details.isWished())
+                .isMine(details.isMine())
                 .ownerMessage(details.ownerMessage())
                 .build();
     }

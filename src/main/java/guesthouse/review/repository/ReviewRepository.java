@@ -51,8 +51,27 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             @Param("status") ReviewStatus status
     );
 
+    @Query("""
+            select r.staffRecruitmentId as staffRecruitmentId,
+                   avg(r.rating) as averageRating,
+                   count(r) as reviewCount
+            from Review r
+            where r.staffRecruitmentId in :staffRecruitmentIds and r.status = :status
+            group by r.staffRecruitmentId
+            """)
+    List<StaffRecruitmentReviewAggregate> aggregateStaffRecruitmentReviews(
+            @Param("staffRecruitmentIds") List<Long> staffRecruitmentIds,
+            @Param("status") ReviewStatus status
+    );
+
     interface GuestHouseReviewAggregate {
         Long getGuestHousePostId();
+        double getAverageRating();
+        long getReviewCount();
+    }
+
+    interface StaffRecruitmentReviewAggregate {
+        Long getStaffRecruitmentId();
         double getAverageRating();
         long getReviewCount();
     }

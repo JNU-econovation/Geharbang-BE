@@ -85,6 +85,7 @@ public class ReviewService {
                 request.content()
         ));
         saveImages(review.getId(), request.imageUrls());
+        publishStaffRecruitmentReviewChanged(staffRecruitmentId);
         return review.getId();
     }
 
@@ -182,6 +183,24 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
+    public Map<Long, ReviewSummaryResponse> createStaffRecruitmentSummaries(List<Long> staffRecruitmentIds) {
+        if (staffRecruitmentIds == null || staffRecruitmentIds.isEmpty()) {
+            return Map.of();
+        }
+        return reviewRepository.aggregateStaffRecruitmentReviews(staffRecruitmentIds, ReviewStatus.ACTIVE)
+                .stream()
+                .collect(Collectors.toMap(
+                        ReviewRepository.StaffRecruitmentReviewAggregate::getStaffRecruitmentId,
+                        aggregate -> new ReviewSummaryResponse(
+                                round(aggregate.getAverageRating()),
+                                aggregate.getReviewCount(),
+                                false,
+                                false
+                        )
+                ));
+    }
+
+    @Transactional(readOnly = true)
     public ReviewSummaryResponse createStaffRecruitmentSummary(Long staffRecruitmentId, Long userId) {
         long reviewCount = reviewRepository.countByStaffRecruitmentIdAndStatus(staffRecruitmentId, ReviewStatus.ACTIVE);
         double averageRating = round(reviewRepository.averageStaffRecruitmentRating(staffRecruitmentId, ReviewStatus.ACTIVE));
@@ -208,7 +227,7 @@ public class ReviewService {
 
         reviewImageRepository.deleteByReviewId(reviewId);
         saveImages(reviewId, request.imageUrls());
-        publishGuestHouseReviewChanged(review);
+        publishReviewChanged(review);
     }
 
     @Transactional
@@ -216,7 +235,7 @@ public class ReviewService {
         Review review = getActiveReview(reviewId);
         validateOwner(review, userId);
         review.delete();
-        publishGuestHouseReviewChanged(review);
+        publishReviewChanged(review);
     }
 
     @Transactional
@@ -250,9 +269,11 @@ public class ReviewService {
         reviewImageRepository.saveAll(images);
     }
 
-    private void publishGuestHouseReviewChanged(Review review) {
+    private void publishReviewChanged(Review review) {
         if (review.getTargetType() == ReviewTargetType.GUEST_HOUSE_POST) {
             publishGuestHouseReviewChanged(review.getGuestHousePostId());
+        } else if (review.getTargetType() == ReviewTargetType.STAFF_RECRUITMENT) {
+            publishStaffRecruitmentReviewChanged(review.getStaffRecruitmentId());
         }
     }
 
@@ -261,6 +282,14 @@ public class ReviewService {
         eventPublisher.publishEvent(new AiIndexSyncEvent(
                 AiIndexDomain.GUESTHOUSE,
                 guestHousePostId,
+                AiIndexSyncAction.UPSERT
+        ));
+    }
+
+    private void publishStaffRecruitmentReviewChanged(Long staffRecruitmentId) {
+        eventPublisher.publishEvent(new AiIndexSyncEvent(
+                AiIndexDomain.STAFF_RECRUITMENT,
+                staffRecruitmentId,
                 AiIndexSyncAction.UPSERT
         ));
     }

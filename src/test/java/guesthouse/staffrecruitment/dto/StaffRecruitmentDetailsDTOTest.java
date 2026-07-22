@@ -17,7 +17,7 @@ class StaffRecruitmentDetailsDTOTest {
         StaffRecruitment recruitment = recruitment("제주특별자치도 제주시 해안로 1", "제주시 애월읍 10");
 
         StaffRecruitmentDetailsDTO result = StaffRecruitmentDetailsDTO.from(
-                recruitment, List.of(), List.of(), List.of(), false
+                recruitment, List.of(), List.of(), List.of(), false, false
         );
 
         assertThat(result.address()).isEqualTo("제주특별자치도 제주시 해안로 1");
@@ -28,7 +28,7 @@ class StaffRecruitmentDetailsDTOTest {
         StaffRecruitment recruitment = recruitment(" ", "제주시 애월읍 10");
 
         StaffRecruitmentDetailsDTO result = StaffRecruitmentDetailsDTO.from(
-                recruitment, List.of(), List.of(), List.of(), false
+                recruitment, List.of(), List.of(), List.of(), false, false
         );
 
         assertThat(result.address()).isEqualTo("제주시 애월읍 10");

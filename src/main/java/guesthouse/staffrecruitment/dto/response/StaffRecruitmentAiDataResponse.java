@@ -7,6 +7,8 @@ public record StaffRecruitmentAiDataResponse(
 ) {
     public record Item(
             Long id,
-            StaffRecruitmentDetailsResponse details
+            StaffRecruitmentDetailsResponse details,
+            double averageRating,
+            long reviewCount
     ) { }
 }

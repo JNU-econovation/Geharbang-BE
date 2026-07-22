@@ -37,13 +37,15 @@ public record StaffRecruitmentDetailsDTO(
         String phoneNumber,
         String webSite,
         Boolean isWished,
+        Boolean isMine,
         String ownerMessage
 ) {
     public static StaffRecruitmentDetailsDTO from (StaffRecruitment recruitment,
                                                    List<StaffRecruitmentJob> jobs,
                                                    List<String> representativeImages,
                                                    List<String> contentImages,
-                                                   Boolean isWished
+                                                   Boolean isWished,
+                                                   Boolean isMine
     ) {
 
         return StaffRecruitmentDetailsDTO.builder()
@@ -69,6 +71,7 @@ public record StaffRecruitmentDetailsDTO(
                 .phoneNumber(recruitment.getContact().getPhoneNumber())
                 .webSite(recruitment.getContact().getWebSite())
                 .isWished(isWished)
+                .isMine(isMine)
                 .ownerMessage(recruitment.getOwnerMessage())
                 .build();
     }

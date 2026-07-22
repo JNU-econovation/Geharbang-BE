@@ -114,7 +114,48 @@ class ReviewServiceTest {
         assertThat(savedReview.getStaffRecruitmentId()).isEqualTo(staffRecruitmentId);
         assertThat(savedReview.getUserId()).isEqualTo(userId);
         assertThat(savedReview.getRating()).isEqualByComparingTo("4.5");
-        verify(eventPublisher, never()).publishEvent(any());
+        verify(eventPublisher).publishEvent(new AiIndexSyncEvent(
+                AiIndexDomain.STAFF_RECRUITMENT,
+                staffRecruitmentId,
+                AiIndexSyncAction.UPSERT
+        ));
+    }
+
+    @Test
+    void updateStaffRecruitmentReview_publishesAiIndexRefreshEvent() {
+        Long reviewId = 10L;
+        Long staffRecruitmentId = 20L;
+        Long userId = 2L;
+        Review review = Review.staffRecruitment(staffRecruitmentId, userId, 4.0, "기존 후기");
+        when(reviewRepository.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE))
+                .thenReturn(java.util.Optional.of(review));
+
+        reviewService.update(reviewId, userId, new ReviewSaveRequest(5.0, "수정한 후기", List.of()));
+
+        verify(eventPublisher).publishEvent(new AiIndexSyncEvent(
+                AiIndexDomain.STAFF_RECRUITMENT,
+                staffRecruitmentId,
+                AiIndexSyncAction.UPSERT
+        ));
+    }
+
+    @Test
+    void deleteStaffRecruitmentReview_publishesAiIndexRefreshEvent() {
+        Long reviewId = 10L;
+        Long staffRecruitmentId = 20L;
+        Long userId = 2L;
+        Review review = Review.staffRecruitment(staffRecruitmentId, userId, 4.0, "기존 후기");
+        when(reviewRepository.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE))
+                .thenReturn(java.util.Optional.of(review));
+
+        reviewService.delete(reviewId, userId);
+
+        assertThat(review.getStatus()).isEqualTo(ReviewStatus.DELETED);
+        verify(eventPublisher).publishEvent(new AiIndexSyncEvent(
+                AiIndexDomain.STAFF_RECRUITMENT,
+                staffRecruitmentId,
+                AiIndexSyncAction.UPSERT
+        ));
     }
 
     @Test
@@ -136,6 +177,27 @@ class ReviewServiceTest {
         assertThat(reviewService.createSummaries(List.of()).isEmpty()).isTrue();
         verify(reviewRepository, times(1))
                 .aggregateGuestHouseReviews(anyList(), eq(ReviewStatus.ACTIVE));
+    }
+
+    @Test
+    void createStaffRecruitmentSummaries_usesSingleAggregateResultSet() {
+        ReviewRepository.StaffRecruitmentReviewAggregate aggregate = mock(
+                ReviewRepository.StaffRecruitmentReviewAggregate.class
+        );
+        when(aggregate.getStaffRecruitmentId()).thenReturn(30L);
+        when(aggregate.getAverageRating()).thenReturn(4.45);
+        when(aggregate.getReviewCount()).thenReturn(2L);
+        when(reviewRepository.aggregateStaffRecruitmentReviews(List.of(30L, 40L), ReviewStatus.ACTIVE))
+                .thenReturn(List.of(aggregate));
+
+        Map<Long, ReviewSummaryResponse> summaries =
+                reviewService.createStaffRecruitmentSummaries(List.of(30L, 40L));
+
+        assertThat(summaries).containsOnlyKeys(30L);
+        assertThat(summaries.get(30L).averageRating()).isEqualTo(4.5);
+        assertThat(summaries.get(30L).reviewCount()).isEqualTo(2L);
+        assertThat(reviewService.createStaffRecruitmentSummaries(List.of()).isEmpty()).isTrue();
+        verify(reviewRepository).aggregateStaffRecruitmentReviews(anyList(), eq(ReviewStatus.ACTIVE));
     }
 
     @Test
